@@ -35,9 +35,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 
 @Composable
-fun SplashScreen() {
+fun SplashScreen(onNavigateToLogin: () -> Unit = {}) {
     var showButton by remember { mutableStateOf(false) }
 
     // 자동 반복 애니메이션
@@ -101,7 +103,9 @@ fun SplashScreen() {
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
                     .height(64.dp)
-                    .background(Color.White, shape = RoundedCornerShape(10.dp)),
+                    .background(Color.White, shape = RoundedCornerShape(10.dp))
+                    .clickable { onNavigateToLogin() }
+                    .pointerHoverIcon(PointerIcon.Hand),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
