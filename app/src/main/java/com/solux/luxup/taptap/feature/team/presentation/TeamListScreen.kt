@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
@@ -46,14 +47,29 @@ import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.shadow
+import com.solux.luxup.taptap.core.navigation.BottomNavBar
+import com.solux.luxup.taptap.core.navigation.BottomNavItem
 
 @Composable
 fun TeamListScreen(
     teams: List<Team> = mockTeams,
     modifier: Modifier = Modifier
 ) {
-    Surface(modifier = modifier.fillMaxSize(), color = BaseWhiteColor) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = BaseWhiteColor,
+        bottomBar = {
+            BottomNavBar(
+                selected = BottomNavItem.TEAM,
+                onItemSelected = { /* 탭 이동(라우팅)은 나중에 */ }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)          // 네비바 높이만큼 본문 밀어줌
+        ) {
             AppLogo()
             TeamListHeader()
             LazyColumn(
