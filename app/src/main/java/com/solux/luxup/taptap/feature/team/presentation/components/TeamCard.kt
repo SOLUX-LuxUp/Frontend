@@ -2,22 +2,10 @@ package com.solux.luxup.taptap.feature.team.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -32,15 +20,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.solux.luxup.taptap.feature.team.model.RecentRecord
+import com.solux.luxup.taptap.feature.team.model.LatestRecord
+import com.solux.luxup.taptap.feature.team.model.MemberProfile
 import com.solux.luxup.taptap.feature.team.model.Team
-import com.solux.luxup.taptap.ui.theme.BrandGreen
-import com.solux.luxup.taptap.ui.theme.RecordGreenEnd
-import com.solux.luxup.taptap.ui.theme.RecordGreenStart
-import com.solux.luxup.taptap.ui.theme.TextBlack
-
-private val BrandGreen = Color(0xFF5CCB6E)
+import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
+import androidx.compose.ui.res.painterResource
+import com.solux.luxup.taptap.R
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 private val FavoriteBlue = Color(0xFF4C9AFF)
+private val RecordBlue = Color(0xFF4C9AFF)
 
 @Composable
 fun TeamCard(
@@ -50,128 +39,127 @@ fun TeamCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(13.dp),                                  // 16 → 13
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFEFE)), // White → #FEFEFE
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)       // 그림자 살짝 키움
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFEFE)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 왼쪽: 별 + 이름 + 멤버
-            Column(modifier = Modifier.weight(1f)) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "즐겨찾기",
-                    tint = if (team.isFavorite) BrandGreen else Color(0xFFD9D9D9),
-                    modifier = Modifier.size(29.dp)
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(team.name, fontSize = 25.sp, fontWeight = FontWeight.Bold, color = TextBlack)
-                Spacer(Modifier.height(8.dp))
-                Text("멤버", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextBlack)
-                Spacer(Modifier.height(4.dp))
-                MemberAvatars(count = team.memberCount)
+        Column(modifier = Modifier.padding(16.dp)) {
+            // 상단: 별 + 이름 / 최근기록 박스
+            Row(verticalAlignment = Alignment.Top) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Icon(  // 별 — 그대로
+                        painter = painterResource(R.drawable.ic_star),
+                        contentDescription = "즐겨찾기",
+                        tint = if (team.isFavorite) FavoriteBlue else Color(0xFFD9D9D9),
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {          // 프로필 + 이름 가로로
+                        TeamProfileImage(team.teamImageUrl)
+                        Spacer(Modifier.width(8.dp))
+                        Text(team.teamName, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+                    }
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    team.latestRecord?.let { RecentRecordBox(it) }
+                    UpdateBar(members = team.recentUpdatedMembers)   // memberProfiles → recentUpdatedMembers
+                }
             }
 
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.height(16.dp))
 
-// 오른쪽: 최근 기록 + 업데이트 (세로로)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                team.recentRecord?.let { RecentRecordBox(it) }
-                UpdateBox(memberCount = team.updatedMemberCount)
-            }
+            // 하단: 멤버
+            Text("멤버", fontSize = 12.sp, color = Color.Gray)
+            Spacer(Modifier.height(6.dp))
+            MemberAvatars(members = team.memberProfiles)
         }
     }
 }
-
 @Composable
-private fun MemberAvatars(count: Int, max: Int = 8) {
+private fun TeamProfileImage(imageUrl: String?, modifier: Modifier = Modifier) {
+    if (imageUrl != null) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = "팀 이미지",
+            modifier = modifier.size(40.dp).clip(CircleShape),   // 사진은 원형으로 자름
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Icon(
+            painter = painterResource(R.drawable.ic_profile),     // SVG에 원 포함 → 그대로
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = modifier.size(40.dp)
+        )
+    }
+}
+@Composable
+private fun MemberAvatars(members: List<MemberProfile>, max: Int = 8) {
     Row {
-        repeat(minOf(count, max)) { index ->
-            Box(
+        members.take(max).forEachIndexed { index, _ ->
+            Icon(
+                painter = painterResource(R.drawable.ic_profile),
+                contentDescription = null,
+                tint = Color.Unspecified,                       // SVG 원래 색 그대로
                 modifier = Modifier
                     .offset(x = if (index == 0) 0.dp else (-6).dp * index)
-                    .size(18.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFD9D9D9))
-                    .border(1.dp, Color.White, CircleShape),
-                contentAlignment = Alignment.Center      // ① 원 가운데에 두기
-            ) {
-                Icon(
-                    Icons.Default.Person,                // ② 사람 아이콘
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(12.dp)
-                )
-            }
+                    .size(28.dp)
+            )
         }
     }
 }
 
+
 @Composable
-private fun RecentRecordBox(record: RecentRecord) {
+private fun RecentRecordBox(record: LatestRecord) {
     Column(
         modifier = Modifier
-            .width(160.dp)                        // 147 → 160, 살짝 넓게
-            .clip(RoundedCornerShape(13.dp))
+            .width(160.dp)
+            .clip(RoundedCornerShape(12.dp))
             .background(
-                Brush.verticalGradient(
-                    colors = listOf(RecordGreenStart, RecordGreenEnd)
+                Brush.horizontalGradient(                       // ③ 그라데이션
+                    colors = listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
                 )
             )
-            .padding(horizontal = 12.dp, vertical = 10.dp)   // height 고정 대신 padding으로
+            .padding(horizontal = 10.dp, vertical = 8.dp)
     ) {
-        Text("최근기록", fontSize = 10.sp, color = Color.White)
-        Spacer(Modifier.height(6.dp))
+        Text("최근 기록", fontSize = 9.sp, color = Color.White.copy(alpha = 0.85f))
+        Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.3f)),
+                modifier = Modifier.size(20.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.Default.Person,
+                    painter = painterResource(R.drawable.ic_profile),
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(24.dp)
                 )
             }
-            Spacer(Modifier.width(8.dp))
-            Column {
-                Text(
-                    record.buttonName,
-                    fontSize = 13.sp,             // 14 → 13, 잘림 방지
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    maxLines = 1                  // 한 줄 보장
-                )
-                Text(
-                    record.timeAgo,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White.copy(alpha = 0.85f),
-                    maxLines = 1
-                )
-            }
+            Spacer(Modifier.width(6.dp))
+            Text(
+                "${record.buttonName} · 27분 전",
+                fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1
+            )
         }
     }
 }
+
 @Composable
-private fun UpdateBox(memberCount: Int) {
+private fun UpdateBar(members: List<MemberProfile>) {        // ② 분리된 아래 바
     Row(
         modifier = Modifier
             .width(160.dp)
-            .clip(RoundedCornerShape(13.dp))
-            .background(RecordGreenStart)            // 단색 초록
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .height(29.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFDEEFFF))                    // 연회색 (디자인 보고 조정)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("업데이트", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Medium)
-        Spacer(Modifier.weight(1f))                  // 라벨과 아바타를 양끝으로
-        MemberAvatars(count = memberCount, max = 4)  // 기존 아바타 컴포넌트 재사용!
+        Text("업데이트", fontSize = 9.sp, color = Color.Gray)
+        Spacer(Modifier.weight(1f))
+        MemberAvatars(members = members, max = 3)            // 아바타 재사용
     }
 }
 
@@ -179,7 +167,18 @@ private fun UpdateBox(memberCount: Int) {
 @Composable
 private fun TeamCardPreview() {
     TeamCard(
-        team = Team(1, "LUX - UP", true, 8, RecentRecord("공지 업로드", "3분 전")),
+        team = Team(
+            teamId = 1,
+            teamName = "LUX-UP",
+            teamImageUrl = null,
+            isFavorite = true,
+            maxMember = 30,
+            memberCount = 6,
+            memberProfiles = (1..6).map { MemberProfile(it.toLong(), "멤버$it", null) },
+            latestRecord = LatestRecord(3, "기획서 업로드", "exercise", "2025-05-23T14:32:00"),  // iconKey "exercise" 추가
+            recentUpdatedMembers = (1..3).map { MemberProfile(it.toLong(), "멤버$it", null) },   // 추가
+            updatedAt = "2025-05-23T14:32:00"
+        ),
         modifier = Modifier.padding(16.dp)
     )
 }
