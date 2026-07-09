@@ -30,10 +30,14 @@ import com.solux.luxup.taptap.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onNavigateToSignupEmail: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {}
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var autoLogin by remember { mutableStateOf(false) }
+    var isLoggingIn by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(
@@ -149,7 +153,11 @@ fun LoginScreen() {
 
         // 로그인 버튼
         Button(
-            onClick = { },
+            onClick = {
+                isLoggingIn = true
+                onLoginSuccess()
+            },
+            enabled = !isLoggingIn,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp)
@@ -162,12 +170,18 @@ fun LoginScreen() {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF4BB4FF),
-                                Color(0xFF2085FF)
+                        brush = if (!isLoggingIn) {
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF4BB4FF),
+                                    Color(0xFF2085FF)
+                                )
                             )
-                        ),
+                        } else {
+                            Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF6D6D6D), Color(0xFF6D6D6D))
+                            )
+                        }
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -209,7 +223,7 @@ fun LoginScreen() {
                 contentDescription = "이메일 회원가입",
                 modifier = Modifier
                     .size(50.dp)
-                    .clickable { }
+                    .clickable { onNavigateToSignupEmail() }
             )
         }
     }

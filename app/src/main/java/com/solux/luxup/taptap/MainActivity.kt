@@ -7,8 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.solux.luxup.taptap.feature.auth.login.presentation.LoginScreen
+import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupEmailScreen
+import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupPasswordScreen
+import com.solux.luxup.taptap.feature.home.presentation.HomeScreen
 import com.solux.luxup.taptap.ui.theme.TapTapTheme
+import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashScreen
 import com.solux.luxup.taptap.feature.splash.presentation.SplashScreen
 
 class MainActivity : ComponentActivity() {
@@ -27,7 +33,55 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("login") {
-                        LoginScreen()
+                        LoginScreen(
+                            onNavigateToSignupEmail = {
+                                navController.navigate("signupEmail")
+                            },
+                            onLoginSuccess = {
+                                navController.navigate("postLoginSplash") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+                    composable("postLoginSplash") {
+                        PostLoginSplashScreen(
+                            onNavigateToHome = {
+                                navController.navigate("home") {
+                                    popUpTo("postLoginSplash") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+                    composable("home") {
+                        HomeScreen()
+                    }
+                    composable("signupEmail") {
+                        SignupEmailScreen(
+                            onNavigateBack = {
+                                navController.popBackStack()
+                            },
+                            onVerified = { email ->
+                                navController.navigate("signupPassword/$email")
+                            }
+                        )
+                    }
+                    composable(
+                        "signupPassword/{email}",
+                        arguments = listOf(navArgument("email") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val email = backStackEntry.arguments?.getString("email").orEmpty()
+                        SignupPasswordScreen(
+                            email = email,
+                            onNavigateBack = {
+                                navController.popBackStack()
+                            },
+                            onSignupComplete = {
+                                navController.navigate("login") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }
+                        )
                     }
                 }
             }
