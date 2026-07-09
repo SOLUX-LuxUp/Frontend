@@ -1,10 +1,47 @@
 package com.solux.luxup.taptap.feature.team.data
 
-import com.solux.luxup.taptap.feature.team.model.RecentRecord
+import com.solux.luxup.taptap.feature.team.model.LatestRecord
+import com.solux.luxup.taptap.feature.team.model.MemberProfile
 import com.solux.luxup.taptap.feature.team.model.Team
 
+private fun mockMembers(n: Int): List<MemberProfile> =
+    (1..n).map { MemberProfile(it.toLong(), "멤버$it", null) }
+
 val mockTeams = listOf(
-    Team(1, "LUX - UP", isFavorite = true, memberCount = 5, recentRecord = RecentRecord("공지 업로드", "3분 전"), updatedMemberCount = 4),
-    Team(2, "SOLUX", isFavorite = false, memberCount = 12, recentRecord = RecentRecord("자료 확인", "1시간 전"), updatedMemberCount = 3),
-    Team(3, "눈송이들", isFavorite = false, memberCount = 9, recentRecord = RecentRecord("밥먹기", "어제"), updatedMemberCount = 2)
+    Team(
+        teamId = 1,
+        teamName = "LUX-UP",
+        teamImageUrl = null,
+        isFavorite = true,
+        maxMember = 30,
+        memberCount = 6,
+        memberProfiles = mockMembers(6),
+        latestRecord = LatestRecord(3, "기획서 업로드", "exercise", "2025-05-23T14:33:00"),
+        recentUpdatedMembers = mockMembers(3),           // 업데이트 바용
+        updatedAt = "2025-05-23T14:33:00"
+    ),
+    Team(
+        teamId = 2,
+        teamName = "SOLUX",
+        teamImageUrl = null,
+        isFavorite = false,
+        maxMember = 20,
+        memberCount = 4,
+        memberProfiles = mockMembers(4),
+        latestRecord = LatestRecord(5, "공지 업로드", "study", "2025-05-23T14:30:00"),
+        recentUpdatedMembers = mockMembers(2),
+        updatedAt = "2025-05-23T14:30:00"
+    ),
+    Team(
+        teamId = 3,
+        teamName = "눈송이들",
+        teamImageUrl = null,
+        isFavorite = true,
+        maxMember = 15,
+        memberCount = 2,
+        memberProfiles = mockMembers(2),
+        latestRecord = LatestRecord(7, "밥먹기", "meal", "2025-05-23T13:57:00"),
+        recentUpdatedMembers = mockMembers(1),
+        updatedAt = "2025-05-23T13:57:00"
+    )
 )

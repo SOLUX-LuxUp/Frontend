@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,17 +31,45 @@ import com.solux.luxup.taptap.feature.team.data.mockTeams
 import com.solux.luxup.taptap.feature.team.model.Team
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamCard
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
-import com.solux.luxup.taptap.ui.theme.BrandGreen
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.shadow
+import com.solux.luxup.taptap.core.navigation.BottomNavBar
+import com.solux.luxup.taptap.core.navigation.BottomNavItem
 
 @Composable
 fun TeamListScreen(
     teams: List<Team> = mockTeams,
     modifier: Modifier = Modifier
 ) {
-    Surface(modifier = modifier.fillMaxSize(), color = Color(0xFFF5F5F5)) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = BaseWhiteColor,
+        bottomBar = {
+            BottomNavBar(
+                selected = BottomNavItem.TEAM,
+                onItemSelected = { /* 탭 이동(라우팅)은 나중에 */ }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)          // 네비바 높이만큼 본문 밀어줌
+        ) {
             AppLogo()
             TeamListHeader()
             LazyColumn(
@@ -61,47 +91,72 @@ private fun TeamListHeader() {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("내 팀", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A), modifier = Modifier.weight(1f))
-        Icon(Icons.Default.Search, contentDescription = "검색", tint = Color(0xFFB1B1B1), modifier = Modifier.padding(end = 16.dp).size(26.dp))
-        Box(
+        Text("내 팀", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+        SearchBar(modifier = Modifier.weight(1f).padding(horizontal = 12.dp))
+        Icon(
+            Icons.Default.Add,
+            contentDescription = "팀 추가",
             modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(BrandGreen),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = "팀 추가",
-                tint = Color.White,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+                .size(28.dp)
+                .graphicsLayer(alpha = 0.99f)
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
+                        ),
+                        blendMode = BlendMode.SrcAtop
+                    )
+                }
+        )
     }
 }
 @Composable
 private fun AppLogo() {
+    Text(
+        "팀 스페이스",
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF1A1A1A),
+        modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 16.dp, start = 8.dp, end = 8.dp),
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+    )
+}
+@Composable
+private fun SearchBar(modifier: Modifier = Modifier) {
+    var query by remember { mutableStateOf("") }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 40.dp, bottom = 16.dp, start = 8.dp, end = 8.dp),
-        horizontalArrangement = Arrangement.Center
+        modifier = modifier
+            .height(44.dp)
+            .shadow(3.dp, RoundedCornerShape(12.dp))       // 그림자 + 둥근 모서리
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "TAPTAP",
-            fontSize = 25.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
+        Icon(
+            Icons.Default.Search,
+            contentDescription = null,
+            tint = Color(0xFFB0B0B0),
+            modifier = Modifier.size(18.dp)
         )
-        Text(
-            text = ".",
-            fontSize = 25.sp,
-            fontWeight = FontWeight.Bold,
-            color = BrandGreen   // 브랜드 초록 점
+        Spacer(Modifier.width(8.dp))
+        BasicTextField(
+            value = query,
+            onValueChange = { query = it },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+            decorationBox = { innerTextField ->
+                Box {
+                    if (query.isEmpty()) {
+                        Text("팀 검색", fontSize = 13.sp, color = Color(0xFFB0B0B0))
+                    }
+                    innerTextField()
+                }
+            }
         )
     }
 }
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TeamListScreenPreview() {
