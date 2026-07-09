@@ -21,13 +21,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.style.TextDecoration
 import com.solux.luxup.taptap.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +34,6 @@ fun LoginScreen() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var autoLogin by remember { mutableStateOf(false) }
-    var isHovered by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(
@@ -186,26 +183,16 @@ fun LoginScreen() {
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium,
             color = Color(0xFFB1B1B1),
-            textDecoration = if (isHovered) TextDecoration.Underline else TextDecoration.None,
-            modifier = Modifier
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            isHovered = event.changes.any { it.pressed }
-                        }
-                    }
-                }
-                .clickable { }
+            modifier = Modifier.clickable { }
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // 소셜 로그인
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             // 패스키
             Image(
@@ -216,12 +203,12 @@ fun LoginScreen() {
                     .clickable { }
             )
 
-            // 구글
+            // 이메일
             Image(
-                painter = painterResource(id = R.drawable.ic_google),
-                contentDescription = "구글 회원가입",
+                painter = painterResource(id = R.drawable.ic_email),
+                contentDescription = "이메일 회원가입",
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(50.dp)
                     .clickable { }
             )
         }
