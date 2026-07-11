@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.R
 import androidx.compose.ui.res.painterResource
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.feature.team.model.ButtonRecord
 import com.solux.luxup.taptap.feature.team.model.MemberProfile
 import com.solux.luxup.taptap.feature.team.model.TeamButton
@@ -32,10 +33,16 @@ fun TeamButtonCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .figmaDropShadow(                        // 사방 균일 그림자 추가
+                cornerRadius = 13.dp,           // 카드 모서리랑 같게
+                alpha = 0.15f,
+                blurRadius = 7.dp
+            ),
+        shape = RoundedCornerShape(13.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFEFE)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)   // 기본 그림자 제거
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),  // 좌우 8, 상하 16
@@ -123,7 +130,7 @@ private fun RecordMemberAvatars(members: List<MemberProfile>, max: Int = 3) {
 }
 
 // iconName → drawable 매핑 (임시, 아이콘 세트 확정 후 확장)
-private fun buttonIconRes(iconName: String): Int = when (iconName) {
+fun buttonIconRes(iconName: String): Int = when (iconName) {
     "book" -> R.drawable.ic_profile      // TODO: 실제 아이콘으로 교체
     "laptop" -> R.drawable.ic_profile    // TODO
     "exercise" -> R.drawable.ic_profile  // TODO
@@ -131,7 +138,7 @@ private fun buttonIconRes(iconName: String): Int = when (iconName) {
 }
 
 // "#FF5733" → Color, 파싱 실패 시 기본색
-private fun safeColor(hex: String, fallback: Color): Color {
+fun safeColor(hex: String, fallback: Color): Color {
     return try {
         val clean = hex.removePrefix("#")
         val value = clean.toLong(16)
