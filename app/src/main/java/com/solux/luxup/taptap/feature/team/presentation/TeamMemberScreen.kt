@@ -30,6 +30,7 @@ import com.solux.luxup.taptap.feature.team.presentation.components.MemberCard
 @Composable
 fun TeamMemberScreen(
     members: List<TeamMember> = MockTeamMembers,
+    currentUserId: Long = 4L,          // ← 추가 (임시: 하연=4를 "나"로)
     onMemberClick: (TeamMember) -> Unit = {},
     onInviteClick: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -46,7 +47,7 @@ fun TeamMemberScreen(
                 text = "멤버",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF8A8A8A)
+                color = Color(0xFF6D6D6D)
             )
             Spacer(Modifier.weight(1f))
             InviteButton(onClick = onInviteClick)
@@ -60,6 +61,7 @@ fun TeamMemberScreen(
             items(members, key = { it.userId }) { member ->
                 MemberCard(
                     member = member,
+                    currentUserId = currentUserId,
                     onClick = { onMemberClick(member) }
                 )
             }
@@ -72,8 +74,8 @@ private fun InviteButton(onClick: () -> Unit) {
     // "+"는 아이콘 대신 글리프로 (아이콘 의존성 회피)
     Text(
         text = "+ 멤버 초대",
-        fontSize = 12.sp,
-        color = Color(0xFF8A8A8A),
+        fontSize = 14.sp,
+        color = Color(0xFFB1B1B1),
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .border(1.dp, Color(0xFFD8D8D8), RoundedCornerShape(20.dp))
