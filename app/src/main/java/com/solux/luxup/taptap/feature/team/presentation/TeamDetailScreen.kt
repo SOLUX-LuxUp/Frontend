@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,13 +20,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,11 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
-import com.solux.luxup.taptap.core.util.CategoryDropdown
-import com.solux.luxup.taptap.core.util.SearchBar
-import com.solux.luxup.taptap.feature.team.data.mockTeamButtons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
-import com.solux.luxup.taptap.feature.team.presentation.components.TeamButtonList
 import com.solux.luxup.taptap.feature.team.presentation.components.buttonIconRes
 import com.solux.luxup.taptap.feature.team.presentation.components.safeColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -54,8 +54,11 @@ import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 @Composable
 fun TeamDetailScreen(
     teamName: String = "LUX-UP",
+    initialTab: TeamDetailTab = TeamDetailTab.ACTIVITY,   // ← 초기 탭 파라미터 추가
     modifier: Modifier = Modifier
 ) {
+    var selectedTab by remember { mutableStateOf(initialTab) }   // ← initialTab로 시작
+
     Scaffold(
         modifier = modifier,
         bottomBar = {
@@ -64,47 +67,37 @@ fun TeamDetailScreen(
         containerColor = Color.White
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            TeamDetailTopBar(teamName = teamName)
-            TeamDetailTabs(selected = TeamDetailTab.ACTIVITY, onTabSelected = {})
-
-            // 최근 기록 배너 — 기록 있는 버튼 중 가장 최근 것
-            val recentButton = (mockTeamButtons.favoriteButtons + mockTeamButtons.buttons)
-                .filter { it.latestRecord != null }
-                .maxByOrNull { it.latestRecord!!.recordedAt }
-            recentButton?.let {
-                Column(modifier = Modifier.padding(horizontal = 40.dp, vertical = 12.dp)) {
-                    Text("최근 기록", fontSize = 14.sp, color = Color(0xFF6D6D6D), fontWeight = FontWeight.Medium)
-                    Spacer(Modifier.height(11.dp))
-                    RecentRecordBanner(it)
-                    Spacer(Modifier.height(30.dp))
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 40.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CategoryDropdown(
-                    onCategorySelected = { /* TODO: 버튼 필터링 */ }
-                )
-                // core/ui/modifier 검색창
-                SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
-            }
-
-            TeamButtonList(
-                favoriteButtons = mockTeamButtons.favoriteButtons,
-                buttons = mockTeamButtons.buttons
+            TeamDetailTopBar(
+                teamName = teamName,
+                action = when (selectedTab) {
+                    TeamDetailTab.MEMBER -> TopBarAction.SETTINGS
+                    else -> TopBarAction.ADD
+                },
+                onActionClick = { /* TODO: ADD → 버튼 생성, SETTINGS → 팀 설정 */ }
             )
+            TeamDetailTabs(
+                selected = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
+
+            when (selectedTab) {
+                TeamDetailTab.ACTIVITY -> TeamActivityScreen()
+                TeamDetailTab.INSIGHT  -> { /* TODO: TeamInsightScreen() */ }
+                TeamDetailTab.MEMBER   -> TeamMemberScreen()
+            }
         }
     }
 }
 
+// 우측 액션 종류 (함수 위 아무 데나 — TeamDetailTab enum 근처에 둬도 됨)
+enum class TopBarAction { ADD, SETTINGS }
+
 @Composable
 private fun TeamDetailTopBar(
     teamName: String,
+    action: TopBarAction,                       // ← 추가: 우측 아이콘 종류
     onBackClick: () -> Unit = {},
-    onAddClick: () -> Unit = {}
+    onActionClick: () -> Unit = {}              // ← onAddClick → onActionClick (범용 이름)
 ) {
     Row(
         modifier = Modifier
@@ -131,26 +124,41 @@ private fun TeamDetailTopBar(
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f)
         )
-        Icon(
-            Icons.Default.Add,
-            contentDescription = "버튼 추가",
-            modifier = Modifier
-                .size(28.dp)
-                .graphicsLayer(alpha = 0.99f)
-                .drawWithContent {
-                    drawContent()
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
-                        ),
-                        blendMode = BlendMode.SrcAtop
-                    )
-                }
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) { onAddClick() }
-        )
+
+        // 우측 아이콘 — 탭에 따라 + 또는 ⚙️
+        when (action) {
+            TopBarAction.ADD -> Icon(
+                Icons.Default.Add,
+                contentDescription = "버튼 추가",
+                modifier = Modifier
+                    .size(28.dp)
+                    .graphicsLayer(alpha = 0.99f)
+                    .drawWithContent {
+                        drawContent()
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
+                            ),
+                            blendMode = BlendMode.SrcAtop
+                        )
+                    }
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onActionClick() }
+            )
+            TopBarAction.SETTINGS -> Icon(
+                Icons.Default.Settings,
+                contentDescription = "팀 설정",
+                tint = Color(0xFF6D6D6D),
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onActionClick() }
+            )
+        }
     }
 }
 
@@ -165,49 +173,80 @@ private fun TeamDetailTabs(
     selected: TeamDetailTab,
     onTabSelected: (TeamDetailTab) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 22.dp)        // ← 탭바 전체 좌우 여백
-    ) {
-        TeamDetailTab.entries.forEach { tab ->
-            val isSelected = tab == selected
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { onTabSelected(tab) },
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+    Column {
+        // 라벨 Row (밑줄 없이 텍스트만)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 22.dp)
+        ) {
+            TeamDetailTab.entries.forEach { tab ->
+                val isSelected = tab == selected
                 Text(
                     text = tab.label,
                     fontSize = 20.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                     color = if (isSelected) Color(0xFF6D6D6D) else Color(0xFFB1B1B1),
-                    modifier = Modifier.padding(vertical = 10.dp)
-                )
-                // 선택된 탭 아래 파란 밑줄
-                Box(
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(
-                            if (isSelected)
-                                Brush.horizontalGradient(
-                                    listOf(BlueGradientStart, BlueGradientEnd)
-                                )
-                            else
-                                Brush.horizontalGradient(listOf(Color.Transparent, Color.Transparent))
-                        )
+                        .weight(1f)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onTabSelected(tab) }
+                        .padding(vertical = 10.dp)
                 )
+            }
+        }
+
+
+        // 인디케이터 영역 — 회색 전체 라인 1개 위에 파란 바(칸별) 겹침
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 22.dp)
+                .height(6.dp)
+        ) {
+            // 바닥: 끊김 없는 회색 라인 (전체 폭, 세로 중앙)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .height(2.0.dp)
+                    .align(Alignment.Center)
+                    .background(Color(0xFFDADADA))
+            )
+            // 위: 탭 칸별로 나눠서 선택된 칸만 파란 바
+            Row(modifier = Modifier.fillMaxSize()) {
+                TeamDetailTab.entries.forEach { tab ->
+                    val isSelected = tab == selected
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            listOf(BlueGradientStart, BlueGradientEnd)
+                                        )
+                                    )
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
+
 @Composable
 private fun RecentRecordBanner(button: TeamButton) {
     Row(
@@ -263,8 +302,14 @@ private fun RecentRecordBanner(button: TeamButton) {
 }
 
 
-@Preview(showBackground = true, heightDp = 800)
-@Composable
-private fun TeamDetailScreenPreview() {
-    TeamDetailScreen()
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 800)
+@androidx.compose.runtime.Composable
+private fun TeamDetailActivityPreview() {
+    TeamDetailScreen(initialTab = TeamDetailTab.ACTIVITY)
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 800)
+@androidx.compose.runtime.Composable
+private fun TeamDetailMemberPreview() {
+    TeamDetailScreen(initialTab = TeamDetailTab.MEMBER)
 }
