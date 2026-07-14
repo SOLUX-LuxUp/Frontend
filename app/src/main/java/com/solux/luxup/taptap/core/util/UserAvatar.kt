@@ -26,7 +26,7 @@ fun UserAvatar(
     if (imageUrl.isNullOrBlank()) {
         // 플레이스홀더 = ic_profile (원 포함 SVG → tint 미지정으로 원본 유지)
         Icon(
-            painter = painterResource(R.drawable.ic_profile),
+            painter = painterResource(R.drawable.ic_profile_thin),
             contentDescription = null,
             tint = Color.Unspecified,
             modifier = modifier.size(size)
@@ -42,11 +42,11 @@ fun UserAvatar(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(size).clip(CircleShape),
                 loading = {
-                    Icon(painterResource(R.drawable.ic_profile), null,
+                    Icon(painterResource(R.drawable.ic_profile_thin), null,
                         tint = Color.Unspecified, modifier = Modifier.size(size))
                 },
                 error = {
-                    Icon(painterResource(R.drawable.ic_profile), null,
+                    Icon(painterResource(R.drawable.ic_profile_thin), null,
                         tint = Color.Unspecified, modifier = Modifier.size(size))
                 }
             )
