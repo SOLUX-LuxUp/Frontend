@@ -1,19 +1,18 @@
 package com.solux.luxup.taptap.feature.team.presentation.memberdetail.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,36 +22,53 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
-import com.solux.luxup.taptap.feature.team.model.TeamMemberButton
+import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 
 @Composable
-fun MemberButtonList(
-    buttons: List<TeamMemberButton>,
+fun MemberSharedButtonList(
+    buttons: List<TeamMemberSharedButton>,
+    onSettingsClick: () -> Unit,          // ⚙️ → 공유 설정 모달 (다음 단계)
     modifier: Modifier = Modifier,
-    collapsedCount: Int = 5          // 4 → 5
+    collapsedCount: Int = 5
 ) {
     var expanded by remember { mutableStateOf(false) }
     val visible = if (expanded) buttons else buttons.take(collapsedCount)
 
     MemberSectionCard(modifier = modifier) {
-        Text(
-            text = "버튼 목록",
-            fontFamily = Pretendard,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF6D6D6D)
-        )
+        // 라벨 + ⚙️
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "공유 중인 버튼",
+                fontFamily = Pretendard,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF6D6D6D)
+            )
+            Spacer(Modifier.width(6.dp))
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Default.Settings,
+                contentDescription = "공유 설정",
+                tint = Color(0xFF8A8A8A),
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onSettingsClick() }
+            )
+        }
         Spacer(Modifier.height(4.dp))
 
+        // 전체 버튼 (isShared 무관 다 표시) — 아이템 재사용
         visible.forEach { button ->
-            MemberButtonItem(buttonName = button.buttonName)        }
+            MemberButtonItem(buttonName = button.buttonName)
+        }
 
         if (buttons.size > collapsedCount) {
             Box(
@@ -79,15 +95,16 @@ fun MemberButtonList(
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-private fun MemberButtonListPreview() {
-    MemberButtonList(
+private fun MemberSharedButtonListPreview() {
+    MemberSharedButtonList(
         buttons = listOf(
-            TeamMemberButton(1, "일기 쓰기", "diary", "#FFCB45"),
-            TeamMemberButton(2, "코드 수정", "code", "#2085FF"),
-            TeamMemberButton(3, "필기하기", "pen", "#FF6B6B"),
-            TeamMemberButton(4, "단톡 연락", "chat", "#4BB4FF"),
-            TeamMemberButton(5, "운동 하기", "run", "#90F525"),
+            TeamMemberSharedButton(5, "일기 쓰기", true),
+            TeamMemberSharedButton(6, "코드 수정", true),
+            TeamMemberSharedButton(7, "필기하기", false),
+            TeamMemberSharedButton(8, "단톡 연락", true),
+            TeamMemberSharedButton(9, "운동 하기", false),
         ),
-        modifier = Modifier.padding(16.dp)
+        onSettingsClick = {},
+        modifier = androidx.compose.ui.Modifier.padding(16.dp)
     )
 }

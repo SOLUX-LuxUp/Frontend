@@ -12,17 +12,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.solux.luxup.taptap.feature.team.data.MockSharedButtons
 import com.solux.luxup.taptap.feature.team.data.MockTeamMemberDetail
 import com.solux.luxup.taptap.feature.team.model.TeamMemberDetail
+import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.components.MemberButtonList
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.components.MemberProfileHeader
+import com.solux.luxup.taptap.feature.team.presentation.memberdetail.components.MemberSharedButtonList
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.components.MemberTimelineList
 
 @Composable
 fun TeamMemberDetailScreen(
     detail: TeamMemberDetail = MockTeamMemberDetail,
-    isMe: Boolean = false,                 // targetUserId == currentUserId
+    isMe: Boolean = false,                                              // targetUserId == currentUserId
+    sharedButtons: List<TeamMemberSharedButton> = MockSharedButtons,   // 내 프로필 공유 버튼 (8.2.4)
     onEditName: () -> Unit = {},
+    onShareSettingsClick: () -> Unit = {},                             // ⚙️ → 공유 설정 모달
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -44,8 +49,17 @@ fun TeamMemberDetailScreen(
         // 최근 기록 섹션
         MemberTimelineList(records = detail.recentTimeline)
 
-        // 버튼 목록 섹션
-        MemberButtonList(buttons = detail.buttons)
+        // 버튼 섹션 — 나/남 분기
+        if (isMe) {
+            // 내 프로필: 공유 중인 버튼 (⚙️로 설정 모달)
+            MemberSharedButtonList(
+                buttons = sharedButtons,
+                onSettingsClick = onShareSettingsClick
+            )
+        } else {
+            // 남 프로필: 버튼 목록
+            MemberButtonList(buttons = detail.buttons)
+        }
 
         Spacer(Modifier.height(20.dp))     // 하단 여백
     }
@@ -54,5 +68,11 @@ fun TeamMemberDetailScreen(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, heightDp = 900)
 @Composable
 private fun TeamMemberDetailScreenPreview() {
-    TeamMemberDetailScreen()
+    TeamMemberDetailScreen()                 // 남 프로필 (isMe = false)
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, heightDp = 900)
+@Composable
+private fun TeamMemberDetailScreenMePreview() {
+    TeamMemberDetailScreen(isMe = true)      // 내 프로필 (공유 버튼 섹션 + 연필)
 }

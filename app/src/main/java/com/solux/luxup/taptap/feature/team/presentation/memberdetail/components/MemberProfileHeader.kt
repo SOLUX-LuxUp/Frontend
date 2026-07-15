@@ -40,14 +40,16 @@ fun MemberProfileHeader(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        // "◯◯의 프로필" — 이름만 파랑, 나머지 회색
+        // "나의 프로필" (내 프로필) / "◯◯의 프로필" (남)
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = Color(0xFF2085FF))) {
-                    append(detail.displayName)
-                }
-                withStyle(SpanStyle(color = Color(0xFF6D6D6D))) {
-                    append("의 프로필")
+                if (editable) {
+                    // 내 프로필
+                    withStyle(SpanStyle(color = Color(0xFF6D6D6D))) { append("나의 프로필") }
+                } else {
+                    // 남 프로필 — 이름만 파랑
+                    withStyle(SpanStyle(color = Color(0xFF2085FF))) { append(detail.displayName) }
+                    withStyle(SpanStyle(color = Color(0xFF6D6D6D))) { append("의 프로필") }
                 }
             },
             fontFamily = Pretendard,
