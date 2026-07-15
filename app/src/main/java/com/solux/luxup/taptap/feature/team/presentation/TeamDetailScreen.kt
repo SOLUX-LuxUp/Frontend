@@ -48,17 +48,21 @@ import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.team.model.TeamButton
 import com.solux.luxup.taptap.feature.team.presentation.components.buttonIconRes
 import com.solux.luxup.taptap.feature.team.presentation.components.safeColor
+import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailScreen
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 @Composable
 fun TeamDetailScreen(
     teamName: String = "LUX-UP",
-    initialTab: TeamDetailTab = TeamDetailTab.ACTIVITY,   // ← 초기 탭 파라미터 추가
+    initialTab: TeamDetailTab = TeamDetailTab.ACTIVITY,
+    initialMemberId: Long? = null,               // ← 추가: 프리뷰/딥링크용 초기 선택 멤버
+    currentUserId: Long = 4L,                    // 임시 (로그인 유저 id, API 연결 시 교체)
+    onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
     modifier: Modifier = Modifier
 ) {
-    var selectedTab by remember { mutableStateOf(initialTab) }   // ← initialTab로 시작
-
+    var selectedTab by remember { mutableStateOf(initialTab) }
+    var selectedMemberId by remember { mutableStateOf(initialMemberId) }
     Scaffold(
         modifier = modifier,
         bottomBar = {
@@ -73,17 +77,44 @@ fun TeamDetailScreen(
                     TeamDetailTab.MEMBER -> TopBarAction.SETTINGS
                     else -> TopBarAction.ADD
                 },
+                onBackClick = {
+                    // 멤버 상세 보는 중이면 → 목록으로, 아니면 → 팀 상세 나가기
+                    if (selectedTab == TeamDetailTab.MEMBER && selectedMemberId != null) {
+                        selectedMemberId = null
+                    } else {
+                        onExit()
+                    }
+                },
                 onActionClick = { /* TODO: ADD → 버튼 생성, SETTINGS → 팀 설정 */ }
             )
             TeamDetailTabs(
                 selected = selectedTab,
-                onTabSelected = { selectedTab = it }
+                onTabSelected = {
+                    selectedTab = it
+                    selectedMemberId = null            // 탭 바꾸면 상세 상태 초기화
+                }
             )
 
             when (selectedTab) {
                 TeamDetailTab.ACTIVITY -> TeamActivityScreen()
                 TeamDetailTab.INSIGHT  -> { /* TODO: TeamInsightScreen() */ }
-                TeamDetailTab.MEMBER   -> TeamMemberScreen()
+                TeamDetailTab.MEMBER   -> {
+                    val memberId = selectedMemberId
+                    if (memberId == null) {
+                        // 멤버 목록
+                        TeamMemberScreen(
+                            currentUserId = currentUserId,
+                            onMemberClick = { member -> selectedMemberId = member.userId }
+                        )
+                    } else {
+                        // 멤버 상세 (나/남 분기)
+                        TeamMemberDetailScreen(
+                            // TODO: API 연결 시 memberId로 실제 조회. 지금은 목데이터 고정
+                            isMe = (memberId == currentUserId),
+                            onEditName = { /* TODO: 이름 수정 (다음 단계) */ }
+                        )
+                    }
+                }
             }
         }
     }
@@ -301,15 +332,29 @@ private fun RecentRecordBanner(button: TeamButton) {
     }
 }
 
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 800)
+// 활동 탭
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 900)
 @androidx.compose.runtime.Composable
 private fun TeamDetailActivityPreview() {
     TeamDetailScreen(initialTab = TeamDetailTab.ACTIVITY)
 }
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 800)
+// 멤버 탭 - 목록 상태
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 900)
 @androidx.compose.runtime.Composable
-private fun TeamDetailMemberPreview() {
+private fun TeamDetailMemberListPreview() {
     TeamDetailScreen(initialTab = TeamDetailTab.MEMBER)
+}
+
+// 멤버 탭 - 남 프로필 상세 (userId=3, 내 id 4L과 다름 → 남)
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 900)
+@androidx.compose.runtime.Composable
+private fun TeamDetailMemberDetailOtherPreview() {
+    TeamDetailScreen(initialTab = TeamDetailTab.MEMBER, initialMemberId = 3L)
+}
+
+// 멤버 탭 - 내 프로필 상세 (userId=4 == currentUserId 4L → 나, 연필 표시)
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 900)
+@androidx.compose.runtime.Composable
+private fun TeamDetailMemberDetailMePreview() {
+    TeamDetailScreen(initialTab = TeamDetailTab.MEMBER, initialMemberId = 4L)
 }
