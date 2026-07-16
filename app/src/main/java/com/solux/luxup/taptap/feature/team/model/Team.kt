@@ -22,6 +22,7 @@ data class MemberProfile(
 data class LatestRecord(
     val teamButtonId: Long,
     val buttonName: String,
-    val iconKey: String,          // 추가: 버튼 아이콘 매핑용 (백엔드 추가 예정)
-    val recordedAt: String              // "2025-05-23T14:32:00" 형태
+    val iconName: String,        // "exercise" — 버튼 아이콘 매핑용
+    val iconColor: String,       // "#FF5733" — 아이콘 색
+    val recordedAt: String
 )
