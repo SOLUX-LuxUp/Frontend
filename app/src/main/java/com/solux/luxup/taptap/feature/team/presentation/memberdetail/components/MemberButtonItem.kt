@@ -23,7 +23,7 @@ import com.solux.luxup.taptap.feature.team.model.TeamMemberButton
 
 @Composable
 fun MemberButtonItem(
-    button: TeamMemberButton,
+    buttonName: String,               // TeamMemberButton → String (타입 무관 재사용)
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -41,7 +41,7 @@ fun MemberButtonItem(
         )
         Spacer(Modifier.width(12.dp))
         Text(
-            text = button.buttonName,
+            text = buttonName,
             fontFamily = Pretendard,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
@@ -55,11 +55,7 @@ private fun MemberButtonItemPreview() {
     androidx.compose.foundation.layout.Column(
         modifier = androidx.compose.ui.Modifier.padding(16.dp)
     ) {
-        MemberButtonItem(
-            button = TeamMemberButton(1, "일기 쓰기", "diary", "#FFCB45")
-        )
-        MemberButtonItem(
-            button = TeamMemberButton(2, "코드 수정", "code", "#2085FF")
-        )
+        MemberButtonItem(buttonName = "일기 쓰기")
+        MemberButtonItem(buttonName = "코드 수정")
     }
 }

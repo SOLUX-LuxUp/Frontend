@@ -52,8 +52,7 @@ fun MemberButtonList(
         Spacer(Modifier.height(4.dp))
 
         visible.forEach { button ->
-            MemberButtonItem(button = button)
-        }
+            MemberButtonItem(buttonName = button.buttonName)        }
 
         if (buttons.size > collapsedCount) {
             Box(
