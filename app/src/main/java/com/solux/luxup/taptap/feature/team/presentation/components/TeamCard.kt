@@ -175,7 +175,7 @@ private fun TeamCardPreview() {
             maxMember = 30,
             memberCount = 6,
             memberProfiles = (1..6).map { MemberProfile(it.toLong(), "멤버$it", null) },
-            latestRecord = LatestRecord(3, "기획서 업로드", "exercise", "2025-05-23T14:32:00"),  // iconKey "exercise" 추가
+            latestRecord = LatestRecord(3, "기획서 업로드", "exercise", "#FF5733", "2025-05-23T14:32:00"),
             recentUpdatedMembers = (1..3).map { MemberProfile(it.toLong(), "멤버$it", null) },   // 추가
             updatedAt = "2025-05-23T14:32:00"
         ),
