@@ -42,8 +42,8 @@ fun TeamMemberDetailScreen(
         // 프로필 헤더 (아바타 + 이름칸 + 최근기록 카드)
         MemberProfileHeader(
             detail = detail,
-            editable = isMe,               // 내 프로필이면 연필
-            onEditName = onEditName
+            editable = isMe,
+            onSaveName = { newName -> /* TODO: 8.2.4 PATCH */ }   // onEditName → onSaveName
         )
 
         // 최근 기록 섹션
@@ -54,7 +54,6 @@ fun TeamMemberDetailScreen(
             // 내 프로필: 공유 중인 버튼 (⚙️로 설정 모달)
             MemberSharedButtonList(
                 buttons = sharedButtons,
-                onSettingsClick = onShareSettingsClick
             )
         } else {
             // 남 프로필: 버튼 목록

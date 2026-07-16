@@ -33,12 +33,13 @@ import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 @Composable
 fun MemberSharedButtonList(
     buttons: List<TeamMemberSharedButton>,
-    onSettingsClick: () -> Unit,          // ⚙️ → 공유 설정 모달 (다음 단계)
     modifier: Modifier = Modifier,
     collapsedCount: Int = 5
 ) {
+    var showModal by remember { mutableStateOf(false) }   // 모달 표시 상태
     var expanded by remember { mutableStateOf(false) }
-    val visible = if (expanded) buttons else buttons.take(collapsedCount)
+    val shared = buttons.filter { it.isShared }
+    val visible = if (expanded) shared else shared.take(collapsedCount)
 
     MemberSectionCard(modifier = modifier) {
         // 라벨 + ⚙️
@@ -60,7 +61,7 @@ fun MemberSharedButtonList(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    ) { onSettingsClick() }
+                    ) { showModal = true }        // ⚙️ → 모달 열기
             )
         }
         Spacer(Modifier.height(4.dp))
@@ -70,7 +71,7 @@ fun MemberSharedButtonList(
             MemberButtonItem(buttonName = button.buttonName)
         }
 
-        if (buttons.size > collapsedCount) {
+        if (shared.size > collapsedCount) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -91,6 +92,18 @@ fun MemberSharedButtonList(
             }
         }
     }
+
+    // 모달 (showModal일 때만)
+    if (showModal) {
+        MemberShareSettingModal(
+            buttons = buttons,
+            onDismiss = { showModal = false },
+            onSave = { updated ->
+                // TODO: API 연결 시 8.2.1 PATCH. 지금은 닫기만
+                showModal = false
+            }
+        )
+    }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
@@ -98,13 +111,12 @@ fun MemberSharedButtonList(
 private fun MemberSharedButtonListPreview() {
     MemberSharedButtonList(
         buttons = listOf(
-            TeamMemberSharedButton(5, "일기 쓰기", true),
-            TeamMemberSharedButton(6, "코드 수정", true),
-            TeamMemberSharedButton(7, "필기하기", false),
-            TeamMemberSharedButton(8, "단톡 연락", true),
-            TeamMemberSharedButton(9, "운동 하기", false),
+            TeamMemberSharedButton(5, "일기 쓰기", "diary", "#FFC107", 1, "루틴", true),
+            TeamMemberSharedButton(6, "코드 수정", "code", "#2085FF", 2, "업무", true),
+            TeamMemberSharedButton(7, "필기하기", "note", "#3357FF", null, null, false),
+            TeamMemberSharedButton(8, "단톡 연락", "chat", "#4BB4FF", 2, "업무", true),
+            TeamMemberSharedButton(9, "운동 하기", "run", "#90F525", 3, "건강", false),
         ),
-        onSettingsClick = {},
         modifier = androidx.compose.ui.Modifier.padding(16.dp)
     )
 }
