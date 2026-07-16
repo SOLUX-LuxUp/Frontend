@@ -16,7 +16,7 @@ val mockTeams = listOf(
         maxMember = 30,
         memberCount = 6,
         memberProfiles = mockMembers(6),
-        latestRecord = LatestRecord(3, "기획서 업로드", "exercise", "2025-05-23T14:33:00"),
+        latestRecord = LatestRecord(3, "기획서 업로드", "exercise", "#FF5733","2025-05-23T14:33:00"),
         recentUpdatedMembers = mockMembers(3),           // 업데이트 바용
         updatedAt = "2025-05-23T14:33:00"
     ),
@@ -28,7 +28,7 @@ val mockTeams = listOf(
         maxMember = 20,
         memberCount = 4,
         memberProfiles = mockMembers(4),
-        latestRecord = LatestRecord(5, "공지 업로드", "study", "2025-05-23T14:30:00"),
+        latestRecord = LatestRecord(5, "공지 업로드", "study", "#FF5733", "2025-05-23T14:30:00"),
         recentUpdatedMembers = mockMembers(2),
         updatedAt = "2025-05-23T14:30:00"
     ),
@@ -40,7 +40,7 @@ val mockTeams = listOf(
         maxMember = 15,
         memberCount = 2,
         memberProfiles = mockMembers(2),
-        latestRecord = LatestRecord(7, "밥먹기", "meal", "2025-05-23T13:57:00"),
+        latestRecord = LatestRecord(7, "밥먹기", "meal", "#FF5733", "2025-05-23T13:57:00"),
         recentUpdatedMembers = mockMembers(1),
         updatedAt = "2025-05-23T13:57:00"
     )
