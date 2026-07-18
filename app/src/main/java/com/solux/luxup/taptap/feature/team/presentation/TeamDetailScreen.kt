@@ -48,6 +48,7 @@ import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.team.model.TeamButton
 import com.solux.luxup.taptap.feature.team.presentation.components.buttonIconRes
 import com.solux.luxup.taptap.feature.team.presentation.components.safeColor
+import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightScreen
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailScreen
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
@@ -97,7 +98,7 @@ fun TeamDetailScreen(
 
             when (selectedTab) {
                 TeamDetailTab.ACTIVITY -> TeamActivityScreen()
-                TeamDetailTab.INSIGHT  -> { /* TODO: TeamInsightScreen() */ }
+                TeamDetailTab.INSIGHT  -> TeamInsightScreen(currentUserId = currentUserId)
                 TeamDetailTab.MEMBER   -> {
                     val memberId = selectedMemberId
                     if (memberId == null) {
@@ -357,4 +358,10 @@ private fun TeamDetailMemberDetailOtherPreview() {
 @androidx.compose.runtime.Composable
 private fun TeamDetailMemberDetailMePreview() {
     TeamDetailScreen(initialTab = TeamDetailTab.MEMBER, initialMemberId = 4L)
+}
+// 인사이트 탭
+@Preview(showBackground = true, heightDp = 900)
+@Composable
+private fun TeamDetailInsightPreview() {
+    TeamDetailScreen(initialTab = TeamDetailTab.INSIGHT)
 }
