@@ -23,8 +23,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.util.formatTimeAgo
+import com.solux.luxup.taptap.core.util.formatTimeOfDay
+import com.solux.luxup.taptap.feature.team.model.ButtonRecord
+import com.solux.luxup.taptap.feature.team.model.MemberProfile
 import com.solux.luxup.taptap.feature.team.model.TeamButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
@@ -68,17 +73,35 @@ fun RecentRecordBanner(button: TeamButton) {
             Spacer(Modifier.height(4.dp))
             button.latestRecord?.let { record ->
                 Text(
-                    "27분 전  •  11:41 AM",     // TODO: recordedAt 변환
+                    "${formatTimeAgo(record.recordedAt)}  •  ${formatTimeOfDay(record.recordedAt)}",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.9f)
                 )
                 Spacer(Modifier.height(13.dp))
                 Text(
-                    "last tapped by  ${record.recordedBy.displayName}",
+                    "last tapped by  ${record.recordedBy.firstOrNull()?.displayName ?: ""}",
                     fontSize = 12.sp,
                     color = Color.White
                 )
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RecentRecordBannerPreview() {
+    RecentRecordBanner(
+        button = TeamButton(
+            teamButtonId = 1, buttonName = "기획서 업데이트",
+            iconName = "book", iconColor = "#FFC107",
+            tapPermission = "all",
+            categoryId = 1, categoryName = "PROJECT", hasTapPermission = true,
+            latestRecord = ButtonRecord(
+                recordedAt = "2025-05-23T11:41:00",
+                recordedBy = listOf(MemberProfile(2, "누리", null)),
+                recordedByCount = 1
+            )
+        )
+    )
 }

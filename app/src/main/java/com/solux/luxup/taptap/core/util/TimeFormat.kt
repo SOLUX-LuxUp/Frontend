@@ -19,3 +19,12 @@ fun formatTimeAgo(isoDateTime: String): String {
         else -> recordedAt.format(DateTimeFormatter.ofPattern("M월 d일"))
     }
 }
+
+/** ISO-8601 → "11:41 AM". 카드·배너 공통. */
+fun formatTimeOfDay(isoDateTime: String): String {
+    val recordedAt = runCatching {
+        LocalDateTime.parse(isoDateTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+    }.getOrNull() ?: return ""
+
+    return recordedAt.format(DateTimeFormatter.ofPattern("h:mm a", java.util.Locale.ENGLISH))
+}
