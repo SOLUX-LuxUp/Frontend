@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.shadow
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 
 @Composable
 fun TeamListScreen(
@@ -74,7 +75,7 @@ fun TeamListScreen(
             TeamListHeader()
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(horizontal = 40.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(teams) { team ->
@@ -88,16 +89,16 @@ fun TeamListScreen(
 @Composable
 private fun TeamListHeader() {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("내 팀", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+        Text("내 팀", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6D6D6D))
         SearchBar(modifier = Modifier.weight(1f).padding(horizontal = 12.dp))
         Icon(
             Icons.Default.Add,
             contentDescription = "팀 추가",
             modifier = Modifier
-                .size(28.dp)
+                .size(35.dp)
                 .graphicsLayer(alpha = 0.99f)
                 .drawWithContent {
                     drawContent()
@@ -116,9 +117,9 @@ private fun AppLogo() {
     Text(
         "팀 스페이스",
         fontSize = 22.sp,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.SemiBold,
         color = Color(0xFF1A1A1A),
-        modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 16.dp, start = 8.dp, end = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 16.dp, start = 40.dp, end = 40.dp),
         textAlign = androidx.compose.ui.text.style.TextAlign.Center
     )
 }
@@ -127,7 +128,7 @@ private fun SearchBar(modifier: Modifier = Modifier) {
     var query by remember { mutableStateOf("") }
     Row(
         modifier = modifier
-            .height(44.dp)
+            .height(43.dp)
             .shadow(3.dp, RoundedCornerShape(12.dp))       // 그림자 + 둥근 모서리
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
@@ -160,5 +161,7 @@ private fun SearchBar(modifier: Modifier = Modifier) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TeamListScreenPreview() {
-    TeamListScreen()
+    PreviewContainer {
+        TeamListScreen()
+    }
 }
