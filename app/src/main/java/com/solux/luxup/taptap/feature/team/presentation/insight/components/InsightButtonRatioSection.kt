@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.team.presentation.insight.daily.components
+package com.solux.luxup.taptap.feature.team.presentation.insight.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -6,7 +6,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -59,7 +58,7 @@ private val BarGradient = Brush.horizontalGradient(
 )
 
 @Composable
-fun DailyButtonRatioSection(
+fun InsightButtonRatioSection(
     buttonTapCounts: List<TeamInsightButtonCount>,
     totalTapCount: Int,
     modifier: Modifier = Modifier
@@ -248,9 +247,9 @@ private fun String?.toRatioColorOrGray(): Color =
 
 @Preview(showBackground = true, heightDp = 500)
 @Composable
-private fun DailyButtonRatioSectionPreview() {
+private fun InsightButtonRatioSectionPreview() {
     PreviewContainer {
-        DailyButtonRatioSection(
+        InsightButtonRatioSection(
             buttonTapCounts = listOf(
                 TeamInsightButtonCount(1L, "기획서 업데이트", 30, "doc", "#FFC94C", 10L, "업무"),
                 TeamInsightButtonCount(2L, "프론트 코드 수정", 19, "code", "#4C8DFF", 10L, "업무"),
@@ -266,9 +265,9 @@ private fun DailyButtonRatioSectionPreview() {
 
 @Preview(showBackground = true, name = "빈 상태", heightDp = 160)
 @Composable
-private fun DailyButtonRatioSectionEmptyPreview() {
+private fun InsightButtonRatioSectionEmptyPreview() {
     PreviewContainer {
-        DailyButtonRatioSection(
+        InsightButtonRatioSection(
             buttonTapCounts = emptyList(),
             totalTapCount = 0,
             modifier = Modifier.padding(16.dp)

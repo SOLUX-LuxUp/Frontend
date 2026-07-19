@@ -1,9 +1,8 @@
-package com.solux.luxup.taptap.feature.team.presentation.insight.daily.components
+package com.solux.luxup.taptap.feature.team.presentation.insight.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,7 +38,7 @@ private val CardBorder = Color(0xFFEDEDED)   // ⚠ 시안 테두리색으로 �
 private val IconCircleBorder = Color(0xFFECEEF1)
 
 @Composable
-fun DailyMemberTopButtonSection(
+fun InsightMemberTopButtonSection(
     memberActivity: List<TeamInsightMemberActivity>,
     currentUserId: Long,
     modifier: Modifier = Modifier
@@ -162,9 +161,9 @@ private fun String?.toTopButtonColorOrGray(): Color =
 
 @Preview(showBackground = true, heightDp = 320)
 @Composable
-private fun DailyMemberTopButtonSectionPreview() {
+private fun InsightMemberTopButtonSectionPreview() {
     PreviewContainer {
-        DailyMemberTopButtonSection(
+        InsightMemberTopButtonSection(
             memberActivity = listOf(
                 TeamInsightMemberActivity(
                     userId = 4L, displayName = "누리", profileImageUrl = null, tapCount = 10,
@@ -187,9 +186,9 @@ private fun DailyMemberTopButtonSectionPreview() {
 
 @Preview(showBackground = true, name = "빈 상태", heightDp = 160)
 @Composable
-private fun DailyMemberTopButtonSectionEmptyPreview() {
+private fun InsightMemberTopButtonSectionEmptyPreview() {
     PreviewContainer {
-        DailyMemberTopButtonSection(
+        InsightMemberTopButtonSection(
             memberActivity = emptyList(),
             currentUserId = 4L,
             modifier = Modifier.padding(16.dp)

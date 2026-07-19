@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.team.presentation.insight.daily
+package com.solux.luxup.taptap.feature.team.presentation.insight.weekly
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,22 +18,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
-import com.solux.luxup.taptap.feature.team.data.MockTeamInsightDaily
-import com.solux.luxup.taptap.feature.team.model.TeamInsightDaily
+import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
+import com.solux.luxup.taptap.feature.team.model.TeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.presentation.insight.components.InsightButtonRatioSection
 import com.solux.luxup.taptap.feature.team.presentation.insight.components.InsightMemberActivitySection
 import com.solux.luxup.taptap.feature.team.presentation.insight.components.InsightMemberTopButtonSection
 import com.solux.luxup.taptap.feature.team.presentation.insight.components.InsightTopButtonBanner
-import com.solux.luxup.taptap.feature.team.presentation.insight.daily.components.DailyTimelineSection
+import com.solux.luxup.taptap.feature.team.presentation.insight.weekly.components.WeeklyActivityBarSection
+
 @Composable
-fun TeamInsightDailyScreen(
-    data: TeamInsightDaily,
+fun TeamInsightWeeklyScreen(
+    data: TeamInsightWeekly,
     currentUserId: Long,
     modifier: Modifier = Modifier
 ) {
-    // 오늘 팀 기록 0건 → 통짜 빈 상태
+    // 이번 주 기록 0건 → 통짜 빈 상태
     if (data.totalTapCount <= 0) {
-        DailyEmptyState(modifier = modifier)
+        WeeklyEmptyState(modifier = modifier)
         return
     }
 
@@ -46,15 +47,17 @@ fun TeamInsightDailyScreen(
         // ② 배너
         InsightTopButtonBanner(
             topButton = data.topButton,
-            label = "오늘 가장 많은 기록"
+            label = "이 주 가장 많은 기록"
         )
+
         Spacer(Modifier.height(28.dp))
 
-        // 타임라인 (⚠ 8.1.8 응답 요청 대기 — 지금은 목데이터)
-        DailyTimelineSection(timeline = data.timeline)
+        // ③ 활동 기록 (요일별 카테고리 막대) — weekly 전용
+        WeeklyActivityBarSection(dailyTapCounts = data.dailyTapCounts)
+
         Spacer(Modifier.height(28.dp))
 
-        // ③ 기록 비율
+        // ④ 기록 비율
         InsightButtonRatioSection(
             buttonTapCounts = data.buttonTapCounts,
             totalTapCount = data.totalTapCount
@@ -62,7 +65,7 @@ fun TeamInsightDailyScreen(
 
         Spacer(Modifier.height(28.dp))
 
-        // ④ 팀별 활동량 (도넛)
+        // ⑤ 팀별 활동량 (도넛)
         InsightMemberActivitySection(
             memberActivity = data.memberActivity,
             currentUserId = currentUserId
@@ -70,15 +73,16 @@ fun TeamInsightDailyScreen(
 
         Spacer(Modifier.height(28.dp))
 
-        // ⑤ 가장 많이 기록한 버튼
+        // ⑥ 가장 많이 기록한 버튼
         InsightMemberTopButtonSection(
             memberActivity = data.memberActivity,
-            currentUserId = currentUserId)
+            currentUserId = currentUserId
+        )
     }
 }
 
 @Composable
-private fun DailyEmptyState(modifier: Modifier = Modifier) {
+private fun WeeklyEmptyState(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -86,32 +90,34 @@ private fun DailyEmptyState(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "아직 오늘 기록이 없어요",
+            text = "아직 이번 주 기록이 없어요",
             fontSize = 14.sp,
             color = Color(0xFF8A94A6) // ⚠ 임시 회색 — 토큰 교체 대상
         )
     }
 }
 
-@Preview(showBackground = true, heightDp = 1400)
+@Preview(showBackground = true, heightDp = 1500)
 @Composable
-private fun TeamInsightDailyScreenPreview() {
+private fun TeamInsightWeeklyScreenPreview() {
     PreviewContainer {
-        TeamInsightDailyScreen(
-            data = MockTeamInsightDaily,
-            currentUserId = 4L // ⚠ 하드코딩 — 정수민 인증 연동 후 실제 값으로
+        TeamInsightWeeklyScreen(
+            data = MockTeamInsightWeekly,
+            currentUserId = 4L, // ⚠ 하드코딩 — 정수민 인증 연동 후 실제 값으로
+            modifier = Modifier.padding(horizontal = 40.dp) // 셸 여백 흉내
         )
     }
 }
 
 @Preview(showBackground = true, name = "빈 상태", heightDp = 400)
 @Composable
-private fun TeamInsightDailyScreenEmptyPreview() {
+private fun TeamInsightWeeklyScreenEmptyPreview() {
     PreviewContainer {
-        TeamInsightDailyScreen(
-            data = MockTeamInsightDaily.copy(
+        TeamInsightWeeklyScreen(
+            data = MockTeamInsightWeekly.copy(
                 totalTapCount = 0,
                 topButton = null,
+                dailyTapCounts = emptyList(),
                 buttonTapCounts = emptyList(),
                 memberActivity = emptyList()
             ),

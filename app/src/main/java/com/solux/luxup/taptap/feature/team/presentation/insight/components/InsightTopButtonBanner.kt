@@ -1,7 +1,6 @@
-package com.solux.luxup.taptap.feature.team.presentation.insight.daily.components
+package com.solux.luxup.taptap.feature.team.presentation.insight.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,8 +41,9 @@ private val White100 = Color(0xFFFEFEFE)   // 시안 natural 100
 private val AvatarBorder = Color(0xFFDADADA) // 시안 확인값
 
 @Composable
-fun DailyTopButtonBanner(
+fun InsightTopButtonBanner(
     topButton: TeamInsightTopButton?,
+    label: String,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -55,7 +55,7 @@ fun DailyTopButtonBanner(
     ) {
         if (topButton == null) {
             Text(
-                text = "오늘 가장 많은 기록",
+                text = label,                    // ← "오늘 가장 많은 기록" → label
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = White100.copy(alpha = 0.9f)
@@ -64,7 +64,7 @@ fun DailyTopButtonBanner(
             Column {
                 // 상단 라벨 (시안 확인값: Medium 14sp, #FEFEFE)
                 Text(
-                    text = "오늘 가장 많은 기록",
+                    text = label,                // ← "오늘 가장 많은 기록" → label
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = White100
@@ -150,9 +150,9 @@ private fun String.toBannerIconColor(): Color =
 
 @Preview(showBackground = true)
 @Composable
-private fun DailyTopButtonBannerPreview() {
+private fun InsightTopButtonBannerPreview() {
     PreviewContainer {
-        DailyTopButtonBanner(
+        InsightTopButtonBanner(
             topButton = TeamInsightTopButton(
                 teamButtonId = 1L,
                 buttonName = "출석",
@@ -168,6 +168,7 @@ private fun DailyTopButtonBannerPreview() {
                     TeamInsightTappedMember(5L, "하연", null),
                 )
             ),
+            label = "오늘 가장 많은 기록",
             modifier = Modifier.padding(16.dp)
         )
     }
