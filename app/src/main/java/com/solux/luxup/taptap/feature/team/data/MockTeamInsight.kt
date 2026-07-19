@@ -11,6 +11,9 @@ import java.time.LocalDateTime
 import com.solux.luxup.taptap.feature.team.model.TeamInsightBarCategory
 import com.solux.luxup.taptap.feature.team.model.TeamInsightDailyBar
 import com.solux.luxup.taptap.feature.team.model.TeamInsightWeekly
+import com.solux.luxup.taptap.feature.team.model.TeamInsightCalendarDay
+import com.solux.luxup.taptap.feature.team.model.TeamInsightCategoryCount
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMonthly
 /**
  * 프리뷰·개발용 목데이터 (API 연결 전) — 실제 8.1.8 응답 형태에 맞춤.
  * 요청 대기 필드(icon/category/tappedMembers)는 "요청 반영 후 완성형"으로 채워 UI 검증.
@@ -153,6 +156,68 @@ val MockTeamInsightWeekly = TeamInsightWeekly(
         TeamInsightMemberActivity(
             userId = 2L, displayName = "은서", profileImageUrl = null, tapCount = 13,
             topButton = TeamInsightMemberTopButton(5L, "홈싸비 추정", 5, "edit", "#FFD54C")
+        ),
+    )
+)
+/**
+ * 먼슬리 목데이터 — 시안 기준 (2026년 5월, 총 40회, 배너 출석 78회)
+ * ⚠ 시안 히트맵에 색칠된 날짜만 tapCount > 0, 나머지는 응답에 없거나 0
+ */
+val MockTeamInsightMonthly = TeamInsightMonthly(
+    teamId = 1L,
+    year = 2026,
+    month = 5,
+    totalTapCount = 40,
+    topButton = TeamInsightTopButton(
+        teamButtonId = 1L,
+        buttonName = "출석",
+        iconName = "doc",
+        iconColor = "#FFC94C",
+        tapCount = 78,
+        tappedMembers = listOf(
+            TeamInsightTappedMember(4L, "누리", null),
+            TeamInsightTappedMember(7L, "수민", null),
+            TeamInsightTappedMember(9L, "정민", null),
+            TeamInsightTappedMember(2L, "은서", null),
+        )
+    ),
+    dailyTapCounts = listOf(
+        TeamInsightCalendarDay("2026-05-01", 5),    // 금 — LV1
+        TeamInsightCalendarDay("2026-05-04", 12),   // 월 — LV2
+        TeamInsightCalendarDay("2026-05-05", 25),   // 화 — LV3
+        TeamInsightCalendarDay("2026-05-06", 33),   // 수 — LV4
+        TeamInsightCalendarDay("2026-05-09", 45),   // 토 — LV5
+        TeamInsightCalendarDay("2026-05-10", 42),   // 일 — LV5
+        TeamInsightCalendarDay("2026-05-20", 22),   // 수 — LV3
+        TeamInsightCalendarDay("2026-05-21", 35),   // 목 — LV4
+        TeamInsightCalendarDay("2026-05-22", 48),   // 금 — LV5
+        TeamInsightCalendarDay("2026-05-25", 15),   // 월 — LV2
+        TeamInsightCalendarDay("2026-05-31", 8),    // 일 — LV1
+    ),
+    categoryTapCounts = listOf(  // ⚠ 현재 화면 미사용
+        TeamInsightCategoryCount(10L, "업무", 500, 0.51),
+        TeamInsightCategoryCount(20L, "디자인", 480, 0.49),
+    ),
+    buttonTapCounts = listOf(    // ⚠ 현재 화면 미사용
+        TeamInsightButtonCount(1L, "기획서 업데이트", 320, "doc", "#FFC94C", 10L, "업무"),
+        TeamInsightButtonCount(2L, "프론트 코드 수정", 280, "code", "#4C8DFF", 10L, "업무"),
+    ),
+    memberActivity = listOf(
+        TeamInsightMemberActivity(
+            userId = 4L, displayName = "누리", profileImageUrl = null, tapCount = 10,
+            topButton = TeamInsightMemberTopButton(1L, "기획서 업데이트", 1, "doc", "#FFC94C")
+        ),
+        TeamInsightMemberActivity(
+            userId = 3L, displayName = "희경", profileImageUrl = null, tapCount = 4,
+            topButton = TeamInsightMemberTopButton(3L, "피그마 업데이트", 4, "figma", "#FF6B6B")
+        ),
+        TeamInsightMemberActivity(
+            userId = 7L, displayName = "수민", profileImageUrl = null, tapCount = 5,
+            topButton = TeamInsightMemberTopButton(2L, "프론트 코드 수정", 5, "code", "#4C8DFF")
+        ),
+        TeamInsightMemberActivity(
+            userId = 2L, displayName = "은서", profileImageUrl = null, tapCount = 2,
+            topButton = TeamInsightMemberTopButton(5L, "출석", 5, "doc", "#FFC94C")
         ),
     )
 )
