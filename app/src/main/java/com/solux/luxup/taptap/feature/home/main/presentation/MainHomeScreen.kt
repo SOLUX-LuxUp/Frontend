@@ -93,7 +93,8 @@ fun MainHomeScreen(
     recentRecord: RecentRecord? = mockRecentRecord,
     favoriteButtons: List<FavoriteButton> = mockFavoriteButtons,
     habitButtons: List<HabitButton> = mockHabitButtons,
-    suggestions: List<RecommendedButton> = recommendedButtons
+    suggestions: List<RecommendedButton> = recommendedButtons,
+    onNavigateToCreateButton: () -> Unit = {}
 ) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.HOME) }
 
@@ -145,7 +146,7 @@ fun MainHomeScreen(
         ) {
             Spacer(Modifier.height(20.dp))
             HomeTopBar(
-                onCreateManually = { /* TODO: 직접 만들기 플로우 연결 */ },
+                onCreateManually = onNavigateToCreateButton,
                 onCreateQuickly = { showQuickCreatePopup = true }
             )
 
