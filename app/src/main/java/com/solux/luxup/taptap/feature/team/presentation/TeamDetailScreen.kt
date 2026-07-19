@@ -324,7 +324,7 @@ private fun RecentRecordBanner(button: TeamButton) {
                 )
                 Spacer(Modifier.height(13.dp))
                 Text(
-                    "last tapped by  ${record.recordedBy.displayName}",
+                    "last tapped by  ${record.recordedBy.firstOrNull()?.displayName ?: ""}",
                     fontSize = 12.sp,
                     color = Color.White
                 )

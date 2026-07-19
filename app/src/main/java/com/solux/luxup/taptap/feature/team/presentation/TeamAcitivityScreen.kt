@@ -26,7 +26,8 @@ fun TeamActivityScreen(
 ) {
     Column(modifier = modifier) {
         // 최근 기록 배너 — 기록 있는 버튼 중 가장 최근 것
-        val recentButton = (mockTeamButtons.favoriteButtons + mockTeamButtons.buttons)
+        // 최근 기록 배너용 - favoriteButtons 합치던 거 제거
+        val recentButton = mockTeamButtons.buttons
             .filter { it.latestRecord != null }
             .maxByOrNull { it.latestRecord!!.recordedAt }
         recentButton?.let {
@@ -47,10 +48,7 @@ fun TeamActivityScreen(
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
         }
 
-        TeamButtonList(
-            favoriteButtons = mockTeamButtons.favoriteButtons,
-            buttons = mockTeamButtons.buttons
-        )
+        TeamButtonList(buttons = mockTeamButtons.buttons)
     }
 }
 

@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.R
 import androidx.compose.ui.res.painterResource
 import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
+import com.solux.luxup.taptap.core.util.formatTimeAgo
+import com.solux.luxup.taptap.core.util.formatTimeOfDay
 import com.solux.luxup.taptap.feature.team.model.ButtonRecord
 import com.solux.luxup.taptap.feature.team.model.MemberProfile
 import com.solux.luxup.taptap.feature.team.model.TeamButton
@@ -85,7 +87,7 @@ fun TeamButtonCard(
                     )
                     Spacer(Modifier.weight(1f))
                     button.latestRecord?.let {
-                        RecordMemberAvatars(listOf(it.recordedBy))   // 지금은 1명, 나중에 여러 명
+                        RecordMemberAvatars(it.recordedBy)      // listOf() 없이 배열 그대로
                     }
                 }
             }
@@ -113,7 +115,7 @@ private fun ButtonIcon(iconName: String, iconColor: String) {
 }
 
 @Composable
-private fun RecordMemberAvatars(members: List<MemberProfile>, max: Int = 3) {
+private fun RecordMemberAvatars(members: List<MemberProfile>, max: Int = 1) {
     Row {
         members.take(max).forEachIndexed { index, _ ->
             Icon(
@@ -154,7 +156,7 @@ fun safeColor(hex: String, fallback: Color): Color {
 // 기록 텍스트: "2시간 전 기록 · 11:41 AM"
 private fun recordText(record: ButtonRecord?): String {
     if (record == null) return "기록 없음"
-    return "최근 기록 · ${record.recordedAt}"   // TODO: formatTimeAgo로 "2시간 전" 변환
+    return "${formatTimeAgo(record.recordedAt)} 기록 · ${formatTimeOfDay(record.recordedAt)}"
 }
 
 
@@ -165,9 +167,13 @@ private fun TeamButtonCardPreview() {
         button = TeamButton(
             teamButtonId = 1, buttonName = "기획서 업데이트",
             iconName = "book", iconColor = "#FFC107",
-            isFavorite = true, tapPermission = "all",
+            tapPermission = "all",
             categoryId = 1, categoryName = "PROJECT", hasTapPermission = true,
-            latestRecord = ButtonRecord("2025-05-23T11:41:00", MemberProfile(2, "누리", null))
+            latestRecord = ButtonRecord(
+                recordedAt = "2025-05-23T11:41:00",
+                recordedBy = listOf(MemberProfile(2, "누리", null)),
+                recordedByCount = 1
+            )
         ),
         modifier = Modifier.padding(16.dp)
     )
