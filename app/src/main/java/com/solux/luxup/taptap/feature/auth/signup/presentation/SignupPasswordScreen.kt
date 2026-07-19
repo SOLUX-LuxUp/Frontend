@@ -96,6 +96,27 @@ fun SignupPasswordScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
+        Text(text = "닉네임", fontSize = 16.sp, color = Color(0xFF6D6D6D))
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            placeholder = { Text("닉네임 입력", color = Color(0xFFB1B1B1)) },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = Color(0xFFEEEEEE),
+                focusedContainerColor = Color(0xFFEEEEEE),
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent
+            )
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
         Text(text = "비밀번호", fontSize = 16.sp, color = Color(0xFF6D6D6D))
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
@@ -172,7 +193,7 @@ fun SignupPasswordScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(150.dp))
+        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 

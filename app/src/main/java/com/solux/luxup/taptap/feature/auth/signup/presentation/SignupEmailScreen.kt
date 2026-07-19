@@ -211,7 +211,7 @@ fun SignupEmailScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(150.dp))
+        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 

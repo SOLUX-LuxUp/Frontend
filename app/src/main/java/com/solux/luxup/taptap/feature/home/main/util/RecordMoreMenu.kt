@@ -1,5 +1,7 @@
 package com.solux.luxup.taptap.feature.home.main.util
 
+import android.R
+import android.R.attr.color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DividerDefaults.color
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,11 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 
+private val RecordDeleteColor = Color(0xFFF6989C)
+
+// 습관 버튼 카드의 "더보기(⋮)"를 눌렀을 때 뜨는 버튼 수정/삭제 메뉴
 @Composable
-fun AddButtonMenuPopup(
-    onCreateManually: () -> Unit,
-    onCreateQuickly: () -> Unit,
+fun RecordMoreMenu(
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -39,23 +46,23 @@ fun AddButtonMenuPopup(
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
                 .border(1.dp, Color(0xFF6D6D6D), RoundedCornerShape(10.dp))
-                .clickable { onCreateManually() }
+                .clickable { onEditClick() }
                 .padding(vertical = 18.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("직접 만들기", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6D6D6D))
+            Text("버튼 수정", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6D6D6D))
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
-                .border(1.dp, Color(0xFF6D6D6D), RoundedCornerShape(10.dp))
-                .clickable { onCreateQuickly() }
+                .border(1.dp, RecordDeleteColor, RoundedCornerShape(10.dp))
+                .clickable { onDeleteClick() }
                 .padding(vertical = 18.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("빠르게 만들기", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6D6D6D))
+            Text("버튼 삭제", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = RecordDeleteColor)
         }
     }
 }

@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.feature.home.main.model.HabitButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -113,12 +115,21 @@ private fun Modifier.habitCardDropShadow(shape: Shape): Modifier = this.drawBehi
 }
 
 @Composable
-fun HabitButtonGrid(buttons: List<HabitButton>) {
+fun HabitButtonGrid(
+    buttons: List<HabitButton>,
+    onEditRecord: (button: HabitButton) -> Unit = {},
+    onDeleteRecord: (button: HabitButton) -> Unit = {}
+) {
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         buttons.chunked(2).forEach { rowButtons ->
             Row(horizontalArrangement = Arrangement.spacedBy(22.dp)) {
                 rowButtons.forEach { button ->
-                    HabitButtonCard(button = button, modifier = Modifier.weight(1f))
+                    HabitButtonCard(
+                        button = button,
+                        modifier = Modifier.weight(1f),
+                        onEditRecord = { onEditRecord(button) },
+                        onDeleteRecord = { onDeleteRecord(button) }
+                    )
                 }
                 if (rowButtons.size == 1) {
                     Spacer(Modifier.weight(1f))
@@ -132,9 +143,11 @@ fun HabitButtonGrid(buttons: List<HabitButton>) {
 fun HabitButtonCard(
     button: HabitButton,
     modifier: Modifier = Modifier,
-    onMoreClick: () -> Unit = {}
+    onEditRecord: () -> Unit = {},
+    onDeleteRecord: () -> Unit = {}
 ) {
     var isFavorite by remember(button.title) { mutableStateOf(button.isFavorite) }
+    var showMoreMenu by remember { mutableStateOf(false) }
     val cardShape = remember {
         HabitCardShape(
             cornerRadius = HabitCardCornerRadius,
@@ -171,7 +184,7 @@ fun HabitButtonCard(
                         tint = Color(0xFF6D6D6D),
                         modifier = Modifier
                             .size(20.dp)
-                            .clickable { onMoreClick() }
+                            .clickable { showMoreMenu = true }
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -222,6 +235,25 @@ fun HabitButtonCard(
                     contentDescription = null,
                     tint = button.iconTint,
                     modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+
+        if (showMoreMenu) {
+            Dialog(
+                onDismissRequest = { showMoreMenu = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                RecordMoreMenu(
+                    modifier = Modifier.padding(horizontal = 40.dp),
+                    onEditClick = {
+                        showMoreMenu = false
+                        onEditRecord()
+                    },
+                    onDeleteClick = {
+                        showMoreMenu = false
+                        onDeleteRecord()
+                    }
                 )
             }
         }

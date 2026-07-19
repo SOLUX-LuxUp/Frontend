@@ -33,7 +33,6 @@ import com.solux.luxup.taptap.ui.theme.BrandWhiteBlue
 
 @Composable
 fun OnboardingTemplateScreen(
-    onTemplateSelected: (templateId: String) -> Unit = {},
     onSkip: () -> Unit = {}
 ) {
     Column(
@@ -60,10 +59,7 @@ fun OnboardingTemplateScreen(
 
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             onboardingTemplates.forEach { template ->
-                OnboardingOptionCard(
-                    template = template,
-                    onClick = { onTemplateSelected(template.id) }
-                )
+                OnboardingOptionCard(template = template)
             }
         }
 
@@ -88,15 +84,13 @@ fun OnboardingTemplateScreen(
 
 @Composable
 private fun OnboardingOptionCard(
-    template: ChecklistTemplate,
-    onClick: () -> Unit
+    template: ChecklistTemplate
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
             .background(BrandWhiteBlue)
-            .clickable { onClick() }
             .padding(20.dp)
     ) {
         Text(
