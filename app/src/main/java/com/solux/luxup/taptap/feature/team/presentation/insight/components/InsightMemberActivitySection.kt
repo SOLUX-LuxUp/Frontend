@@ -1,6 +1,5 @@
-package com.solux.luxup.taptap.feature.team.presentation.insight.daily.components
+package com.solux.luxup.taptap.feature.team.presentation.insight.components
 
-import android.R
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -70,7 +69,7 @@ private data class ActivitySlice(
 )
 
 @Composable
-fun DailyMemberActivitySection(
+fun InsightMemberActivitySection(
     memberActivity: List<TeamInsightMemberActivity>,
     currentUserId: Long,
     modifier: Modifier = Modifier
@@ -260,9 +259,9 @@ private fun LegendRow(slice: ActivitySlice) {
 
 @Preview(showBackground = true, heightDp = 340)
 @Composable
-private fun DailyMemberActivitySectionPreview() {
+private fun InsightMemberActivitySectionPreview() {
     PreviewContainer {
-        DailyMemberActivitySection(
+        InsightMemberActivitySection(
             memberActivity = listOf(
                 TeamInsightMemberActivity(
                     userId = 4L, displayName = "누리", profileImageUrl = null, tapCount = 10,
@@ -289,9 +288,9 @@ private fun DailyMemberActivitySectionPreview() {
 
 @Preview(showBackground = true, name = "6명 초과 (기타 묶음)", heightDp = 380)
 @Composable
-private fun DailyMemberActivitySectionEtcPreview() {
+private fun InsightMemberActivitySectionEtcPreview() {
     PreviewContainer {
-        DailyMemberActivitySection(
+        InsightMemberActivitySection(
             memberActivity = listOf(
                 TeamInsightMemberActivity(4L, "누리", null, 10, null),
                 TeamInsightMemberActivity(7L, "수민", null, 8, null),
@@ -309,9 +308,9 @@ private fun DailyMemberActivitySectionEtcPreview() {
 
 @Preview(showBackground = true, name = "빈 상태", heightDp = 160)
 @Composable
-private fun DailyMemberActivitySectionEmptyPreview() {
+private fun InsightMemberActivitySectionEmptyPreview() {
     PreviewContainer {
-        DailyMemberActivitySection(
+        InsightMemberActivitySection(
             memberActivity = emptyList(),
             currentUserId = 4L,
             modifier = Modifier.padding(16.dp)
