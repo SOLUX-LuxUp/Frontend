@@ -31,7 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightDaily
+import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
+import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.presentation.insight.daily.TeamInsightDailyScreen
+import com.solux.luxup.taptap.feature.team.presentation.insight.monthly.TeamInsightMonthlyScreen
+import com.solux.luxup.taptap.feature.team.presentation.insight.weekly.TeamInsightWeeklyScreen
 
 enum class InsightPeriod(val label: String) {
     DAILY("Daily"),
@@ -74,8 +78,18 @@ fun TeamInsightScreen(
                     currentUserId = currentUserId
                 )
             }
-            InsightPeriod.WEEKLY -> { /* TODO: TeamInsightWeeklyScreen() */ }
-            InsightPeriod.MONTHLY -> { /* TODO: TeamInsightMonthlyScreen() */ }
+            InsightPeriod.WEEKLY -> {
+                TeamInsightWeeklyScreen(
+                    data = MockTeamInsightWeekly,
+                    currentUserId = currentUserId
+                )
+            }
+            InsightPeriod.MONTHLY -> {
+                TeamInsightMonthlyScreen(
+                    data = MockTeamInsightMonthly,   // ⚠ API 연결 시 ViewModel 상태로 교체
+                    currentUserId = currentUserId
+                )
+            }
         }
     }
 }
