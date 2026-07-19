@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,7 +38,8 @@ private val defaultCategories = listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK", "A
 fun CategoryDropdown(
     modifier: Modifier = Modifier,
     categories: List<String> = defaultCategories,
-    onCategorySelected: (String?) -> Unit = {}
+    onCategorySelected: (String?) -> Unit = {},
+    onEditCategoriesClick: () -> Unit = {}
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableIntStateOf(0) }
@@ -90,6 +92,18 @@ fun CategoryDropdown(
                                 }
                                 .padding(vertical = 2.dp)
                         )
+                    }
+                    Spacer(Modifier.height(2.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFD9D9D9), RoundedCornerShape(50))
+                            .clickable {
+                                isExpanded = false
+                                onEditCategoriesClick()
+                            }
+                            .padding(horizontal = 8.dp, vertical = 1.dp)
+                    ) {
+                        Text("카테고리 수정", fontSize = 14.sp, color = Color(0xFFFFFFFF))
                     }
                 }
             }

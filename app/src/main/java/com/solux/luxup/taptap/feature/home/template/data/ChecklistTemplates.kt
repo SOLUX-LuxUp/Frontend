@@ -134,6 +134,3 @@ val productivityTemplate = ChecklistTemplate(
 )
 
 val onboardingTemplates = listOf(memoryTemplate, selfCareTemplate, productivityTemplate)
-
-fun findTemplate(id: String): ChecklistTemplate =
-    onboardingTemplates.first { it.id == id }

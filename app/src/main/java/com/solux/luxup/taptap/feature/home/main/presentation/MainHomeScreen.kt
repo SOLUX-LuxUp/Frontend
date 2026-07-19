@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -59,6 +60,7 @@ import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.core.util.CategoryDropdown
+import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.feature.home.main.data.TEMPLATE_FIRST_BUTTON_TITLE
 import com.solux.luxup.taptap.feature.home.main.data.TEMPLATE_QUICK_BUTTON_TITLE
 import com.solux.luxup.taptap.feature.home.main.data.mockFavoriteButtons
@@ -72,10 +74,14 @@ import com.solux.luxup.taptap.feature.home.main.model.HomeUser
 import com.solux.luxup.taptap.feature.home.main.model.RecentRecord
 import com.solux.luxup.taptap.feature.home.main.model.RecommendedButton
 import com.solux.luxup.taptap.feature.home.main.util.AddButtonMenuPopup
+import com.solux.luxup.taptap.feature.home.main.util.CategoryDeleteConfirmDialog
+import com.solux.luxup.taptap.feature.home.main.util.CategoryEditDialog
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteAddBox
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteButtonBox
+import com.solux.luxup.taptap.feature.home.main.util.FavoriteEditDialog
 import com.solux.luxup.taptap.feature.home.main.util.HabitButtonGrid
 import com.solux.luxup.taptap.feature.home.main.util.RecentRecordBox
+import com.solux.luxup.taptap.feature.home.main.util.RecordDeleteConfirmDialog
 import com.solux.luxup.taptap.feature.home.main.util.TemplateSuggestionPopupCard
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -94,15 +100,30 @@ fun MainHomeScreen(
     // 상단 + 버튼 드롭다운에서 "빠르게 만들기"를 선택했을 때만 뜨는 추천 버튼 팝업
     var showQuickCreatePopup by remember { mutableStateOf(false) }
 
+    // 카테고리 드롭다운/수정 팝업에서 사용하는 카테고리 목록 ("ALL"은 전체 노출용 옵션이라 별도로 붙인다)
+    var manageableCategories by remember { mutableStateOf(listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK")) }
+    var buttonsState by remember(habitButtons) { mutableStateOf(habitButtons) }
+
+    // "즐겨찾기" 글자를 눌렀을 때 뜨는 즐겨찾기 수정 팝업 상태
+    var favoriteButtonsState by remember(favoriteButtons) { mutableStateOf(favoriteButtons) }
+    var showFavoriteEditDialog by remember { mutableStateOf(false) }
+
     // 카테고리 드롭다운에서 선택된 카테고리 (null 또는 "ALL"이면 전체 노출)
     var selectedCategory by remember { mutableStateOf<String?>(null) }
-    val filteredHabitButtons = remember(habitButtons, selectedCategory) {
+    val filteredHabitButtons = remember(buttonsState, selectedCategory) {
         if (selectedCategory == null || selectedCategory == "ALL") {
-            habitButtons
+            buttonsState
         } else {
-            habitButtons.filter { it.category == selectedCategory }
+            buttonsState.filter { it.category == selectedCategory }
         }
     }
+
+    // 카테고리 드롭다운 아래 "카테고리 수정" 버튼 및 그 안의 카테고리별 삭제 확인 팝업 상태
+    var showCategoryEditDialog by remember { mutableStateOf(false) }
+    var categoryPendingDelete by remember { mutableStateOf<String?>(null) }
+
+    // 습관 버튼 카드의 "더보기" 메뉴에서 "버튼 삭제"를 눌렀을 때 뜨는 기록 삭제 확인 팝업 상태
+    var recordPendingDelete by remember { mutableStateOf<HabitButton?>(null) }
 
     fun onRecommendedButtonClick(item: RecommendedButton) {
         // TODO: 실제 버튼 생성 플로우 연결 (선택한 템플릿으로 다음 화면 이동)
@@ -150,7 +171,12 @@ fun MainHomeScreen(
 
             Spacer(Modifier.height(30.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("즐겨찾기", fontSize = 15.sp, color = Color(0xFF6D6D6D))
+                Text(
+                    "즐겨찾기",
+                    fontSize = 15.sp,
+                    color = Color(0xFF6D6D6D),
+                    modifier = Modifier.clickable { showFavoriteEditDialog = true }
+                )
                 Spacer(Modifier.width(2.dp))
                 Icon(
                     painter = painterResource(R.drawable.ic_setting),
@@ -164,20 +190,41 @@ fun MainHomeScreen(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                favoriteButtons.forEach { button ->
+                favoriteButtonsState.forEach { button ->
                     FavoriteButtonBox(button = button, onClick = { /* TODO: 즐겨찾기 버튼 클릭 */ })
                 }
-                FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
+                if (favoriteButtonsState.isEmpty()) {
+                    FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
+                }
             }
 
             Spacer(Modifier.height(30.dp))
-            CategoryDropdown(onCategorySelected = { selectedCategory = it })
-            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CategoryDropdown(
+                    modifier = Modifier.width(80.dp),
+                    categories = manageableCategories + "ALL",
+                    onCategorySelected = { selectedCategory = it },
+                    onEditCategoriesClick = { showCategoryEditDialog = true }
+                )
+                SearchBar(
+                    modifier = Modifier.offset(x = 20.dp),
+                    placeholder = "버튼 검색"
+                )
+            }
+            Spacer(Modifier.height(30.dp))
 
-            if (habitButtons.isEmpty()) {
+            if (buttonsState.isEmpty()) {
                 TemplateSuggestionExpandedCard(title = TEMPLATE_FIRST_BUTTON_TITLE)
             } else {
-                HabitButtonGrid(buttons = filteredHabitButtons)
+                HabitButtonGrid(
+                    buttons = filteredHabitButtons,
+                    onEditRecord = { /* TODO: 버튼 페이지로 이동하는 플로우 연결 (해당 화면 아직 없음) */ },
+                    onDeleteRecord = { button -> recordPendingDelete = button }
+                )
             }
 
             Spacer(Modifier.height(30.dp))
@@ -193,6 +240,89 @@ fun MainHomeScreen(
                 onItemClick = {
                     onRecommendedButtonClick(it)
                     showQuickCreatePopup = false
+                }
+            )
+        }
+    }
+
+    if (showCategoryEditDialog) {
+        Dialog(
+            onDismissRequest = { showCategoryEditDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            CategoryEditDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                categories = manageableCategories,
+                onDismiss = { showCategoryEditDialog = false },
+                onSave = { updated ->
+                    manageableCategories = updated
+                    showCategoryEditDialog = false
+                },
+                onDeleteCategory = { category -> categoryPendingDelete = category }
+            )
+        }
+    }
+
+    categoryPendingDelete?.let { category ->
+        Dialog(
+            onDismissRequest = { categoryPendingDelete = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            CategoryDeleteConfirmDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                category = category,
+                onDismiss = { categoryPendingDelete = null },
+                onConfirmDelete = { deleteButtonsToo ->
+                    manageableCategories = manageableCategories - category
+                    if (deleteButtonsToo) {
+                        buttonsState = buttonsState.filter { it.category != category }
+                    }
+                    if (selectedCategory == category) {
+                        selectedCategory = null
+                    }
+                    categoryPendingDelete = null
+                }
+            )
+        }
+    }
+
+    recordPendingDelete?.let { button ->
+        Dialog(
+            onDismissRequest = { recordPendingDelete = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            RecordDeleteConfirmDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                recordedAtIsoTimestamp = button.lastRecordedAt,
+                onDismiss = { recordPendingDelete = null },
+                onConfirmDelete = {
+                    // TODO: 실제 기록 삭제 API 연결
+                    recordPendingDelete = null
+                }
+            )
+        }
+    }
+
+    if (showFavoriteEditDialog) {
+        Dialog(
+            onDismissRequest = { showFavoriteEditDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            FavoriteEditDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                favorites = favoriteButtonsState,
+                onDismiss = { showFavoriteEditDialog = false },
+                onSave = { updated ->
+                    favoriteButtonsState = updated
+                    showFavoriteEditDialog = false
                 }
             )
         }
@@ -250,24 +380,19 @@ private fun AddButtonWithMenu(
             onDismissRequest = { showMenu = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            Box(
+            AddButtonMenuPopup(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 80.dp, end = 40.dp),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                AddButtonMenuPopup(
-                    onDismiss = { showMenu = false },
-                    onCreateManually = {
-                        showMenu = false
-                        onCreateManually()
-                    },
-                    onCreateQuickly = {
-                        showMenu = false
-                        onCreateQuickly()
-                    }
-                )
-            }
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                onCreateManually = {
+                    showMenu = false
+                    onCreateManually()
+                },
+                onCreateQuickly = {
+                    showMenu = false
+                    onCreateQuickly()
+                }
+            )
         }
     }
 }
