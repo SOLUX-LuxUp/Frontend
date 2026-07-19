@@ -28,6 +28,11 @@ import androidx.compose.ui.res.painterResource
 import com.solux.luxup.taptap.R
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import com.solux.luxup.taptap.core.util.formatTimeAgo
+
 private val FavoriteBlue = Color(0xFF4C9AFF)
 private val RecordBlue = Color(0xFF4C9AFF)
 
@@ -69,7 +74,7 @@ fun TeamCard(
             Spacer(Modifier.height(16.dp))
 
             // 하단: 멤버
-            Text("멤버", fontSize = 12.sp, color = Color.Gray)
+            Text("멤버", fontSize = 14.sp, color = Color(0xFF6D6D6D))
             Spacer(Modifier.height(6.dp))
             MemberAvatars(members = team.memberProfiles)
         }
@@ -94,16 +99,18 @@ private fun TeamProfileImage(imageUrl: String?, modifier: Modifier = Modifier) {
     }
 }
 @Composable
-private fun MemberAvatars(members: List<MemberProfile>, max: Int = 8) {
-    Row {
-        members.take(max).forEachIndexed { index, _ ->
+private fun MemberAvatars(
+    members: List<MemberProfile>,
+    max: Int = 8,
+    avatarSize: Dp = 28.dp                     // 크기 파라미터 추가
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
+        members.take(max).forEach { _ ->
             Icon(
                 painter = painterResource(R.drawable.ic_profile),
                 contentDescription = null,
-                tint = Color.Unspecified,                       // SVG 원래 색 그대로
-                modifier = Modifier
-                    .offset(x = if (index == 0) 0.dp else (-6).dp * index)
-                    .size(28.dp)
+                tint = Color.Unspecified,
+                modifier = Modifier.size(avatarSize)
             )
         }
     }
@@ -114,8 +121,9 @@ private fun MemberAvatars(members: List<MemberProfile>, max: Int = 8) {
 private fun RecentRecordBox(record: LatestRecord) {
     Column(
         modifier = Modifier
-            .width(160.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .width(130.dp)
+            .height(65.dp)
+            .clip(RoundedCornerShape(10.dp))
             .background(
                 Brush.horizontalGradient(                       // ③ 그라데이션
                     colors = listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
@@ -124,7 +132,7 @@ private fun RecentRecordBox(record: LatestRecord) {
             .padding(horizontal = 10.dp, vertical = 8.dp)
     ) {
         Text("최근 기록", fontSize = 9.sp, color = Color.White.copy(alpha = 0.85f))
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(1.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier.size(20.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.3f)),
@@ -139,46 +147,72 @@ private fun RecentRecordBox(record: LatestRecord) {
             }
             Spacer(Modifier.width(6.dp))
             Text(
-                "${record.buttonName} · 27분 전",
-                fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1
+                text = record.buttonName,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false)
+            )
+            Text(
+                text = " · ${formatTimeAgo(record.recordedAt)}",
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                maxLines = 1
             )
         }
     }
 }
 
 @Composable
-private fun UpdateBar(members: List<MemberProfile>) {        // ② 분리된 아래 바
+private fun UpdateBar(members: List<MemberProfile>) {
     Row(
         modifier = Modifier
-            .width(160.dp)
+            .width(130.dp)
             .height(29.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFDEEFFF))                    // 연회색 (디자인 보고 조정)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0xFFDEEFFF))
+            .padding(horizontal = 10.dp),        // vertical = 6.dp 제거
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("업데이트", fontSize = 9.sp, color = Color.Gray)
         Spacer(Modifier.weight(1f))
-        MemberAvatars(members = members, max = 3)            // 아바타 재사용
+        MemberAvatars(members = members, max = 3, avatarSize = 20.dp)
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun TeamCardPreview() {
-    TeamCard(
-        team = Team(
-            teamId = 1,
-            teamName = "LUX-UP",
-            teamImageUrl = null,
-            isFavorite = true,
-            maxMember = 30,
-            memberCount = 6,
-            memberProfiles = (1..6).map { MemberProfile(it.toLong(), "멤버$it", null) },
-            latestRecord = LatestRecord(3, "기획서 업로드", "exercise", "#FF5733", "2025-05-23T14:32:00"),
-            recentUpdatedMembers = (1..3).map { MemberProfile(it.toLong(), "멤버$it", null) },   // 추가
-            updatedAt = "2025-05-23T14:32:00"
-        ),
-        modifier = Modifier.padding(16.dp)
-    )
+    PreviewContainer {
+        TeamCard(
+            team = Team(
+                teamId = 1,
+                teamName = "LUX-UP",
+                teamImageUrl = null,
+                isFavorite = true,
+                maxMember = 30,
+                memberCount = 6,
+                memberProfiles = (1..6).map { MemberProfile(it.toLong(), "멤버$it", null) },
+                latestRecord = LatestRecord(
+                    3,
+                    "기획서 업로드",
+                    "exercise",
+                    "#FF5733",
+                    "2025-05-23T14:32:00"
+                ),
+                recentUpdatedMembers = (1..3).map {
+                    MemberProfile(
+                        it.toLong(),
+                        "멤버$it",
+                        null
+                    )
+                },   // 추가
+                updatedAt = "2025-05-23T14:32:00"
+            ),
+            modifier = Modifier.padding(16.dp)
+        )
+    }
 }
