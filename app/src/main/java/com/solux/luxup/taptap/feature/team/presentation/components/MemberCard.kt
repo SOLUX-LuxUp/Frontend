@@ -125,10 +125,11 @@ private fun MemberCardPreview() {
                 displayName = "누리",
                 profileImageUrl = null,
                 role = TeamMemberRole.OWNER,
+                joinedAt = "2026-03-13T00:00:00",        // ← 추가
                 latestRecord = com.solux.luxup.taptap.feature.team.model
                     .MemberLatestRecord("버터 세척", "2025-05-23T14:12:00")
             ),
-            currentUserId = 1L,        // ← 추가
+            currentUserId = 1L,
             onClick = {}
         )
         // 은서 = 내가 아님, 멤버 → 배지 없음
@@ -138,9 +139,10 @@ private fun MemberCardPreview() {
                 displayName = "은서",
                 profileImageUrl = null,
                 role = TeamMemberRole.MEMBER,
+                joinedAt = "2026-03-19T00:00:00",        // ← 추가
                 latestRecord = null
             ),
-            currentUserId = 1L,        // ← 추가 (누리가 나이므로 은서엔 배지 없음)
+            currentUserId = 1L,
             onClick = {}
         )
     }
