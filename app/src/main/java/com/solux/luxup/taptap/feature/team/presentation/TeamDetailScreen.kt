@@ -60,6 +60,8 @@ fun TeamDetailScreen(
     initialMemberId: Long? = null,               // ← 추가: 프리뷰/딥링크용 초기 선택 멤버
     currentUserId: Long = 4L,                    // 임시 (로그인 유저 id, API 연결 시 교체)
     onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
+    onCreateButton: () -> Unit = {},
+    onOpenTeamSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
@@ -86,7 +88,12 @@ fun TeamDetailScreen(
                         onExit()
                     }
                 },
-                onActionClick = { /* TODO: ADD → 버튼 생성, SETTINGS → 팀 설정 */ }
+                onActionClick = {
+                    when (selectedTab) {
+                        TeamDetailTab.MEMBER -> onOpenTeamSettings()
+                        else -> onCreateButton()
+                    }
+                }
             )
             TeamDetailTabs(
                 selected = selectedTab,
