@@ -5,6 +5,7 @@ data class TeamMember(
     val displayName: String,
     val profileImageUrl: String?,
     val role: TeamMemberRole,
+    val joinedAt: String,
     val latestRecord: MemberLatestRecord?   // 프로퍼티 이름은 그대로, 타입만 분리
 )
 

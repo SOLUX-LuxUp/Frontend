@@ -264,20 +264,20 @@ private fun InsightMemberActivitySectionPreview() {
         InsightMemberActivitySection(
             memberActivity = listOf(
                 TeamInsightMemberActivity(
-                    userId = 4L, displayName = "누리", profileImageUrl = null, tapCount = 10,
-                    topButton = TeamInsightMemberTopButton(1L, "기획서 업데이트", 5, "doc", "#FFC94C")
+                    userId = 2L, displayName = "누리", profileImageUrl = null, tapCount = 10,
+                    topButton = TeamInsightMemberTopButton(6L, "기획서 업데이트", "document", "#FFC107", 5)
                 ),
                 TeamInsightMemberActivity(
-                    userId = 7L, displayName = "수민", profileImageUrl = null, tapCount = 5,
-                    topButton = TeamInsightMemberTopButton(2L, "프론트 코드 수정", 3, "code", "#4C8DFF")
+                    userId = 5L, displayName = "수민", profileImageUrl = null, tapCount = 5,
+                    topButton = TeamInsightMemberTopButton(1L, "프론트 코드 수정", "code", "#4C8DFF", 3)
                 ),
                 TeamInsightMemberActivity(
-                    userId = 9L, displayName = "정민", profileImageUrl = null, tapCount = 3,
-                    topButton = TeamInsightMemberTopButton(3L, "피그마 업데이트", 2, "figma", "#FF6B6B")
+                    userId = 4L, displayName = "정민", profileImageUrl = null, tapCount = 3,
+                    topButton = TeamInsightMemberTopButton(7L, "피그마 업데이트", "pencil", "#FF5C5C", 2)
                 ),
                 TeamInsightMemberActivity(
-                    userId = 2L, displayName = "은서", profileImageUrl = null, tapCount = 2,
-                    topButton = TeamInsightMemberTopButton(4L, "톡방에 연락", 1, "chat", "#7C5CFF")
+                    userId = 3L, displayName = "은서", profileImageUrl = null, tapCount = 2,
+                    topButton = TeamInsightMemberTopButton(9L, "계획서 수정", "edit", "#FFC107", 1)
                 ),
             ),
             currentUserId = 4L, // ⚠ 하드코딩 — 정수민 인증 연동 후 실제 값으로

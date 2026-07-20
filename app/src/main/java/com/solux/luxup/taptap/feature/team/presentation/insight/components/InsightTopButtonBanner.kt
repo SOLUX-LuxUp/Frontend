@@ -26,7 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.util.UserAvatar
-import com.solux.luxup.taptap.feature.team.model.TeamInsightTappedMember
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMember
 import com.solux.luxup.taptap.feature.team.model.TeamInsightTopButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
@@ -121,7 +121,7 @@ fun InsightTopButtonBanner(
 /** 아바타 오버랩 — 시안 확인값: 18dp, 1dp #DADADA 테두리, 흰 배경, 겹침 */
 @Composable
 private fun AvatarOverlap(
-    members: List<TeamInsightTappedMember>,
+    members: List<TeamInsightMember>,
     maxVisible: Int = 6      // ⚠ 추정 — 넘을 때 규칙(+N) 시안 확인 필요
 ) {
     if (members.isEmpty()) return
@@ -160,12 +160,12 @@ private fun InsightTopButtonBannerPreview() {
                 iconColor = "#FFC94C",
                 tapCount = 7,
                 tappedMembers = listOf(
-                    TeamInsightTappedMember(4L, "유하연", null),
-                    TeamInsightTappedMember(7L, "정수민", null),
-                    TeamInsightTappedMember(9L, "김민지", null),
-                    TeamInsightTappedMember(2L, "누리", null),
-                    TeamInsightTappedMember(3L, "희경", null),
-                    TeamInsightTappedMember(5L, "하연", null),
+                    TeamInsightMember(4L, "유하연", null),
+                    TeamInsightMember(7L, "정수민", null),
+                    TeamInsightMember(9L, "김민지", null),
+                    TeamInsightMember(2L, "누리", null),
+                    TeamInsightMember(3L, "희경", null),
+                    TeamInsightMember(5L, "하연", null),
                 )
             ),
             label = "오늘 가장 많은 기록",

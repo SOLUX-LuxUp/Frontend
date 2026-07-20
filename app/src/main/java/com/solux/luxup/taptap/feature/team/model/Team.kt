@@ -3,7 +3,9 @@ package com.solux.luxup.taptap.feature.team.model
 data class Team(
     val teamId: Long,
     val teamName: String,
-    val teamImageUrl: String?,          // 이미지 없을 수 있어 nullable
+    val teamImageUrl: String?,      // 이미지로 설정 시
+    val iconName: String?,          // 아이콘으로 설정 시 ("exercise")
+    val iconColor: String?,         // 아이콘 색상 ("red")
     val isFavorite: Boolean,
     val maxMember: Int,
     val memberCount: Int,
