@@ -112,7 +112,7 @@ private fun MemberTopButtonRow(
                 // ⚠ SVG 매핑 대기 → 이니셜 대체
                 Text(
                     text = top.buttonName.take(1),
-                    color = top.iconColor.toTopButtonColorOrGray(),
+                    color = top.iconColor.toHexColor(),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -151,9 +151,8 @@ private fun MemberTopButtonRow(
 }
 
 /** ⚠ 임시 — iconColor null(요청 대기)이면 회색. core 공용 파서 생기면 교체 */
-private fun String?.toTopButtonColorOrGray(): Color =
-    if (this == null) Color(0xFFB0B8C1)
-    else try {
+private fun String.toHexColor(): Color =
+    try {
         Color(("FF" + this.removePrefix("#")).toLong(16))
     } catch (_: Exception) {
         Color(0xFFB0B8C1)
@@ -167,15 +166,15 @@ private fun InsightMemberTopButtonSectionPreview() {
             memberActivity = listOf(
                 TeamInsightMemberActivity(
                     userId = 4L, displayName = "누리", profileImageUrl = null, tapCount = 10,
-                    topButton = TeamInsightMemberTopButton(1L, "기획서 업데이트", 5, "doc", "#FFC94C")
+                    topButton = TeamInsightMemberTopButton(6L, "기획서 업데이트", "document", "#FFC107", 5)
                 ),
                 TeamInsightMemberActivity(
                     userId = 7L, displayName = "수민", profileImageUrl = null, tapCount = 5,
-                    topButton = TeamInsightMemberTopButton(2L, "프론트 코드 수정", 3, "code", "#4C8DFF")
+                    topButton = TeamInsightMemberTopButton(1L, "프론트 코드 수정", "code", "#4C8DFF", 3)
                 ),
                 TeamInsightMemberActivity(
                     userId = 9L, displayName = "정민", profileImageUrl = null, tapCount = 3,
-                    topButton = TeamInsightMemberTopButton(3L, "피그마 업데이트", 2, "figma", "#FF6B6B")
+                    topButton = TeamInsightMemberTopButton(7L, "피그마 업데이트", "pencil", "#FF5C5C", 2)
                 ),
             ),
             currentUserId = 4L, // ⚠ 하드코딩 — 정수민 인증 연동 후 실제 값으로

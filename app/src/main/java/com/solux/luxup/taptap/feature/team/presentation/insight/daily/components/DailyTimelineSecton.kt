@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.SectionCard
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.util.UserAvatar
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMember
 import com.solux.luxup.taptap.feature.team.model.TeamInsightTimelineItem
 import java.time.Duration
 import java.time.LocalDateTime
@@ -71,7 +72,7 @@ fun DailyTimelineSection(
             Text("아직 오늘 기록이 없어요", fontSize = 14.sp, color = SubColor)
         } else {
             // 최신순 정렬 (API가 정렬해 주면 이 줄 제거 가능)
-            val sorted = timeline.sortedByDescending { it.recordedAt }
+            val sorted = timeline.sortedByDescending { it.tappedAt }
             sorted.forEachIndexed { index, item ->
                 TimelineRow(
                     item = item,
@@ -131,7 +132,7 @@ private fun TimelineRow(
                 // ⚠ SVG 매핑 대기 → 이니셜 대체
                 Text(
                     text = item.buttonName.take(1),
-                    color = item.iconColor.toTimelineColorOrGray(),
+                    color = item.iconColor.toHexColor(),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -156,7 +157,7 @@ private fun TimelineRow(
             )
             Spacer(Modifier.height(1.dp))
             Text(
-                text = "${item.recordedAt.toTimeText()} • ${item.recordedAt.toElapsedText()}",
+                text = "${item.tappedAt.toTimeText()} • ${item.tappedAt.toElapsedText()}",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = SubColor,
@@ -167,10 +168,10 @@ private fun TimelineRow(
         Spacer(Modifier.width(10.dp))
 
         // 기록한 유저
-        UserAvatar(imageUrl = item.profileImageUrl, modifier = Modifier.size(24.dp))
+        UserAvatar(imageUrl = item.member.profileImageUrl, modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(8.dp))
         Text(
-            text = item.displayName,
+            text = item.member.displayName,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             color = NameColor,
@@ -202,10 +203,9 @@ private fun String.toElapsedText(): String =
         ""
     }
 
-/** ⚠ 임시 — iconColor null(요청 대기)이면 회색 */
-private fun String?.toTimelineColorOrGray(): Color =
-    if (this == null) Color(0xFFB0B8C1)
-    else try {
+/** ⚠ 임시 hex 파서 — core/util 공용 생기면 교체 */
+private fun String.toHexColor(): Color =
+    try {
         Color(("FF" + this.removePrefix("#")).toLong(16))
     } catch (_: Exception) {
         Color(0xFFB0B8C1)
@@ -218,16 +218,28 @@ private fun DailyTimelineSectionPreview() {
         DailyTimelineSection(
             timeline = listOf(
                 TeamInsightTimelineItem(
-                    101L, 1L, "기획서 업데이트", "doc", "#FFC94C",
-                    2L, "누리", null, LocalDateTime.now().minusHours(3).toString()
+                    teamButtonId = 6L,
+                    buttonName = "기획서 업데이트",
+                    iconName = "document",
+                    iconColor = "#FFC107",
+                    tappedAt = LocalDateTime.now().minusHours(3).toString(),
+                    member = TeamInsightMember(2L, "누리", null)
                 ),
                 TeamInsightTimelineItem(
-                    102L, 2L, "프론트 코드 수정", "code", "#4C8DFF",
-                    4L, "하연", null, LocalDateTime.now().minusHours(5).toString()
+                    teamButtonId = 1L,
+                    buttonName = "프론트 코드 수정",
+                    iconName = "code",
+                    iconColor = "#4C8DFF",
+                    tappedAt = LocalDateTime.now().minusHours(5).toString(),
+                    member = TeamInsightMember(3L, "하연", null)
                 ),
                 TeamInsightTimelineItem(
-                    103L, 3L, "피그마 업데이트", "figma", "#FF6B6B",
-                    3L, "희경", null, LocalDateTime.now().minusHours(9).toString()
+                    teamButtonId = 7L,
+                    buttonName = "피그마 업데이트",
+                    iconName = "pencil",
+                    iconColor = "#FF5C5C",
+                    tappedAt = LocalDateTime.now().minusHours(9).toString(),
+                    member = TeamInsightMember(4L, "희경", null)
                 ),
             ),
             modifier = Modifier.padding(16.dp)

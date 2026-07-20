@@ -24,7 +24,6 @@ data class TeamInsightMonthly(
     val topButton: TeamInsightTopButton?,                 // ③ 배너 (동일 타입)
     val dailyTapCounts: List<TeamInsightCalendarDay>,     // ② 캘린더 히트맵 (monthly 전용)
     val categoryTapCounts: List<TeamInsightCategoryCount> = emptyList(), // ⚠ 현재 미사용
-    val buttonTapCounts: List<TeamInsightButtonCount> = emptyList(),     // ⚠ 현재 미사용
     val memberActivity: List<TeamInsightMemberActivity>   // ④⑤ 활동량·최다버튼 (동일 타입)
 )
 
@@ -34,13 +33,15 @@ data class TeamInsightCalendarDay(
     val tapCount: Int
 )
 
-/** 카테고리별 집계 — ⚠ 응답엔 오지만 monthly 시안엔 해당 섹션 없음 */
+/** 카테고리별 집계 — ⚠ 응답엔 오지만 monthly 시안엔 해당 섹션 없어서 현재 미사용중 */
 data class TeamInsightCategoryCount(
     val categoryId: Long,
     val categoryName: String,
+    val categoryColor: String,
     val tapCount: Int,
     val ratio: Double
 )
+
 
 /** 히트맵 색 단계 — 시안 범례 고정 임계값 */
 enum class HeatLevel(val label: String) {

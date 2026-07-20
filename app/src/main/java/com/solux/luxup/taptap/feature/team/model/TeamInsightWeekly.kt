@@ -7,11 +7,6 @@ package com.solux.luxup.taptap.feature.team.model
  * daily와 공통 필드(topButton/buttonTapCounts/memberActivity)는 같은 타입 재사용.
  * weekly 전용: dailyTapCounts (요일별 카테고리 막대)
  *
- * !! 백엔드 요청 대기 (daily와 동일):
- *   - buttonTapCounts[]: iconName / iconColor / categoryId / categoryName
- *   - memberActivity[].topButton: iconName / iconColor
- *   - topButton.tappedMembers: 배너 아바타용
- *   - dailyTapCounts[].categories: categoryRatio(Map) → 객체 배열 + categoryColor 요청함
  */
 data class TeamInsightWeekly(
     val teamId: Long,

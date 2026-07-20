@@ -125,7 +125,7 @@ private fun RatioRow(
         animationSpec = tween(durationMillis = 600),
         label = "ratioBar"
     )
-    val iconColor = item.iconColor.toRatioColorOrGray()
+    val iconColor = item.iconColor.toHexColor()
 
     Row(
         modifier = Modifier
@@ -236,10 +236,9 @@ private fun ConnectorIcon(
     }
 }
 
-/** ⚠ 임시 — iconColor null(요청 대기)이면 회색. core 공용 파서 생기면 교체 */
-private fun String?.toRatioColorOrGray(): Color =
-    if (this == null) Color(0xFFB0B8C1)
-    else try {
+/// 파서 교체
+private fun String.toHexColor(): Color =
+    try {
         Color(("FF" + this.removePrefix("#")).toLong(16))
     } catch (_: Exception) {
         Color(0xFFB0B8C1)
@@ -251,11 +250,11 @@ private fun InsightButtonRatioSectionPreview() {
     PreviewContainer {
         InsightButtonRatioSection(
             buttonTapCounts = listOf(
-                TeamInsightButtonCount(1L, "기획서 업데이트", 30, "doc", "#FFC94C", 10L, "업무"),
-                TeamInsightButtonCount(2L, "프론트 코드 수정", 19, "code", "#4C8DFF", 10L, "업무"),
-                TeamInsightButtonCount(3L, "피그마 업데이트", 10, "figma", "#FF6B6B", 20L, "디자인"),
-                TeamInsightButtonCount(4L, "톡방에 연락", 8, "chat", "#7C5CFF", 30L, "소통"),
-                TeamInsightButtonCount(5L, "계획서 수정", 1, "edit", "#FFD54C", 10L, "업무"),
+                TeamInsightButtonCount(6L, "기획서 업데이트", "document", "#FFC107", 20L, "자기계발", 30),
+                TeamInsightButtonCount(1L, "프론트 코드 수정", "code", "#4C8DFF", 20L, "자기계발", 19),
+                TeamInsightButtonCount(7L, "피그마 업데이트", "pencil", "#FF5C5C", 20L, "자기계발", 10),
+                TeamInsightButtonCount(8L, "톡방에 연락", "person", "#4C8DFF", 10L, "건강", 8),
+                TeamInsightButtonCount(9L, "계획서 수정", "edit", "#FFC107", 20L, "자기계발", 1),
             ),
             totalTapCount = 68,
             modifier = Modifier.padding(16.dp)
