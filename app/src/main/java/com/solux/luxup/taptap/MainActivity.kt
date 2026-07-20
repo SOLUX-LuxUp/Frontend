@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,6 +16,8 @@ import androidx.navigation.navArgument
 import com.solux.luxup.taptap.feature.auth.login.presentation.LoginScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupEmailScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupPasswordScreen
+import com.solux.luxup.taptap.feature.home.main.presentation.CreateButtonScreen
+import com.solux.luxup.taptap.feature.home.main.presentation.IconSelectScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.MainHomeScreen
 import com.solux.luxup.taptap.feature.home.template.presentation.OnboardingTemplateScreen
 import com.solux.luxup.taptap.ui.theme.TapTapTheme
@@ -64,7 +70,45 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("mainHome") {
-                        MainHomeScreen()
+                        MainHomeScreen(
+                            onNavigateToCreateButton = {
+                                navController.navigate("createButton")
+                            }
+                        )
+                    }
+                    composable("createButton") { backStackEntry ->
+                        val selectedIconRes by backStackEntry.savedStateHandle
+                            .getStateFlow<Int?>("selectedIconRes", null)
+                            .collectAsState()
+                        val selectedIconTintArgb by backStackEntry.savedStateHandle
+                            .getStateFlow<Int?>("selectedIconTint", null)
+                            .collectAsState()
+                        CreateButtonScreen(
+                            selectedIconRes = selectedIconRes,
+                            selectedIconTint = selectedIconTintArgb?.let { Color(it) },
+                            onNavigateBack = {
+                                navController.popBackStack()
+                            },
+                            onNavigateToIconSelect = {
+                                navController.navigate("iconSelect")
+                            }
+                        )
+                    }
+                    composable("iconSelect") {
+                        IconSelectScreen(
+                            onNavigateBack = {
+                                navController.popBackStack()
+                            },
+                            onConfirm = { iconRes, tint ->
+                                navController.previousBackStackEntry
+                                    ?.savedStateHandle
+                                    ?.set("selectedIconRes", iconRes)
+                                navController.previousBackStackEntry
+                                    ?.savedStateHandle
+                                    ?.set("selectedIconTint", tint.toArgb())
+                                navController.popBackStack()
+                            }
+                        )
                     }
                     composable("signupEmail") {
                         SignupEmailScreen(
