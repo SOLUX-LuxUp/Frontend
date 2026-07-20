@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 val iconPaletteColors = listOf(
     Color(0xFFFF7171),
     Color(0xFFFFC760),
-    Color(0xFFFFF600),
+    Color(0xFFFCED66),
     Color(0xFF83FF65),
     Color(0xFF63F2FF),
     Color(0xFF536AFF),
