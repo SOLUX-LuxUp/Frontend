@@ -16,6 +16,7 @@ import androidx.navigation.navArgument
 import com.solux.luxup.taptap.feature.auth.login.presentation.LoginScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupEmailScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupPasswordScreen
+import com.solux.luxup.taptap.feature.home.buttondetail.presentation.ButtonDetailScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.CreateButtonScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.IconSelectScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.MainHomeScreen
@@ -73,6 +74,17 @@ class MainActivity : ComponentActivity() {
                         MainHomeScreen(
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
+                            },
+                            onNavigateToButtonDetail = {
+                                // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
+                                navController.navigate("buttonDetail")
+                            }
+                        )
+                    }
+                    composable("buttonDetail") {
+                        ButtonDetailScreen(
+                            onNavigateBack = {
+                                navController.popBackStack()
                             }
                         )
                     }

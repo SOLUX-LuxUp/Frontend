@@ -1,7 +1,9 @@
 package com.solux.luxup.taptap.feature.home.main.util
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -118,7 +120,9 @@ private fun Modifier.habitCardDropShadow(shape: Shape): Modifier = this.drawBehi
 fun HabitButtonGrid(
     buttons: List<HabitButton>,
     onEditRecord: (button: HabitButton) -> Unit = {},
-    onDeleteRecord: (button: HabitButton) -> Unit = {}
+    onDeleteRecord: (button: HabitButton) -> Unit = {},
+    onQuickRecord: (button: HabitButton) -> Unit = {},
+    onOpenDetail: (button: HabitButton) -> Unit = {}
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         buttons.chunked(2).forEach { rowButtons ->
@@ -128,7 +132,9 @@ fun HabitButtonGrid(
                         button = button,
                         modifier = Modifier.weight(1f),
                         onEditRecord = { onEditRecord(button) },
-                        onDeleteRecord = { onDeleteRecord(button) }
+                        onDeleteRecord = { onDeleteRecord(button) },
+                        onQuickRecord = { onQuickRecord(button) },
+                        onOpenDetail = { onOpenDetail(button) }
                     )
                 }
                 if (rowButtons.size == 1) {
@@ -139,12 +145,16 @@ fun HabitButtonGrid(
     }
 }
 
+// 카드를 한 번 탭하면 바로 기록, 길게 누르면 버튼 상세 페이지로 이동
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HabitButtonCard(
     button: HabitButton,
     modifier: Modifier = Modifier,
     onEditRecord: () -> Unit = {},
-    onDeleteRecord: () -> Unit = {}
+    onDeleteRecord: () -> Unit = {},
+    onQuickRecord: () -> Unit = {},
+    onOpenDetail: () -> Unit = {}
 ) {
     var isFavorite by remember(button.title) { mutableStateOf(button.isFavorite) }
     var showMoreMenu by remember { mutableStateOf(false) }
@@ -157,7 +167,12 @@ fun HabitButtonCard(
         )
     }
 
-    Box(modifier = modifier) {
+    Box(
+        modifier = modifier.combinedClickable(
+            onClick = onQuickRecord,
+            onLongClick = onOpenDetail
+        )
+    ) {
         // 카드 모서리가 뱃지 자리만큼 파여 있으므로, 뱃지는 카드 위에 그대로 올려 그린다
         Card(
             modifier = Modifier
