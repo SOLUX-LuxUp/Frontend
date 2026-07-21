@@ -31,5 +31,5 @@ fun TeamButtonList(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TeamButtonListPreview() {
-    TeamButtonList(buttons = mockTeamButtons.buttons)
+    TeamButtonList(buttons = mockTeamButtons)
 }

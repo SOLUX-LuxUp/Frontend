@@ -25,11 +25,9 @@ fun TeamActivityScreen(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        // 최근 기록 배너 — 기록 있는 버튼 중 가장 최근 것
-        // 최근 기록 배너용 - favoriteButtons 합치던 거 제거
-        val recentButton = mockTeamButtons.buttons
-            .filter { it.latestRecord != null }
-            .maxByOrNull { it.latestRecord!!.recordedAt }
+        // 최근 기록 배너 — 서버가 latestRecord.recordedAt 최신순으로 정렬해서 주므로
+        // 기록이 있는 첫 번째 버튼이 곧 가장 최근 기록이다
+        val recentButton = mockTeamButtons.firstOrNull { it.latestRecord != null }
         recentButton?.let {
             Column(modifier = Modifier.padding(horizontal = 40.dp, vertical = 12.dp)) {
                 Text("최근 기록", fontSize = 14.sp, color = Color(0xFF6D6D6D), fontWeight = FontWeight.Medium)
@@ -48,7 +46,7 @@ fun TeamActivityScreen(
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
         }
 
-        TeamButtonList(buttons = mockTeamButtons.buttons)
+        TeamButtonList(buttons = mockTeamButtons)
     }
 }
 

@@ -2,8 +2,7 @@ package com.solux.luxup.taptap.feature.team.data
 
 import com.solux.luxup.taptap.feature.team.model.*
 
-val mockTeamButtons = TeamButtonsResponse(
-    buttons = listOf(
+val mockTeamButtons: List<TeamButton> = listOf(
         TeamButton(
             teamButtonId = 1, buttonName = "기획서 업데이트",
             iconName = "book", iconColor = "#FFC107",
@@ -37,4 +36,3 @@ val mockTeamButtons = TeamButtonsResponse(
             latestRecord = null              // 기록 없는 경우도 하나
         )
     )
-)
