@@ -55,6 +55,8 @@ fun TeamDetailScreen(
     onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
     onCreateButton: () -> Unit = {},
     onOpenTeamSettings: () -> Unit = {},
+    onEditButton: (Long) -> Unit = {},
+    onOpenButtonInfo: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
@@ -98,7 +100,11 @@ fun TeamDetailScreen(
             )
 
             when (selectedTab) {
-                TeamDetailTab.ACTIVITY -> TeamActivityScreen()
+                TeamDetailTab.ACTIVITY -> TeamActivityScreen(
+                    onNavigateToTimeline = { /* TODO: 타임라인 화면 */ },
+                    onNavigateToEdit = { onEditButton(it.teamButtonId) },
+                    onNavigateToInfo = { onOpenButtonInfo(it.teamButtonId) },
+                )
                 TeamDetailTab.INSIGHT  -> TeamInsightScreen(currentUserId = currentUserId)
                 TeamDetailTab.MEMBER   -> {
                     val memberId = selectedMemberId

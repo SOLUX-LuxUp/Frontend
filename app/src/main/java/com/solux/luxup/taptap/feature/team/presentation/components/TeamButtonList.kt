@@ -15,6 +15,9 @@ import com.solux.luxup.taptap.feature.team.model.TeamButton
 @Composable
 fun TeamButtonList(
     buttons: List<TeamButton>,
+    onButtonClick: (TeamButton) -> Unit = {},
+    onButtonLongClick: (TeamButton) -> Unit = {},
+    onButtonMenuClick: (TeamButton) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -22,8 +25,13 @@ fun TeamButtonList(
         contentPadding = PaddingValues(horizontal = 40.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(buttons) { button ->
-            TeamButtonCard(button = button)
+        items(buttons, key = { it.teamButtonId }) { button ->
+            TeamButtonCard(
+                button = button,
+                onClick = { onButtonClick(button) },
+                onLongClick = { onButtonLongClick(button) },
+                onMenuClick = { onButtonMenuClick(button) },
+            )
         }
     }
 }
