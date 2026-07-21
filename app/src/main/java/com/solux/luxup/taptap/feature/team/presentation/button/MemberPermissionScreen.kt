@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,14 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.CheckMarkIcon
-import com.solux.luxup.taptap.core.ui.components.SearchIcon
+import com.solux.luxup.taptap.core.util.SearchBar
+import com.solux.luxup.taptap.core.util.UserAvatar
 import com.solux.luxup.taptap.feature.team.data.MockTeamMembers
 import com.solux.luxup.taptap.feature.team.model.TeamMember
 import com.solux.luxup.taptap.feature.team.model.TeamMemberRole
@@ -62,9 +61,15 @@ fun MemberPermissionScreen(
     var selected by remember(selectedUserIds) { mutableStateOf(selectedUserIds.toSet()) }
     var query by remember { mutableStateOf("") }
 
-    val filtered = remember(query, members) {
-        if (query.isBlank()) members
-        else members.filter { it.displayName.contains(query.trim(), ignoreCase = true) }
+    // 진입 시 한 번만 정렬. 체크할 때마다 행이 튀지 않도록 selected 변화에는 반응하지 않는다
+    val sortedMembers = remember(members) {
+        val initiallySelected = selectedUserIds.toSet()
+        members.sortedByDescending { it.userId in initiallySelected }
+    }
+
+    val filtered = remember(query, sortedMembers) {
+        if (query.isBlank()) sortedMembers
+        else sortedMembers.filter { it.displayName.contains(query.trim(), ignoreCase = true) }
     }
 
     Column(
@@ -79,33 +84,16 @@ fun MemberPermissionScreen(
             confirmEnabled = selected.isNotEmpty(),
         )
 
-        // TODO: core/ui의 공통 SearchBar로 교체 (시그니처 확인 후)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .height(40.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFFF5F6F8))
-                .padding(horizontal = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SearchIcon()
-            Spacer(Modifier.width(8.dp))
-            Box(Modifier.weight(1f)) {
-                if (query.isEmpty()) {
-                    Text("멤버 검색", fontSize = 14.sp, color = Color(0xFFB0B3B8))
-                }
-                BasicTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    singleLine = true,
-                    textStyle = TextStyle(fontSize = 14.sp, color = Color(0xFF111827)),
-                    cursorBrush = SolidColor(Color(0xFF2D8CFF)),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
+        Spacer(Modifier.height(24.dp))
+
+        SearchBar(
+            placeholder = "멤버 검색",
+            height = 43.dp,
+            cornerRadius = 13.dp,
+            horizontalMargin = 40.dp,
+            fillWidth = true,
+            onQueryChange = { query = it },
+        )
 
         Spacer(Modifier.height(16.dp))
 
@@ -114,7 +102,7 @@ fun MemberPermissionScreen(
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             color = Color(0xFF6B7280),
-            modifier = Modifier.padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = 40.dp),
         )
 
         Spacer(Modifier.height(8.dp))
@@ -151,16 +139,10 @@ private fun MemberPermissionRow(
             .fillMaxWidth()
             .background(if (isChecked) Color(0xFFF5F6F8) else Color.White)
             .clickable(onClick = onToggle)
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+            .padding(horizontal = 40.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // TODO: 공통 UserAvatar로 교체
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFE5E7EB)),
-        )
+        UserAvatar(imageUrl = member.profileImageUrl, size = 40.dp)
 
         Spacer(Modifier.width(12.dp))
 
@@ -169,6 +151,11 @@ private fun MemberPermissionRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
+            Text(
+                text = if (isMe) "${member.displayName}(나)" else member.displayName,
+                fontSize = 14.sp,
+                color = Color(0xFF6D6D6D),
+            )
             if (member.role == TeamMemberRole.OWNER) {
                 Box(
                     modifier = Modifier
@@ -179,11 +166,6 @@ private fun MemberPermissionRow(
                     Text("팀장", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Medium)
                 }
             }
-            Text(
-                text = if (isMe) "${member.displayName}(나)" else member.displayName,
-                fontSize = 15.sp,
-                color = Color(0xFF111827),
-            )
         }
 
         CheckBox(isChecked = isChecked)
@@ -194,18 +176,25 @@ private fun MemberPermissionRow(
 private fun CheckBox(isChecked: Boolean) {
     Box(
         modifier = Modifier
-            .size(22.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(if (isChecked) Color(0xFF2D8CFF) else Color.White)
-            .border(
-                width = 1.5.dp,
-                color = if (isChecked) Color(0xFF2D8CFF) else Color(0xFFD1D5DB),
-                shape = RoundedCornerShape(4.dp),
+            .size(17.dp)
+            .clip(RoundedCornerShape(2.dp))
+            .then(
+                if (isChecked) {
+                    Modifier.background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF4BB4FF), Color(0xFF2085FF)),
+                        ),
+                    )
+                } else {
+                    Modifier
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFD1D5DB), RoundedCornerShape(2.dp))
+                },
             ),
         contentAlignment = Alignment.Center,
     ) {
         if (isChecked) {
-            CheckMarkIcon(modifier = Modifier.size(14.dp), tint = Color.White, strokeRatio = 0.17f)
+            CheckMarkIcon(modifier = Modifier.size(11.dp), tint = Color.White, strokeRatio = 0.2f)
         }
     }
 }

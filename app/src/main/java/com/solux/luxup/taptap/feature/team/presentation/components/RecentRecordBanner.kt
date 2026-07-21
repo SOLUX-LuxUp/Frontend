@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.util.formatTimeAgo
 import com.solux.luxup.taptap.core.util.formatTimeOfDay
 import com.solux.luxup.taptap.feature.team.model.ButtonRecord
@@ -58,8 +59,7 @@ fun RecentRecordBanner(button: TeamButton) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(buttonIconRes(button.iconName)),
-                contentDescription = null,
+                painter = painterResource(ButtonIcons.resOf(button.iconName)),                contentDescription = null,
                 tint = safeColor(button.iconColor, Color(0xFF2085FF)),
                 modifier = Modifier.size(32.dp)
             )

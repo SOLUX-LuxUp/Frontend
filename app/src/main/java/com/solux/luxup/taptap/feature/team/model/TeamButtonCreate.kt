@@ -19,12 +19,13 @@ enum class TapPermission(val value: String, val label: String) {
 }
 
 data class TeamButtonCategory(
-    val categoryId: Long?,
-    val name: String,
+    val categoryId: Long,
+    val categoryName: String,
+    val categoryColor: IconColor,
+    val displayOrder: Int,
 ) {
     companion object {
-        /** categoryId = null → No Category */
-        val None = TeamButtonCategory(null, "No Category")
+        const val NONE_LABEL = "No Category"
     }
 }
 
@@ -37,7 +38,7 @@ data class TeamButtonForm(
     val iconName: String = "",
     val iconColor: IconColor = IconColor.DEFAULT,
     val description: String = "",
-    val category: TeamButtonCategory = TeamButtonCategory.None,
+    val category: TeamButtonCategory? = null,
     val tapPermission: TapPermission = TapPermission.ALL,
     val allowedUserIds: List<Long> = emptyList(),
 ) {
@@ -49,7 +50,8 @@ data class TeamButtonForm(
         get() = allowedUserIds.size
 
     companion object {
-        const val NAME_MAX = 15 // TODO(백엔드): 이름 최대 길이 명시 요청
+        /** 서버 허용치는 100자지만, 한 줄 카드에 들어가는 길이로 제한 */
+        const val NAME_MAX = 20
         const val DESCRIPTION_MAX = 50
     }
 }

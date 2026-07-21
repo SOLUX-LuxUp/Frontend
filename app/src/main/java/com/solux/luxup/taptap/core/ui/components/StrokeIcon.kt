@@ -43,7 +43,7 @@ fun ChevronDownIcon(
         painter = painterResource(R.drawable.ic_chevron_down),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
-        modifier = modifier.size(16.dp),
+        modifier = modifier.size(12.dp),
     )
 }
 

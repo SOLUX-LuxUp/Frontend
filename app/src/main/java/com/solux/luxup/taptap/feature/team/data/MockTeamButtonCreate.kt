@@ -1,5 +1,6 @@
 package com.solux.luxup.taptap.feature.team.data
 
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.feature.team.model.TeamButtonCategory
 
 /**
@@ -13,10 +14,9 @@ object MockTeamButtonCreate {
      * 명세서에는 개인 버튼용 /api/buttons/categories 만 존재.
      */
     val categories: List<TeamButtonCategory> = listOf(
-        TeamButtonCategory.None,
-        TeamButtonCategory(1L, "HEALTH"),
-        TeamButtonCategory(2L, "ROUTINE"),
-        TeamButtonCategory(3L, "TRAVEL"),
-        TeamButtonCategory(4L, "WORK"),
+        TeamButtonCategory(1L, "가족", IconColor.ORANGE, 0),
+        TeamButtonCategory(2L, "친구", IconColor.CYAN, 1),
+        TeamButtonCategory(3L, "연인", IconColor.PINK, 2),
+        TeamButtonCategory(4L, "No Category", IconColor.GREY, 3),
     )
 }

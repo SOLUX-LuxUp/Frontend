@@ -24,27 +24,33 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    placeholder: String = "검색",              // ← 화면마다 다른 문구
-    onQueryChange: (String) -> Unit = {}       // ← 검색어 바뀔 때 (나중에 필터링)
+    placeholder: String = "검색",
+    height: Dp = 35.dp,
+    cornerRadius: Dp = 12.dp,
+    horizontalMargin: Dp = 20.dp,
+    fillWidth: Boolean = false,
+    onQueryChange: (String) -> Unit = {}
 ) {
     var query by remember { mutableStateOf("") }
     Row(
         modifier = modifier
-            .padding(horizontal = 20.dp) // ⭐ 바깥 여백
-            .height(35.dp)
-            .width(260.dp)               // ⭐ 너비 줄이기
-            .figmaDropShadow(                        // .shadow() 대신
-                cornerRadius = 12.dp,
+            .padding(horizontal = horizontalMargin)
+            .height(height)
+            .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(260.dp))
+            .figmaDropShadow(
+                cornerRadius = cornerRadius,
                 alpha = 0.15f,
                 blurRadius = 7.dp
             )
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(cornerRadius))
             .background(Color.White)
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically

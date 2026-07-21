@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.BackArrowIcon
@@ -36,8 +39,8 @@ import com.solux.luxup.taptap.core.ui.components.ChevronDownIcon
 import com.solux.luxup.taptap.core.ui.components.ConfirmCheckIcon
 
 private val BorderColor = Color(0xFFE5E7EB)
-private val LabelColor = Color(0xFF6B7280)
-private val TextColor = Color(0xFF111827)
+private val LabelColor = Color(0xFF6D6D6D)
+private val TextColor = Color(0xFF6D6D6D)
 private val PlaceholderColor = Color(0xFFB0B3B8)
 
 /** 뒤로 + 타이틀 + 우측 확인 체크로 구성된 공통 상단바 */
@@ -49,31 +52,36 @@ fun FormTopBar(
     confirmEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .padding(horizontal = 20.dp),
-    ) {
-        BackArrowIcon(
+    Column(modifier = modifier.fillMaxWidth()) {
+        Spacer(Modifier.height(42.dp))
+
+        Box(
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .size(24.dp)
-                .clickable(onClick = onBack),
-        )
-        Text(
-            text = title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextColor,
-            modifier = Modifier.align(Alignment.Center),
-        )
-        ConfirmCheckIcon(
-            enabled = confirmEnabled,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .clickable(enabled = confirmEnabled, onClick = onConfirm),
-        )
+                .fillMaxWidth()
+                .height(30.dp)
+                .padding(horizontal = 40.dp),
+        ) {
+            BackArrowIcon(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(31.02.dp)
+                    .clickable(onClick = onBack),
+            )
+            Text(
+                text = title,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextColor,
+                modifier = Modifier.align(Alignment.Center),
+            )
+            ConfirmCheckIcon(
+                enabled = confirmEnabled,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(28.dp)
+                    .clickable(enabled = confirmEnabled, onClick = onConfirm),
+            )
+        }
     }
 }
 
@@ -84,7 +92,8 @@ fun FormLabel(
 ) {
     Text(
         text = text,
-        fontSize = 13.sp,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
         color = LabelColor,
         modifier = modifier,
     )
@@ -102,9 +111,9 @@ fun FormTextField(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(46.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(8.dp))
+            .height(56.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
             .padding(horizontal = 14.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -115,7 +124,7 @@ fun FormTextField(
             value = value,
             onValueChange = { if (it.length <= maxLength) onValueChange(it) },
             singleLine = true,
-            textStyle = TextStyle(fontSize = 15.sp, color = TextColor),
+            textStyle = TextStyle(fontSize = 14.sp, color = TextColor),
             cursorBrush = SolidColor(Color(0xFF2D8CFF)),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -134,9 +143,9 @@ fun FormMultilineField(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 96.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(8.dp))
+            .heightIn(min = 91.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
             .padding(14.dp),
     ) {
         if (value.isEmpty()) {
@@ -145,13 +154,13 @@ fun FormMultilineField(
         BasicTextField(
             value = value,
             onValueChange = { if (it.length <= maxLength) onValueChange(it) },
-            textStyle = TextStyle(fontSize = 15.sp, color = TextColor),
+            textStyle = TextStyle(fontSize = 14.sp, color = TextColor),
             cursorBrush = SolidColor(Color(0xFF2D8CFF)),
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
             text = "${value.length}/$maxLength",
-            fontSize = 12.sp,
+            fontSize = 13.sp,
             color = PlaceholderColor,
             modifier = Modifier.align(Alignment.BottomEnd),
         )
@@ -170,7 +179,7 @@ fun <T> FormDropdown(
     labelOf: (T) -> String,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    width: androidx.compose.ui.unit.Dp = 150.dp,
+    width: androidx.compose.ui.unit.Dp = 213.dp,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -178,7 +187,7 @@ fun <T> FormDropdown(
         Row(
             modifier = Modifier
                 .width(width)
-                .height(42.dp)
+                .height(38.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .border(1.dp, BorderColor, RoundedCornerShape(8.dp))
                 .background(Color.White)
@@ -187,7 +196,7 @@ fun <T> FormDropdown(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(text = labelOf(selected), fontSize = 14.sp, color = TextColor)
+            Text(text = labelOf(selected), fontSize = 15.sp, color = TextColor)
             ChevronDownIcon()
         }
 
@@ -203,4 +212,70 @@ fun <T> FormDropdown(
             }
         }
     }
+}
+
+@Preview(showBackground = true, widthDp = 390)
+@Composable
+private fun TeamButtonFormComponentsPreview() {
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("기획서 최신본으로 올리기") }
+    var category by remember { mutableStateOf("No Category") }
+
+    Column {
+        FormTopBar(
+            title = "팀 버튼 만들기",
+            onBack = {},
+            onConfirm = {},
+        )
+
+        Column(modifier = Modifier.padding(24.dp)) {
+            FormLabel("이름")
+            Spacer(Modifier.height(8.dp))
+            FormTextField(
+                value = name,
+                onValueChange = { name = it },
+                placeholder = "새로운 버튼",
+                maxLength = 15,
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                FormLabel("카테고리")
+                FormDropdown(
+                    selected = category,
+                    options = listOf("No Category", "HEALTH", "ROUTINE", "WORK"),
+                    labelOf = { it },
+                    onSelect = { category = it },
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            FormLabel("버튼 설명")
+            Spacer(Modifier.height(8.dp))
+            FormMultilineField(
+                value = description,
+                onValueChange = { description = it },
+                maxLength = 50,
+                placeholder = "설명을 적어주세요",
+            )
+        }
+    }
+}
+
+/** 확인 버튼 비활성 상태 */
+@Preview(showBackground = true, widthDp = 390)
+@Composable
+private fun FormTopBarDisabledPreview() {
+    FormTopBar(
+        title = "멤버 권한 설정",
+        onBack = {},
+        onConfirm = {},
+        confirmEnabled = false,
+    )
 }

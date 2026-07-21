@@ -52,7 +52,7 @@ class TeamButtonCreateViewModel(
         form = form.copy(description = value)
     }
 
-    fun updateCategory(category: TeamButtonCategory) {
+    fun updateCategory(category: TeamButtonCategory?) {
         form = form.copy(category = category)
     }
 

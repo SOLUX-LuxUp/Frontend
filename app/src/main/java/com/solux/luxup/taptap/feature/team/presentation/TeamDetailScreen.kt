@@ -45,8 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
-import com.solux.luxup.taptap.feature.team.presentation.components.buttonIconRes
+import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
 import com.solux.luxup.taptap.feature.team.presentation.components.safeColor
 import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightScreen
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailScreen
@@ -66,6 +67,7 @@ fun TeamDetailScreen(
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
     var selectedMemberId by remember { mutableStateOf(initialMemberId) }
+    var showCreateOption by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
         bottomBar = {
@@ -91,7 +93,7 @@ fun TeamDetailScreen(
                 onActionClick = {
                     when (selectedTab) {
                         TeamDetailTab.MEMBER -> onOpenTeamSettings()
-                        else -> onCreateButton()
+                        else -> showCreateOption = true
                     }
                 }
             )
@@ -124,6 +126,16 @@ fun TeamDetailScreen(
                     }
                 }
             }
+        }
+        if (showCreateOption) {
+            TeamButtonCreateOptionDialog(
+                onDismiss = { showCreateOption = false },
+                onSelectManual = {
+                    showCreateOption = false
+                    onCreateButton()
+                },
+                onSelectQuick = { showCreateOption = false },
+            )
         }
     }
 }
@@ -310,8 +322,7 @@ private fun RecentRecordBanner(button: TeamButton) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(buttonIconRes(button.iconName)),
-                contentDescription = null,
+                painter = painterResource(ButtonIcons.resOf(button.iconName)),                contentDescription = null,
                 tint = safeColor(button.iconColor, Color(0xFF2085FF)),
                 modifier = Modifier.size(32.dp)
             )

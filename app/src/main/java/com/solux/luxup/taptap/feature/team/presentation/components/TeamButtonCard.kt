@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.R
 import androidx.compose.ui.res.painterResource
 import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.util.formatTimeAgo
 import com.solux.luxup.taptap.core.util.formatTimeOfDay
 import com.solux.luxup.taptap.feature.team.model.ButtonRecord
@@ -106,8 +107,7 @@ private fun ButtonIcon(iconName: String, iconColor: String) {
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            painter = painterResource(buttonIconRes(iconName)),
-            contentDescription = null,
+            painter = painterResource(ButtonIcons.resOf(iconName)),            contentDescription = null,
             tint = safeColor(iconColor, Color(0xFF3357FF)),
             modifier = Modifier.size(32.dp)                  // 원 커진 만큼 안 아이콘도 24 → 32
         )
@@ -131,13 +131,7 @@ private fun RecordMemberAvatars(members: List<MemberProfile>, max: Int = 1) {
     }
 }
 
-// iconName → drawable 매핑 (임시, 아이콘 세트 확정 후 확장)
-fun buttonIconRes(iconName: String): Int = when (iconName) {
-    "book" -> R.drawable.ic_profile      // TODO: 실제 아이콘으로 교체
-    "laptop" -> R.drawable.ic_profile    // TODO
-    "exercise" -> R.drawable.ic_profile  // TODO
-    else -> R.drawable.ic_profile
-}
+
 
 // "#FF5733" → Color, 파싱 실패 시 기본색
 fun safeColor(hex: String, fallback: Color): Color {

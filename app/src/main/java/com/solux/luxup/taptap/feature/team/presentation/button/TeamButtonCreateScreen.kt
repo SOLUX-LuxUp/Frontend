@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.feature.team.data.MockTeamButtonCreate
 import com.solux.luxup.taptap.feature.team.model.TapPermission
@@ -46,7 +47,7 @@ import com.solux.luxup.taptap.feature.team.presentation.button.components.FormMu
 import com.solux.luxup.taptap.feature.team.presentation.button.components.FormTextField
 import com.solux.luxup.taptap.feature.team.presentation.button.components.FormTopBar
 
-private val ScreenPadding = 24.dp // TODO: Dimens 상수화 시 정리
+private val ScreenPadding = 40.dp // 전 화면 공통 좌우 여백
 
 /**
  * 팀 버튼 만들기 (8.1.1)
@@ -63,7 +64,7 @@ fun TeamButtonCreateScreen(
     confirmEnabled: Boolean,
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
-    onCategorySelect: (TeamButtonCategory) -> Unit,
+    onCategorySelect: (TeamButtonCategory?) -> Unit,
     onTapPermissionChange: (TapPermission) -> Unit,
     onBack: () -> Unit,
     onConfirm: () -> Unit,
@@ -90,14 +91,14 @@ fun TeamButtonCreateScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = ScreenPadding),
         ) {
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(63.dp))
 
             // 아이콘 미리보기 — 탭하면 아이콘 선택 화면
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .size(120.dp)
-                    .shadow(6.dp, CircleShape, clip = false)
+                    .size(138.dp)
+                    .figmaDropShadow(cornerRadius = 69.dp, blurRadius = 10.dp)
                     .clip(CircleShape)
                     .background(Color.White)
                     .clickable(onClick = onIconClick),
@@ -107,11 +108,11 @@ fun TeamButtonCreateScreen(
                     painter = painterResource(ButtonIcons.resOf(form.iconName)),
                     contentDescription = null,
                     tint = form.iconColor.color,
-                    modifier = Modifier.size(52.dp),
+                    modifier = Modifier.size(60.dp),
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(36.dp))
 
             FormLabel("이름")
             Spacer(Modifier.height(8.dp))
@@ -132,8 +133,8 @@ fun TeamButtonCreateScreen(
                 FormLabel("카테고리")
                 FormDropdown(
                     selected = form.category,
-                    options = categories,
-                    labelOf = { it.name },
+                    options = listOf<TeamButtonCategory?>(null) + categories,
+                    labelOf = { it?.categoryName ?: TeamButtonCategory.NONE_LABEL },
                     onSelect = onCategorySelect,
                 )
             }
@@ -176,8 +177,9 @@ fun TeamButtonCreateScreen(
                     FormLabel("사용할 수 있는 멤버")
                     Text(
                         text = "${form.allowedMemberCount}명",
-                        fontSize = 13.sp,
-                        color = Color(0xFF6B7280),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF6D6D6D),
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -192,9 +194,9 @@ fun TeamButtonCreateScreen(
                 ) {
                     Text(
                         text = "멤버 선택",
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF6B7280),
+                        color = Color(0xFFB1B1B1),
                     )
                 }
             }

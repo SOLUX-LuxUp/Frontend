@@ -71,7 +71,7 @@ fun TeamIconSelectScreen(
                 tint = Color(0xFFB1B1B1),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(30.dp)
+                    .size(31.02.dp)
                     .clickable(onClick = onNavigateBack),
             )
             Text(
@@ -84,7 +84,7 @@ fun TeamIconSelectScreen(
             ConfirmCheckIcon(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .size(30.dp)
+                    .size(28.dp)
                     .clickable { onConfirm(iconName, color) },
             )
         }
