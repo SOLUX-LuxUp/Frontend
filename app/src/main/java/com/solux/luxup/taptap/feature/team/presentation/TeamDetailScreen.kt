@@ -45,8 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
-import com.solux.luxup.taptap.feature.team.presentation.components.buttonIconRes
+import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
 import com.solux.luxup.taptap.feature.team.presentation.components.safeColor
 import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightScreen
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailScreen
@@ -60,10 +61,13 @@ fun TeamDetailScreen(
     initialMemberId: Long? = null,               // ← 추가: 프리뷰/딥링크용 초기 선택 멤버
     currentUserId: Long = 4L,                    // 임시 (로그인 유저 id, API 연결 시 교체)
     onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
+    onCreateButton: () -> Unit = {},
+    onOpenTeamSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
     var selectedMemberId by remember { mutableStateOf(initialMemberId) }
+    var showCreateOption by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
         bottomBar = {
@@ -86,7 +90,12 @@ fun TeamDetailScreen(
                         onExit()
                     }
                 },
-                onActionClick = { /* TODO: ADD → 버튼 생성, SETTINGS → 팀 설정 */ }
+                onActionClick = {
+                    when (selectedTab) {
+                        TeamDetailTab.MEMBER -> onOpenTeamSettings()
+                        else -> showCreateOption = true
+                    }
+                }
             )
             TeamDetailTabs(
                 selected = selectedTab,
@@ -117,6 +126,16 @@ fun TeamDetailScreen(
                     }
                 }
             }
+        }
+        if (showCreateOption) {
+            TeamButtonCreateOptionDialog(
+                onDismiss = { showCreateOption = false },
+                onSelectManual = {
+                    showCreateOption = false
+                    onCreateButton()
+                },
+                onSelectQuick = { showCreateOption = false },
+            )
         }
     }
 }
@@ -303,8 +322,7 @@ private fun RecentRecordBanner(button: TeamButton) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(buttonIconRes(button.iconName)),
-                contentDescription = null,
+                painter = painterResource(ButtonIcons.resOf(button.iconName)),                contentDescription = null,
                 tint = safeColor(button.iconColor, Color(0xFF2085FF)),
                 modifier = Modifier.size(32.dp)
             )
