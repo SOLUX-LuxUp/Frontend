@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.solux.luxup.taptap.core.util.iconPaletteColors
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.util.loadButtonIconResIds
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -51,7 +51,8 @@ fun IconSelectScreen(
     val context = LocalContext.current
     val iconResIds = remember { loadButtonIconResIds(context) }
     var selectedIconRes by remember { mutableStateOf(iconResIds.firstOrNull()) }
-    var selectedColor by remember { mutableStateOf(iconPaletteColors.first()) }
+    val paletteColors = remember { IconColor.palette.map { it.color } }
+    var selectedColor by remember { mutableStateOf(paletteColors.first()) }
 
     Column(
         modifier = Modifier
@@ -162,7 +163,7 @@ fun IconSelectScreen(
             Text("색상", fontSize = 14.sp, color = Color(0xFF6D6D6D))
             Spacer(Modifier.height(12.dp))
 
-            iconPaletteColors.chunked(6).forEach { row ->
+            paletteColors.chunked(6).forEach { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween

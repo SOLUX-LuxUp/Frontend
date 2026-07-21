@@ -94,7 +94,8 @@ fun MainHomeScreen(
     favoriteButtons: List<FavoriteButton> = mockFavoriteButtons,
     habitButtons: List<HabitButton> = mockHabitButtons,
     suggestions: List<RecommendedButton> = recommendedButtons,
-    onNavigateToCreateButton: () -> Unit = {}
+    onNavigateToCreateButton: () -> Unit = {},
+    onNavigateToButtonDetail: (button: HabitButton) -> Unit = {}
 ) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.HOME) }
 
@@ -223,8 +224,10 @@ fun MainHomeScreen(
             } else {
                 HabitButtonGrid(
                     buttons = filteredHabitButtons,
-                    onEditRecord = { /* TODO: 버튼 페이지로 이동하는 플로우 연결 (해당 화면 아직 없음) */ },
-                    onDeleteRecord = { button -> recordPendingDelete = button }
+                    onEditRecord = { /* TODO: 버튼 수정 화면으로 이동하는 플로우 연결 (해당 화면 아직 없음) */ },
+                    onDeleteRecord = { button -> recordPendingDelete = button },
+                    onQuickRecord = { /* TODO: 한 번 탭으로 바로 기록하는 API 연결 */ },
+                    onOpenDetail = onNavigateToButtonDetail
                 )
             }
 
