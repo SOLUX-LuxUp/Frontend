@@ -4,6 +4,7 @@ import com.solux.luxup.taptap.feature.team.model.ButtonRecord
 import com.solux.luxup.taptap.feature.team.model.MemberProfile
 import com.solux.luxup.taptap.feature.team.model.MyButtonPermission
 import com.solux.luxup.taptap.feature.team.model.TeamButtonDetail
+import com.solux.luxup.taptap.feature.team.model.TeamButtonPermissionRequest
 
 /**
  * GET /api/teams/{team_id}/buttons/{team_button_id} 응답 목데이터.
@@ -26,6 +27,9 @@ object MockTeamButtonDetail {
             permissionStatus = "granted",
             isNotificationEnabled = true,
         ),
+        canEdit = true,
+        canDelete = false,
+        isTeamOwner = true,
         categoryId = 1L,
         categoryName = "기획",
         allowedUserIds = listOf(1L, 2L, 4L),
@@ -36,5 +40,11 @@ object MockTeamButtonDetail {
         ),
         createdAt = "2025-05-01T09:00:00",
         updatedAt = "2025-05-23T14:32:00",
+    )
+
+    /** 탭 권한 요청 목록 (관리자 화면의 "권한 요청" 탭) */
+    val permissionRequests = listOf(
+        TeamButtonPermissionRequest(5L, "세희", null, "2025-05-23T14:32:00"),
+        TeamButtonPermissionRequest(6L, "정민", null, "2025-05-23T15:10:00"),
     )
 }
