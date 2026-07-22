@@ -26,7 +26,9 @@ import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashScreen
 import com.solux.luxup.taptap.feature.splash.presentation.SplashScreen
 import com.solux.luxup.taptap.feature.team.presentation.TeamDetailScreen
 import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonCreateRoute
+import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonEditRoute
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonCreateGraph
+import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonEditGraph
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -161,7 +163,10 @@ class MainActivity : ComponentActivity() {
                             onExit = { navController.popBackStack() },
                             onCreateButton = {
                                 navController.navigate(TeamButtonCreateRoute.graph(teamId))
-                            }
+                            },
+                            onEditButton = { buttonId ->
+                                navController.navigate(TeamButtonEditRoute.graph(teamId, buttonId))
+                            },
                         )
                     }
 
@@ -169,6 +174,12 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         currentUserId = 4L,   // TODO: 로그인 유저 id로 교체
                         onCreated = { navController.popBackStack() }
+                    )
+
+                    teamButtonEditGraph(
+                        navController = navController,
+                        currentUserId = 4L,
+                        onUpdated = { navController.popBackStack() }
                     )
                 }
             }

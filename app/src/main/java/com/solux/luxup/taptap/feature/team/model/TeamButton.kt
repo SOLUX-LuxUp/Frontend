@@ -1,8 +1,5 @@
 package com.solux.luxup.taptap.feature.team.model
 
-data class TeamButtonsResponse(
-    val buttons: List<TeamButton>
-)
 
 data class TeamButton(
     val teamButtonId: Long,

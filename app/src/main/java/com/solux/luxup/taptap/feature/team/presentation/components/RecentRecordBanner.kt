@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.util.formatTimeAgo
 import com.solux.luxup.taptap.core.util.formatTimeOfDay
 import com.solux.luxup.taptap.feature.team.model.ButtonRecord
@@ -60,7 +61,7 @@ fun RecentRecordBanner(button: TeamButton) {
         ) {
             Icon(
                 painter = painterResource(ButtonIcons.resOf(button.iconName)),                contentDescription = null,
-                tint = safeColor(button.iconColor, Color(0xFF2085FF)),
+                tint = IconColor.from(button.iconColor).color,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -94,7 +95,7 @@ private fun RecentRecordBannerPreview() {
     RecentRecordBanner(
         button = TeamButton(
             teamButtonId = 1, buttonName = "기획서 업데이트",
-            iconName = "book", iconColor = "#FFC107",
+            iconName = "book", iconColor = "yellow",
             tapPermission = "all",
             categoryId = 1, categoryName = "PROJECT", hasTapPermission = true,
             latestRecord = ButtonRecord(

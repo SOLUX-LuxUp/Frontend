@@ -1,21 +1,17 @@
 package com.solux.luxup.taptap.feature.team.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -37,7 +33,6 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,10 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
-import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
-import com.solux.luxup.taptap.feature.team.model.TeamButton
 import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
-import com.solux.luxup.taptap.feature.team.presentation.components.safeColor
 import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightScreen
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailScreen
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -63,6 +55,8 @@ fun TeamDetailScreen(
     onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
     onCreateButton: () -> Unit = {},
     onOpenTeamSettings: () -> Unit = {},
+    onEditButton: (Long) -> Unit = {},
+    onOpenButtonInfo: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
@@ -106,7 +100,11 @@ fun TeamDetailScreen(
             )
 
             when (selectedTab) {
-                TeamDetailTab.ACTIVITY -> TeamActivityScreen()
+                TeamDetailTab.ACTIVITY -> TeamActivityScreen(
+                    onNavigateToTimeline = { /* TODO: 타임라인 화면 */ },
+                    onNavigateToEdit = { onEditButton(it.teamButtonId) },
+                    onNavigateToInfo = { onOpenButtonInfo(it.teamButtonId) },
+                )
                 TeamDetailTab.INSIGHT  -> TeamInsightScreen(currentUserId = currentUserId)
                 TeamDetailTab.MEMBER   -> {
                     val memberId = selectedMemberId
@@ -298,58 +296,6 @@ private fun TeamDetailTabs(
     }
 }
 
-@Composable
-private fun RecentRecordBanner(button: TeamButton) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                Brush.horizontalGradient(
-                    listOf(BlueGradientStart, BlueGradientEnd)
-                )
-            )
-            .padding(16.dp, vertical = 24.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 왼쪽: 큰 아이콘 원
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(Color.White)
-                .border(1.dp, Color(0xFF7CCBFF), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(ButtonIcons.resOf(button.iconName)),                contentDescription = null,
-                tint = safeColor(button.iconColor, Color(0xFF2085FF)),
-                modifier = Modifier.size(32.dp)
-            )
-        }
-
-        Spacer(Modifier.width(16.dp))
-
-        // 오른쪽: 이름 + 시간 + last tapped by
-        Column {
-            Text(button.buttonName, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Spacer(Modifier.height(4.dp))
-            button.latestRecord?.let { record ->
-                Text(
-                    "27분 전  •  11:41 AM",     // TODO: recordedAt 변환
-                    fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.9f)
-                )
-                Spacer(Modifier.height(13.dp))
-                Text(
-                    "last tapped by  ${record.recordedBy.firstOrNull()?.displayName ?: ""}",
-                    fontSize = 12.sp,
-                    color = Color.White
-                )
-            }
-        }
-    }
-}
 
 // 활동 탭
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true, heightDp = 900)
