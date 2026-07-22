@@ -23,12 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.feature.team.data.MockTeamButtonCreate
+import com.solux.luxup.taptap.feature.team.data.MockTeamButtonDetail
 import com.solux.luxup.taptap.feature.team.model.TapPermission
 import com.solux.luxup.taptap.feature.team.model.TeamButtonCategory
 import com.solux.luxup.taptap.feature.team.model.TeamButtonForm
@@ -50,8 +49,8 @@ import com.solux.luxup.taptap.feature.team.presentation.button.components.FormTo
 private val ScreenPadding = 40.dp // 전 화면 공통 좌우 여백
 
 /**
- * 팀 버튼 만들기 (8.1.1)
- * 진입: TeamActivityScreen 우상단 + 아이콘
+ * 팀 버튼 만들기 (8.1.1) / 팀 버튼 수정 (8.1.3)
+ * 폼이 동일해 화면을 공유하고, title과 ViewModel만 교체한다.
  *
  * NOTE: 아이콘 선택 / 멤버 권한 설정이 별도 화면이라 form 상태는 반드시 이 화면 바깥
  *  (nested nav graph 스코프 ViewModel 또는 savedStateHandle)에서 들고 있어야
@@ -71,6 +70,8 @@ fun TeamButtonCreateScreen(
     onIconClick: () -> Unit,
     onMemberSelectClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** 생성 "팀 버튼 만들기" / 수정 "팀 버튼 수정" */
+    title: String = "팀 버튼 만들기",
     bottomBar: @Composable () -> Unit = {},
 ) {
     Column(
@@ -79,7 +80,7 @@ fun TeamButtonCreateScreen(
             .background(Color.White),
     ) {
         FormTopBar(
-            title = "팀 버튼 만들기",
+            title = title,
             onBack = onBack,
             onConfirm = onConfirm,
             confirmEnabled = confirmEnabled,
@@ -241,6 +242,27 @@ private fun TeamButtonCreateScreenCustomPreview() {
         )
     }
     TeamButtonCreateScreen(
+        form = form,
+        categories = MockTeamButtonCreate.categories,
+        confirmEnabled = form.canSubmit,
+        onNameChange = { form = form.copy(name = it) },
+        onDescriptionChange = { form = form.copy(description = it) },
+        onCategorySelect = { form = form.copy(category = it) },
+        onTapPermissionChange = { form = form.copy(tapPermission = it) },
+        onBack = {},
+        onConfirm = {},
+        onIconClick = {},
+        onMemberSelectClick = {},
+    )
+}
+
+/** 팀 버튼 수정 — 상세 조회 값으로 채워진 상태 */
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Composable
+private fun TeamButtonEditScreenPreview() {
+    var form by remember { mutableStateOf(MockTeamButtonDetail.detail.toForm()) }
+    TeamButtonCreateScreen(
+        title = "팀 버튼 수정",
         form = form,
         categories = MockTeamButtonCreate.categories,
         confirmEnabled = form.canSubmit,

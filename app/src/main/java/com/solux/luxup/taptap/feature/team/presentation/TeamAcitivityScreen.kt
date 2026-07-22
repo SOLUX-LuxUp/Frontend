@@ -70,8 +70,8 @@ fun TeamActivityScreen(
 
         TeamButtonList(
             buttons = mockTeamButtons,
-            onButtonClick = onNavigateToTimeline,
-            onButtonLongClick = onNavigateToEdit,
+            onButtonClick = onRecordTap,        // 짧게 → 탭 기록
+            onButtonLongClick = onNavigateToTimeline,   // 길게 → 타임라인
             onButtonMenuClick = { menuTarget = it },
         )
     }
