@@ -31,6 +31,8 @@ import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonInfoRou
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonCreateGraph
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonEditGraph
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonInfoScreen
+import com.solux.luxup.taptap.feature.team.presentation.button.timeline.TeamButtonTimelineRoute
+import com.solux.luxup.taptap.feature.team.presentation.button.timeline.teamButtonTimelineScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -178,6 +180,10 @@ class MainActivity : ComponentActivity() {
                             onOpenButtonInfo = { buttonId ->
                                 navController.navigate(TeamButtonInfoRoute.route(teamId, buttonId))
                             },
+                            // 길게 누르기 → 타임라인
+                            onOpenButtonTimeline = { buttonId ->
+                                navController.navigate(TeamButtonTimelineRoute.route(teamId, buttonId))
+                            },
                         )
                     }
 
@@ -197,6 +203,12 @@ class MainActivity : ComponentActivity() {
 
                     // 팀 버튼 정보 — 관리자/비관리자 분기, 우상단 아이콘으로 수정 진입
                     teamButtonInfoScreen(
+                        navController = navController,
+                        currentUserId = 4L,
+                    )
+
+                    // 팀 버튼 타임라인 — 목록에서 길게 누르기로 진입
+                    teamButtonTimelineScreen(
                         navController = navController,
                         currentUserId = 4L,
                     )
