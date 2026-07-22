@@ -212,8 +212,9 @@ private fun TimelineTopBar(
             tint = Color(0xFFB1B1B1),
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .size(30.dp)
-                .clickable(onClick = onBack),
+                .clickable(onClick = onBack)
+                .padding(4.dp)
+                .size(30.dp),
         )
         Icon(
             painter = painterResource(R.drawable.ic_edit),

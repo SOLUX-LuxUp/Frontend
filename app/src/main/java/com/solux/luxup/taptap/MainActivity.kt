@@ -193,6 +193,7 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val teamId = backStackEntry.arguments?.getLong("teamId") ?: 0L
                         TeamDetailScreen(
+                            teamId = teamId,
                             onExit = { navController.popBackStack() },
                             // + → 직접 만들기
                             onCreateButton = {
