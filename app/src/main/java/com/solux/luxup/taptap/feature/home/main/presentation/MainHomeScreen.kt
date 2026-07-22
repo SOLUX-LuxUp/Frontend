@@ -95,7 +95,8 @@ fun MainHomeScreen(
     habitButtons: List<HabitButton> = mockHabitButtons,
     suggestions: List<RecommendedButton> = recommendedButtons,
     onNavigateToCreateButton: () -> Unit = {},
-    onNavigateToButtonDetail: (button: HabitButton) -> Unit = {}
+    onNavigateToButtonDetail: (button: HabitButton) -> Unit = {},
+    onNavItemSelected: (BottomNavItem) -> Unit = {}
 ) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.HOME) }
 
@@ -134,7 +135,13 @@ fun MainHomeScreen(
     Scaffold(
         containerColor = BaseWhiteColor,
         bottomBar = {
-            BottomNavBar(selected = selectedNavItem, onItemSelected = { selectedNavItem = it })
+            BottomNavBar(
+                selected = selectedNavItem,
+                onItemSelected = { item ->
+                    selectedNavItem = item
+                    onNavItemSelected(item)
+                }
+            )
         }
     ) { innerPadding ->
         Column(
@@ -203,17 +210,18 @@ fun MainHomeScreen(
             Spacer(Modifier.height(30.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CategoryDropdown(
-                    modifier = Modifier.width(80.dp),
                     categories = manageableCategories + "ALL",
                     onCategorySelected = { selectedCategory = it },
                     onEditCategoriesClick = { showCategoryEditDialog = true }
                 )
+                Spacer(Modifier.width(16.dp))
                 SearchBar(
-                    modifier = Modifier.offset(x = 20.dp),
+                    modifier = Modifier.weight(1f),
+                    fillWidth = true,
+                    horizontalMargin = 0.dp,
                     placeholder = "버튼 검색"
                 )
             }
