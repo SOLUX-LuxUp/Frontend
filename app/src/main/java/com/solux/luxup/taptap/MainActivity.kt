@@ -27,8 +27,10 @@ import com.solux.luxup.taptap.feature.splash.presentation.SplashScreen
 import com.solux.luxup.taptap.feature.team.presentation.TeamDetailScreen
 import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonCreateRoute
 import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonEditRoute
+import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonInfoRoute
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonCreateGraph
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonEditGraph
+import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonInfoScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +39,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TapTapTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "splash") {
+                NavHost(navController = navController, startDestination = "teamDetail/1") {
                     composable("splash") {
                         SplashScreen(
                             onNavigateToLogin = {
@@ -154,6 +156,9 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+                    // ---- 팀 스페이스 ----
+
+                    // 팀 상세 — 활동·인사이트·멤버 탭 셸
                     composable(
                         "teamDetail/{teamId}",
                         arguments = listOf(navArgument("teamId") { type = NavType.LongType })
@@ -161,25 +166,39 @@ class MainActivity : ComponentActivity() {
                         val teamId = backStackEntry.arguments?.getLong("teamId") ?: 0L
                         TeamDetailScreen(
                             onExit = { navController.popBackStack() },
+                            // + → 직접 만들기
                             onCreateButton = {
                                 navController.navigate(TeamButtonCreateRoute.graph(teamId))
                             },
+                            // 버튼 정보 화면의 수정 아이콘에서 진입하므로 현재는 미사용
                             onEditButton = { buttonId ->
                                 navController.navigate(TeamButtonEditRoute.graph(teamId, buttonId))
+                            },
+                            // ⋮ → 버튼 정보
+                            onOpenButtonInfo = { buttonId ->
+                                navController.navigate(TeamButtonInfoRoute.route(teamId, buttonId))
                             },
                         )
                     }
 
+                    // 팀 버튼 생성 — 만들기 / 아이콘 선택 / 멤버 권한 설정 (ViewModel 공유)
                     teamButtonCreateGraph(
                         navController = navController,
                         currentUserId = 4L,   // TODO: 로그인 유저 id로 교체
                         onCreated = { navController.popBackStack() }
                     )
 
+                    // 팀 버튼 수정 — 생성 화면을 공유하고 상세 조회로 초기값을 채운다
                     teamButtonEditGraph(
                         navController = navController,
                         currentUserId = 4L,
                         onUpdated = { navController.popBackStack() }
+                    )
+
+                    // 팀 버튼 정보 — 관리자/비관리자 분기, 우상단 아이콘으로 수정 진입
+                    teamButtonInfoScreen(
+                        navController = navController,
+                        currentUserId = 4L,
                     )
                 }
             }

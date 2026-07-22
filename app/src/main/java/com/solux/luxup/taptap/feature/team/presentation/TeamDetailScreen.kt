@@ -101,8 +101,8 @@ fun TeamDetailScreen(
 
             when (selectedTab) {
                 TeamDetailTab.ACTIVITY -> TeamActivityScreen(
+                    onRecordTap = { /* TODO: POST .../records */ },
                     onNavigateToTimeline = { /* TODO: 타임라인 화면 */ },
-                    onNavigateToEdit = { onEditButton(it.teamButtonId) },
                     onNavigateToInfo = { onOpenButtonInfo(it.teamButtonId) },
                 )
                 TeamDetailTab.INSIGHT  -> TeamInsightScreen(currentUserId = currentUserId)

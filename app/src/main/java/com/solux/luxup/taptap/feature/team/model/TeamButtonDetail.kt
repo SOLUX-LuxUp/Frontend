@@ -17,6 +17,12 @@ data class TeamButtonDetail(
     val isActive: Boolean,
     val createdBy: MemberProfile,
     val myPermission: MyButtonPermission,
+    /** 팀 설정 buttonEditPermission + 생성자/팀장 여부 반영 */
+    val canEdit: Boolean,
+    /** 팀 설정 buttonDeletePermission + 생성자/팀장 여부 반영 */
+    val canDelete: Boolean,
+    /** 관리자/비관리자 화면 분기용 */
+    val isTeamOwner: Boolean,
     val categoryId: Long?,
     val categoryName: String?,
     val allowedUserIds: List<Long>,
@@ -24,6 +30,13 @@ data class TeamButtonDetail(
     val createdAt: String,
     val updatedAt: String,
 ) {
+    /**
+     * 버튼 정보 화면의 관리자 화면(권한 승인·거부 탭)을 볼 수 있는지.
+     * 팀장이거나 이 버튼을 만든 사람.
+     */
+    fun isManager(currentUserId: Long): Boolean =
+        isTeamOwner || createdBy.userId == currentUserId
+
     /** 수정 화면 초기값으로 변환 */
     fun toForm(): TeamButtonForm = TeamButtonForm(
         name = buttonName,
@@ -54,3 +67,21 @@ data class MyButtonPermission(
     val permissionStatus: String?,
     val isNotificationEnabled: Boolean,
 )
+
+/**
+ * 탭 권한 요청 목록 조회 응답.
+ * TODO(백엔드): URL 확인 필요
+ */
+data class TeamButtonPermissionRequest(
+    val userId: Long,
+    val displayName: String,
+    val profileImageUrl: String?,
+    val requestedAt: String,
+)
+
+/** myPermission.permissionStatus 값 */
+object PermissionStatus {
+    const val GRANTED = "granted"
+    const val PENDING = "pending"
+    const val DENIED = "denied"
+}
