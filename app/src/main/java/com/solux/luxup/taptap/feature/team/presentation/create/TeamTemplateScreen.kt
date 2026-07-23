@@ -38,6 +38,7 @@ import com.solux.luxup.taptap.feature.team.data.mockTeamCreateResult
 import com.solux.luxup.taptap.feature.team.data.mockTeamTemplates
 import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
 import com.solux.luxup.taptap.feature.team.model.TeamTemplate
+import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
 
 /**
  * 팀의 방향을 정하는 화면.
@@ -68,7 +69,7 @@ fun TeamTemplateScreen(
     ) {
         Spacer(modifier = Modifier.height(56.dp))
 
-        TemplateTeamProfile(
+        TeamProfileCircle(
             imageUrl = team.teamImageUrl,
             iconName = team.iconName,
             iconColor = team.iconColor,
@@ -174,42 +175,6 @@ private fun TemplateCard(
     }
 }
 
-@Composable
-private fun TemplateTeamProfile(
-    imageUrl: String?,
-    iconName: String?,
-    iconColor: String?,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(80.dp)
-            .clip(CircleShape)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEDEDED), CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        when {
-            imageUrl != null -> AsyncImage(
-                model = imageUrl,
-                contentDescription = "팀 이미지",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-            )
-
-            iconName != null -> Icon(
-                painter = painterResource(TeamIcon.from(iconName).resId),
-                contentDescription = null,
-                tint = IconColor.from(iconColor).color,
-                modifier = Modifier.size(40.dp),
-            )
-
-            else -> Unit
-        }
-    }
-}
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 720)
 @Composable

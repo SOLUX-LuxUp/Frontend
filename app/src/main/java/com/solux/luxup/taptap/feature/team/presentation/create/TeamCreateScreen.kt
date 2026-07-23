@@ -48,10 +48,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.solux.luxup.taptap.core.ui.components.BackArrowIcon
+import com.solux.luxup.taptap.core.ui.components.ConfirmCheckIcon
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.ui.theme.TeamIcon
 import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
+import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
 
 /**
  * 팀 만들기 화면.
@@ -85,9 +88,12 @@ fun TeamCreateScreen(
                 .padding(horizontal = 40.dp),
             contentAlignment = Alignment.Center,
         ) {
-            BackArrow(
-                onClick = onBackClick,
-                modifier = Modifier.align(Alignment.CenterStart),
+            BackArrowIcon(
+                tint = Color(0xFFB1B1B1),
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(31.02.dp)
+                    .clickable(onClick = onBackClick),
             )
 
             Text(
@@ -97,10 +103,11 @@ fun TeamCreateScreen(
                 color = Color(0xFF1A1A1A),
             )
 
-            ConfirmButton(
-                onClick = onConfirmClick,
-                enabled = !isSubmitting,
-                modifier = Modifier.align(Alignment.CenterEnd),
+            ConfirmCheckIcon(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(28.dp)
+                    .clickable(onClick = onConfirmClick),
             )
         }
 
@@ -115,7 +122,7 @@ fun TeamCreateScreen(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
-                TeamProfileSlot(
+                TeamProfileCircle(
                     imageUrl = form.teamImageUrl,
                     iconName = form.iconName,
                     iconColor = form.iconColor,
@@ -177,56 +184,6 @@ fun TeamCreateScreen(
     }
 }
 
-/**
- * 팀 프로필. 이미지 / 아이콘 / 미설정 3분기.
- * 탭하면 "이미지로 설정 / 아이콘으로 설정" 모달이 열린다.
- */
-@Composable
-private fun TeamProfileSlot(
-    imageUrl: String?,
-    iconName: String?,
-    iconColor: String?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(120.dp)
-            .clip(CircleShape)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEDEDED), CircleShape)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        when {
-            imageUrl != null -> AsyncImage(
-                model = imageUrl,
-                contentDescription = "팀 이미지",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-            )
-
-            iconName != null -> Icon(
-                painter = painterResource(TeamIcon.from(iconName).resId),
-                contentDescription = null,
-                tint = IconColor.from(iconColor).color,
-                modifier = Modifier.size(56.dp),
-            )
-
-            else -> Text(
-                text = "+",
-                fontSize = 28.sp,
-                color = Color(0xFFBDBDBD),
-            )
-        }
-    }
-}
 
 /**
  * 최대 인원 휠 피커. 5단위 스텝, 5~30.
@@ -295,99 +252,7 @@ fun MaxMemberPicker(
     }
 }
 
-/** TODO: ic_arrow_back SVG 확정 시 painterResource 로 교체 */
-@Composable
-private fun BackArrow(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(32.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(modifier = Modifier.size(18.dp)) {
-            val lineColor = Color(0xFF616161)
-            val stroke = 2.dp.toPx()
-            drawLine(
-                color = lineColor,
-                start = Offset(size.width, size.height / 2),
-                end = Offset(0f, size.height / 2),
-                strokeWidth = stroke,
-                cap = StrokeCap.Round,
-            )
-            drawLine(
-                color = lineColor,
-                start = Offset(0f, size.height / 2),
-                end = Offset(size.width * 0.4f, size.height * 0.15f),
-                strokeWidth = stroke,
-                cap = StrokeCap.Round,
-            )
-            drawLine(
-                color = lineColor,
-                start = Offset(0f, size.height / 2),
-                end = Offset(size.width * 0.4f, size.height * 0.85f),
-                strokeWidth = stroke,
-                cap = StrokeCap.Round,
-            )
-        }
-    }
-}
 
-/** TODO: ic_check SVG 확정 시 painterResource 로 교체 */
-@Composable
-private fun ConfirmButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(28.dp)
-            .clip(CircleShape)
-            .background(
-                if (enabled) {
-                    Brush.horizontalGradient(
-                        listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
-                    )
-                } else {
-                    Brush.horizontalGradient(
-                        listOf(Color(0xFFBDBDBD), Color(0xFFBDBDBD))
-                    )
-                }
-            )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                enabled = enabled,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(modifier = Modifier.size(14.dp)) {
-            val stroke = 2.dp.toPx()
-            drawLine(
-                color = Color.White,
-                start = Offset(0f, size.height * 0.55f),
-                end = Offset(size.width * 0.38f, size.height * 0.85f),
-                strokeWidth = stroke,
-                cap = StrokeCap.Round,
-            )
-            drawLine(
-                color = Color.White,
-                start = Offset(size.width * 0.38f, size.height * 0.85f),
-                end = Offset(size.width, size.height * 0.2f),
-                strokeWidth = stroke,
-                cap = StrokeCap.Round,
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 720)
 @Composable

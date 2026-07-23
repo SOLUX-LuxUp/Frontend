@@ -34,11 +34,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.solux.luxup.taptap.core.ui.components.ConfirmCheckIcon
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.ui.theme.TeamIcon
 import com.solux.luxup.taptap.feature.team.data.mockTeamCreateResult
 import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
+import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
 
 /**
  * 팀 생성 직후 초대코드를 공유하는 화면.
@@ -67,7 +69,12 @@ fun TeamInviteCodeScreen(
                 .padding(horizontal = 40.dp),
             contentAlignment = Alignment.CenterEnd,
         ) {
-            InviteConfirmButton(onClick = onConfirmClick)
+            ConfirmCheckIcon(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(28.dp)
+                    .clickable(onClick = onConfirmClick),
+            )
         }
 
         Column(
@@ -78,7 +85,7 @@ fun TeamInviteCodeScreen(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            InviteTeamProfile(
+            TeamProfileCircle(
                 imageUrl = team.teamImageUrl,
                 iconName = team.iconName,
                 iconColor = team.iconColor,
@@ -150,84 +157,7 @@ fun TeamInviteCodeScreen(
     }
 }
 
-@Composable
-private fun InviteTeamProfile(
-    imageUrl: String?,
-    iconName: String?,
-    iconColor: String?,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(90.dp)
-            .clip(CircleShape)
-            .background(Color.White)
-            .border(1.dp, Color(0xFFEDEDED), CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        when {
-            imageUrl != null -> AsyncImage(
-                model = imageUrl,
-                contentDescription = "팀 이미지",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-            )
 
-            iconName != null -> Icon(
-                painter = painterResource(TeamIcon.from(iconName).resId),
-                contentDescription = null,
-                tint = IconColor.from(iconColor).color,
-                modifier = Modifier.size(44.dp),
-            )
-
-            else -> Unit
-        }
-    }
-}
-
-/** TODO: ic_check SVG 확정 시 painterResource 로 교체 */
-@Composable
-private fun InviteConfirmButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(28.dp)
-            .clip(CircleShape)
-            .background(
-                Brush.horizontalGradient(
-                    listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
-                )
-            )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(modifier = Modifier.size(14.dp)) {
-            val stroke = 2.dp.toPx()
-            drawLine(
-                color = Color.White,
-                start = Offset(0f, size.height * 0.55f),
-                end = Offset(size.width * 0.38f, size.height * 0.85f),
-                strokeWidth = stroke,
-                cap = StrokeCap.Round,
-            )
-            drawLine(
-                color = Color.White,
-                start = Offset(size.width * 0.38f, size.height * 0.85f),
-                end = Offset(size.width, size.height * 0.2f),
-                strokeWidth = stroke,
-                cap = StrokeCap.Round,
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 720)
 @Composable
