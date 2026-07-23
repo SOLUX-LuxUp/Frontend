@@ -1,13 +1,11 @@
-package com.solux.luxup.taptap.feature.team.presentation.activity
+package com.solux.luxup.taptap.feature.team.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -35,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.components.SectionCard
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
@@ -58,22 +56,19 @@ fun TeamFirstButtonSection(
     onSuggestionClick: (TeamButtonSuggestion) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(12.dp))
-            .padding(vertical = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    SectionCard(
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
     ) {
         Text(
             text = "첫 번째 버튼을 만들어보세요",
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF1A1A1A),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
         )
 
-        if (suggestions.isEmpty()) return@Column
+        if (suggestions.isEmpty()) return@SectionCard
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -86,12 +81,10 @@ fun TeamFirstButtonSection(
             mutableStateOf(categories.firstOrNull().orEmpty())
         }
 
+        // 탭은 최대 4개(가족/친구/연인/기타)라 가로 스크롤 없이 가운데 정렬
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         ) {
             categories.forEach { category ->
                 CategoryTab(
@@ -114,8 +107,7 @@ fun TeamFirstButtonSection(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 200.dp)
-                .padding(horizontal = 16.dp),
+                .heightIn(max = 200.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             items(filtered) { suggestion ->
@@ -144,7 +136,7 @@ private fun CategoryTab(
                 indication = null,
                 onClick = onClick,
             )
-            .padding(horizontal = 14.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Text(
             text = label,
