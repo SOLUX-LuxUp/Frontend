@@ -1,7 +1,6 @@
 package com.solux.luxup.taptap.feature.team.presentation.create
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -59,6 +58,8 @@ import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
  *
  * 확인(✓) → POST /api/teams → teamId·inviteCode 수신 후 초대코드 공유 화면으로 이동.
  * 프로필 원 탭 → 이미지/아이콘 선택 모달 (호출부에서 처리)
+ *
+ * 색상·치수는 사용처에 직접 기입. Figma 값 확정 시 해당 위치에서 수정.
  */
 @Composable
 fun TeamCreateScreen(
@@ -76,16 +77,37 @@ fun TeamCreateScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
-        TeamCreateTopBar(
-            onBackClick = onBackClick,
-            onConfirmClick = onConfirmClick,
-            isConfirmEnabled = !isSubmitting,
-        )
+        // 상단바
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 40.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            BackArrow(
+                onClick = onBackClick,
+                modifier = Modifier.align(Alignment.CenterStart),
+            )
+
+            Text(
+                text = "팀 만들기",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1A1A1A),
+            )
+
+            ConfirmButton(
+                onClick = onConfirmClick,
+                enabled = !isSubmitting,
+                modifier = Modifier.align(Alignment.CenterEnd),
+            )
+        }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = HorizontalPadding),
+                .padding(horizontal = 40.dp),
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -103,63 +125,55 @@ fun TeamCreateScreen(
 
             Spacer(modifier = Modifier.height(44.dp))
 
-            FieldLabel(text = "팀 이름")
-            Spacer(modifier = Modifier.height(8.dp))
-            TeamNameField(
-                value = form.teamName,
-                onValueChange = {
-                    onTeamNameChange(it.take(TeamCreateForm.MAX_TEAM_NAME_LENGTH))
-                },
+            // 팀 이름
+            Text(
+                text = "팀 이름",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF616161),
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                BasicTextField(
+                    value = form.teamName,
+                    onValueChange = {
+                        onTeamNameChange(it.take(TeamCreateForm.MAX_TEAM_NAME_LENGTH))
+                    },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 15.sp, color = Color(0xFF1A1A1A)),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            FieldLabel(text = "인원 제한")
+            // 인원 제한
+            Text(
+                text = "인원 제한",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF616161),
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "최대", fontSize = 15.sp, color = LabelColor)
+                Text(text = "최대", fontSize = 15.sp, color = Color(0xFF616161))
                 MaxMemberPicker(
                     value = form.maxMember,
                     onValueChange = onMaxMemberChange,
                     modifier = Modifier.padding(horizontal = 12.dp),
                 )
-                Text(text = "명", fontSize = 15.sp, color = LabelColor)
+                Text(text = "명", fontSize = 15.sp, color = Color(0xFF616161))
             }
         }
-    }
-}
-
-@Composable
-private fun TeamCreateTopBar(
-    onBackClick: () -> Unit,
-    onConfirmClick: () -> Unit,
-    isConfirmEnabled: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .padding(horizontal = HorizontalPadding),
-        contentAlignment = Alignment.Center,
-    ) {
-        BackArrow(
-            onClick = onBackClick,
-            modifier = Modifier.align(Alignment.CenterStart),
-        )
-
-        Text(
-            text = "팀 만들기",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = TextColor,
-        )
-
-        ConfirmButton(
-            onClick = onConfirmClick,
-            enabled = isConfirmEnabled,
-            modifier = Modifier.align(Alignment.CenterEnd),
-        )
     }
 }
 
@@ -177,10 +191,10 @@ private fun TeamProfileSlot(
 ) {
     Box(
         modifier = modifier
-            .size(ProfileSize)
+            .size(120.dp)
             .clip(CircleShape)
             .background(Color.White)
-            .border(1.dp, ProfileBorderColor, CircleShape)
+            .border(1.dp, Color(0xFFEDEDED), CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -192,7 +206,9 @@ private fun TeamProfileSlot(
             imageUrl != null -> AsyncImage(
                 model = imageUrl,
                 contentDescription = "팀 이미지",
-                modifier = Modifier.fillMaxSize().clip(CircleShape),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
                 contentScale = ContentScale.Crop,
             )
 
@@ -200,55 +216,15 @@ private fun TeamProfileSlot(
                 painter = painterResource(TeamIcon.from(iconName).resId),
                 contentDescription = null,
                 tint = IconColor.from(iconColor).color,
-                modifier = Modifier.size(ProfileIconSize),
+                modifier = Modifier.size(56.dp),
             )
 
             else -> Text(
                 text = "+",
                 fontSize = 28.sp,
-                color = PlaceholderColor,
+                color = Color(0xFFBDBDBD),
             )
         }
-    }
-}
-
-@Composable
-private fun FieldLabel(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Medium,
-        color = LabelColor,
-        modifier = modifier,
-    )
-}
-
-@Composable
-private fun TeamNameField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            textStyle = TextStyle(fontSize = 15.sp, color = TextColor),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            modifier = Modifier.fillMaxWidth(),
-        )
     }
 }
 
@@ -262,8 +238,11 @@ fun MaxMemberPicker(
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val itemHeight = 32.dp
+    val visibleCount = 3
+
     val options = TeamCreateForm.MAX_MEMBER_OPTIONS
-    val itemHeightPx = with(LocalDensity.current) { PickerItemHeight.toPx() }
+    val itemHeightPx = with(LocalDensity.current) { itemHeight.toPx() }
 
     val initialIndex = remember { options.indexOf(value).coerceAtLeast(0) }
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
@@ -285,14 +264,14 @@ fun MaxMemberPicker(
     Box(
         modifier = modifier
             .width(64.dp)
-            .height(PickerItemHeight * VISIBLE_ITEM_COUNT)
+            .height(itemHeight * visibleCount)
             .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(10.dp)),
+            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(10.dp)),
     ) {
         LazyColumn(
             state = listState,
             flingBehavior = rememberSnapFlingBehavior(listState),
-            contentPadding = PaddingValues(vertical = PickerItemHeight),
+            contentPadding = PaddingValues(vertical = itemHeight),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize(),
         ) {
@@ -301,14 +280,14 @@ fun MaxMemberPicker(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(PickerItemHeight),
+                        .height(itemHeight),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = option.toString(),
                         fontSize = if (isSelected) 16.sp else 13.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isSelected) TextColor else UnselectedGray,
+                        color = if (isSelected) Color(0xFF1A1A1A) else Color(0xFFBDBDBD),
                     )
                 }
             }
@@ -333,23 +312,24 @@ private fun BackArrow(
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.size(18.dp)) {
+            val lineColor = Color(0xFF616161)
             val stroke = 2.dp.toPx()
             drawLine(
-                color = LabelColor,
+                color = lineColor,
                 start = Offset(size.width, size.height / 2),
                 end = Offset(0f, size.height / 2),
                 strokeWidth = stroke,
                 cap = StrokeCap.Round,
             )
             drawLine(
-                color = LabelColor,
+                color = lineColor,
                 start = Offset(0f, size.height / 2),
                 end = Offset(size.width * 0.4f, size.height * 0.15f),
                 strokeWidth = stroke,
                 cap = StrokeCap.Round,
             )
             drawLine(
-                color = LabelColor,
+                color = lineColor,
                 start = Offset(0f, size.height / 2),
                 end = Offset(size.width * 0.4f, size.height * 0.85f),
                 strokeWidth = stroke,
@@ -372,9 +352,13 @@ private fun ConfirmButton(
             .clip(CircleShape)
             .background(
                 if (enabled) {
-                    Brush.horizontalGradient(listOf(GradientStart, GradientEnd))
+                    Brush.horizontalGradient(
+                        listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
+                    )
                 } else {
-                    Brush.horizontalGradient(listOf(DisabledGray, DisabledGray))
+                    Brush.horizontalGradient(
+                        listOf(Color(0xFFBDBDBD), Color(0xFFBDBDBD))
+                    )
                 }
             )
             .clickable(
@@ -404,24 +388,6 @@ private fun ConfirmButton(
         }
     }
 }
-
-private const val VISIBLE_ITEM_COUNT = 3
-
-// TODO: Figma Inspect 값 확정 후 교체
-private val HorizontalPadding = 40.dp
-private val ProfileSize = 120.dp
-private val ProfileIconSize = 56.dp
-private val PickerItemHeight = 32.dp
-
-private val TextColor = Color(0xFF1A1A1A)
-private val LabelColor = Color(0xFF616161)
-private val PlaceholderColor = Color(0xFFBDBDBD)
-private val BorderColor = Color(0xFFE0E0E0)
-private val ProfileBorderColor = Color(0xFFEDEDED)
-private val UnselectedGray = Color(0xFFBDBDBD)
-private val DisabledGray = Color(0xFFBDBDBD)
-private val GradientStart = Color(0xFF4BB4FF)
-private val GradientEnd = Color(0xFF2085FF)
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 720)
 @Composable
