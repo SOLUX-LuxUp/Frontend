@@ -18,6 +18,9 @@ data class TeamCreateForm(
     companion object {
         const val DEFAULT_MAX_MEMBER = 10
         const val MAX_TEAM_NAME_LENGTH = 20
+        /** 기획 확정: 아이콘·이미지 미설정 시 1번 아이콘 + 블루 */
+        const val DEFAULT_ICON_NAME = "people"
+        const val DEFAULT_ICON_COLOR = "blue"
 
         /** 기획 확정: 5단위 스텝, 5~30 */
         val MAX_MEMBER_OPTIONS = listOf(5, 10, 15, 20, 25, 30)

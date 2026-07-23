@@ -83,10 +83,11 @@ fun TeamProfileCircle(
                 modifier = Modifier.size(iconSize),
             )
 
-            else -> Text(
-                text = "+",
-                fontSize = 32.sp,
-                color = Color(0xFFBDBDBD),
+            else -> Icon(
+                painter = painterResource(TeamIcon.DEFAULT.resId),
+                contentDescription = null,
+                tint = IconColor.DEFAULT.color,
+                modifier = Modifier.size(iconSize),
             )
         }
     }

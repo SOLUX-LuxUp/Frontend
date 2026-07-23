@@ -1,11 +1,9 @@
 package com.solux.luxup.taptap.feature.team.presentation.create
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,16 +13,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,35 +29,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.solux.luxup.taptap.core.ui.components.BackArrowIcon
-import com.solux.luxup.taptap.core.ui.components.ConfirmCheckIcon
-import com.solux.luxup.taptap.core.ui.theme.IconColor
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
-import com.solux.luxup.taptap.core.ui.theme.TeamIcon
 import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
+import com.solux.luxup.taptap.feature.team.presentation.button.components.FormLabel
+import com.solux.luxup.taptap.feature.team.presentation.button.components.FormTextField
+import com.solux.luxup.taptap.feature.team.presentation.button.components.FormTopBar
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
 
+private val ScreenPadding = 40.dp // 전 화면 공통 좌우 여백
+
 /**
- * 팀 만들기 화면.
+ * 팀 만들기 (8.0.2)
  *
  * 확인(✓) → POST /api/teams → teamId·inviteCode 수신 후 초대코드 공유 화면으로 이동.
  * 프로필 원 탭 → 이미지/아이콘 선택 모달 (호출부에서 처리)
  *
- * 색상·치수는 사용처에 직접 기입. Figma 값 확정 시 해당 위치에서 수정.
+ * 레이아웃은 팀 버튼 만들기(TeamButtonCreateScreen)와 통일한다.
+ * 인원 제한은 화면 안 휠에서 바로 선택한다. (모달 방식은 TeamMaxMemberModal 에 보관)
  */
 @Composable
 fun TeamCreateScreen(
@@ -70,8 +60,8 @@ fun TeamCreateScreen(
     onTeamNameChange: (String) -> Unit,
     onMaxMemberChange: (Int) -> Unit,
     onProfileClick: () -> Unit,
-    onBackClick: () -> Unit,
-    onConfirmClick: () -> Unit,
+    onBack: () -> Unit,
+    onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
     isSubmitting: Boolean = false,
 ) {
@@ -80,110 +70,69 @@ fun TeamCreateScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
-        // 상단바
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .padding(horizontal = 40.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            BackArrowIcon(
-                tint = Color(0xFFB1B1B1),
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(31.02.dp)
-                    .clickable(onClick = onBackClick),
-            )
-
-            Text(
-                text = "팀 만들기",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1A1A1A),
-            )
-
-            ConfirmCheckIcon(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(28.dp)
-                    .clickable(onClick = onConfirmClick),
-            )
-        }
+        FormTopBar(
+            title = "팀 만들기",
+            onBack = onBack,
+            onConfirm = onConfirm,
+            confirmEnabled = !isSubmitting,
+        )
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 40.dp),
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = ScreenPadding),
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(63.dp))
 
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                TeamProfileCircle(
-                    imageUrl = form.teamImageUrl,
-                    iconName = form.iconName,
-                    iconColor = form.iconColor,
-                    onClick = onProfileClick,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(44.dp))
-
-            // 팀 이름
-            Text(
-                text = "팀 이름",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF616161),
+            // 프로필 미리보기 — 탭하면 이미지/아이콘 선택 모달
+            TeamProfileCircle(
+                imageUrl = form.teamImageUrl,
+                iconName = form.iconName,
+                iconColor = form.iconColor,
+                onClick = onProfileClick,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                BasicTextField(
-                    value = form.teamName,
-                    onValueChange = {
-                        onTeamNameChange(it.take(TeamCreateForm.MAX_TEAM_NAME_LENGTH))
-                    },
-                    singleLine = true,
-                    textStyle = TextStyle(fontSize = 15.sp, color = Color(0xFF1A1A1A)),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(Modifier.height(36.dp))
 
-            // 인원 제한
-            Text(
-                text = "인원 제한",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF616161),
+            FormLabel("팀 이름")
+            Spacer(Modifier.height(8.dp))
+            FormTextField(
+                value = form.teamName,
+                onValueChange = onTeamNameChange,
+                placeholder = "새로운 팀",
+                maxLength = TeamCreateForm.MAX_TEAM_NAME_LENGTH,
             )
-            Spacer(modifier = Modifier.height(12.dp))
+
+            Spacer(Modifier.height(20.dp))
+
+            FormLabel("인원 제한")
+            Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "최대", fontSize = 15.sp, color = Color(0xFF616161))
+                Text(
+                    text = "최대",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF6D6D6D),
+                )
                 MaxMemberPicker(
                     value = form.maxMember,
                     onValueChange = onMaxMemberChange,
-                    modifier = Modifier.padding(horizontal = 12.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp),
                 )
-                Text(text = "명", fontSize = 15.sp, color = Color(0xFF616161))
+                Text(
+                    text = "명",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF6D6D6D),
+                )
             }
+
+            Spacer(Modifier.height(40.dp))
         }
     }
 }
-
 
 /**
  * 최대 인원 휠 피커. 5단위 스텝, 5~30.
@@ -195,8 +144,9 @@ fun MaxMemberPicker(
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val itemHeight = 32.dp
+    val itemHeight = 29.33.dp    // 88 / 3
     val visibleCount = 3
+    val boxWidth = 98.dp
 
     val options = TeamCreateForm.MAX_MEMBER_OPTIONS
     val itemHeightPx = with(LocalDensity.current) { itemHeight.toPx() }
@@ -220,10 +170,11 @@ fun MaxMemberPicker(
 
     Box(
         modifier = modifier
-            .width(64.dp)
+            .width(boxWidth)
             .height(itemHeight * visibleCount)
+            .figmaDropShadow(cornerRadius = 10.dp)
             .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(10.dp)),
+            .background(Color.White),
     ) {
         LazyColumn(
             state = listState,
@@ -242,19 +193,40 @@ fun MaxMemberPicker(
                 ) {
                     Text(
                         text = option.toString(),
-                        fontSize = if (isSelected) 16.sp else 13.sp,
+                        fontSize = if (isSelected) 16.sp else 14.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isSelected) Color(0xFF1A1A1A) else Color(0xFFBDBDBD),
+                        color = if (isSelected) Color(0xFF1A1A1A) else Color(0xFFB1B1B1),
                     )
                 }
             }
         }
+
+        // 선택 영역 표시 — 가운데 칸 위아래 구분선. 좌우로 살짝 들어가 있다
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp),
+        ) {
+            Spacer(Modifier.height(itemHeight))
+            SelectionDivider()
+            Spacer(Modifier.height(itemHeight))
+            SelectionDivider()
+        }
     }
 }
 
+@Composable
+private fun SelectionDivider() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(Color(0xFF6D6D6D)),
+    )
+}
 
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 720)
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun TeamCreateScreenEmptyPreview() {
     PreviewContainer {
@@ -263,13 +235,13 @@ private fun TeamCreateScreenEmptyPreview() {
             onTeamNameChange = {},
             onMaxMemberChange = {},
             onProfileClick = {},
-            onBackClick = {},
-            onConfirmClick = {},
+            onBack = {},
+            onConfirm = {},
         )
     }
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 720)
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun TeamCreateScreenFilledPreview() {
     PreviewContainer {
@@ -283,8 +255,8 @@ private fun TeamCreateScreenFilledPreview() {
             onTeamNameChange = {},
             onMaxMemberChange = {},
             onProfileClick = {},
-            onBackClick = {},
-            onConfirmClick = {},
+            onBack = {},
+            onConfirm = {},
         )
     }
 }

@@ -13,6 +13,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 import com.solux.luxup.taptap.core.ui.components.OptionItem
 import com.solux.luxup.taptap.core.ui.components.OptionSelectModal
 
@@ -58,8 +61,8 @@ fun NavGraphBuilder.teamCreateGraph(
                 onTeamNameChange = viewModel::updateTeamName,
                 onMaxMemberChange = viewModel::updateMaxMember,
                 onProfileClick = { showSourceModal = true },
-                onBackClick = { navController.popBackStack() },
-                onConfirmClick = {
+                onBack = { navController.popBackStack() },
+                onConfirm = {
                     viewModel.createTeam {
                         navController.navigate(TeamCreateRoute.INVITE_CODE)
                     }
@@ -99,11 +102,20 @@ fun NavGraphBuilder.teamCreateGraph(
         composable(TeamCreateRoute.INVITE_CODE) { backStackEntry ->
             val viewModel = backStackEntry.sharedCreateViewModel(navController)
             val team = viewModel.createdTeam ?: return@composable
+            val context = LocalContext.current
 
             TeamInviteCodeScreen(
                 team = team,
                 onShareClick = { code ->
-                    // TODO: 공유 인텐트 연결
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "TAPTAP에서 '${team.teamName}' 팀에 초대받았어요!\n" +
+                                    "앱에서 아래 코드를 입력해 참여해보세요.\n\n$code",
+                        )
+                    }
+                    context.startActivity(Intent.createChooser(intent, "팀 코드 공유하기"))
                 },
                 onConfirmClick = {
                     navController.navigate(TeamCreateRoute.TEMPLATE) {
