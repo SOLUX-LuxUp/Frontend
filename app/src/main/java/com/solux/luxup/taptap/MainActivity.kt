@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
@@ -26,6 +29,11 @@ import com.solux.luxup.taptap.feature.home.main.presentation.CreateButtonScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.IconSelectScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.MainHomeScreen
 import com.solux.luxup.taptap.feature.home.template.presentation.OnboardingTemplateScreen
+import com.solux.luxup.taptap.feature.insight.daily.data.MockInsightDaily
+import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightDailyScreen
+import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightRatioAllScreen
+import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightTimelineAllScreen
+import com.solux.luxup.taptap.feature.insight.daily.util.shiftDate
 import com.solux.luxup.taptap.feature.notification.presentation.NotificationScreen
 import com.solux.luxup.taptap.ui.theme.TapTapTheme
 import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashScreen
@@ -49,7 +57,7 @@ private fun NavController.navigateToTab(item: BottomNavItem) {
         BottomNavItem.NOTIFICATION -> "notification"
         BottomNavItem.TEAM -> "teamDetail/$CURRENT_TEAM_ID"
         BottomNavItem.SETTINGS -> "accountSettings"
-        BottomNavItem.RECORD -> return // TODO: 기록 라우트 연결
+        BottomNavItem.RECORD -> "insightDaily"
     }
     navigate(route) {
         popUpTo("mainHome") { saveState = true }
@@ -129,6 +137,59 @@ class MainActivity : ComponentActivity() {
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             }
+                        )
+                    }
+                    composable("insightDaily") {
+                        var targetDate by remember { mutableStateOf(MockInsightDaily.targetDate) }
+                        InsightDailyScreen(
+                            data = MockInsightDaily.copy(targetDate = targetDate),
+                            onNavigateToTimelineAll = {
+                                navController.navigate("insightTimelineAll")
+                            },
+                            onNavigateToRatioAll = {
+                                navController.navigate("insightRatioAll")
+                            },
+                            onNavigateToButtonDetail = {
+                                // TODO: 선택한 기록의 버튼 상세로 이동
+                                navController.navigate("buttonDetail")
+                            },
+                            onDeleteRecord = {
+                                // TODO: 기록 삭제 API 연결
+                            },
+                            onPrevDay = { targetDate = targetDate.shiftDate(-1) },
+                            onNextDay = { targetDate = targetDate.shiftDate(1) },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    composable("insightTimelineAll") {
+                        var targetDate by remember { mutableStateOf(MockInsightDaily.targetDate) }
+                        InsightTimelineAllScreen(
+                            targetDate = targetDate,
+                            timeline = MockInsightDaily.timeline,
+                            onBack = { navController.popBackStack() },
+                            onNavigateToButtonDetail = {
+                                // TODO: 선택한 기록의 버튼 상세로 이동
+                                navController.navigate("buttonDetail")
+                            },
+                            onDeleteRecord = {
+                                // TODO: 기록 삭제 API 연결
+                            },
+                            onPrevDay = { targetDate = targetDate.shiftDate(-1) },
+                            onNextDay = { targetDate = targetDate.shiftDate(1) }
+                        )
+                    }
+                    composable("insightRatioAll") {
+                        var targetDate by remember { mutableStateOf(MockInsightDaily.targetDate) }
+                        InsightRatioAllScreen(
+                            targetDate = targetDate,
+                            categoryTapCounts = MockInsightDaily.categoryTapCounts,
+                            buttonTapCounts = MockInsightDaily.buttonTapCounts,
+                            totalTapCount = MockInsightDaily.totalTapCount,
+                            onBack = { navController.popBackStack() },
+                            onPrevDay = { targetDate = targetDate.shiftDate(-1) },
+                            onNextDay = { targetDate = targetDate.shiftDate(1) }
                         )
                     }
                     composable("accountSettings") {
