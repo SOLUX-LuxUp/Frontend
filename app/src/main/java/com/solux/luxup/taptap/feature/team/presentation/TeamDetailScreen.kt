@@ -48,6 +48,7 @@ import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 @Composable
 fun TeamDetailScreen(
+    teamId: Long = 0L,
     teamName: String = "LUX-UP",
     initialTab: TeamDetailTab = TeamDetailTab.ACTIVITY,
     initialMemberId: Long? = null,               // ← 추가: 프리뷰/딥링크용 초기 선택 멤버
@@ -57,6 +58,7 @@ fun TeamDetailScreen(
     onOpenTeamSettings: () -> Unit = {},
     onEditButton: (Long) -> Unit = {},
     onOpenButtonInfo: (Long) -> Unit = {},
+    onOpenButtonTimeline: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
@@ -100,9 +102,10 @@ fun TeamDetailScreen(
             )
 
             when (selectedTab) {
-                TeamDetailTab.ACTIVITY -> TeamActivityScreen(
-                    onRecordTap = { /* TODO: POST .../records */ },
-                    onNavigateToTimeline = { /* TODO: 타임라인 화면 */ },
+                TeamDetailTab.ACTIVITY -> TeamActivityRoute(
+                    teamId = teamId,
+                    currentUserId = currentUserId,
+                    onNavigateToTimeline = { onOpenButtonTimeline(it.teamButtonId) },
                     onNavigateToInfo = { onOpenButtonInfo(it.teamButtonId) },
                 )
                 TeamDetailTab.INSIGHT  -> TeamInsightScreen(currentUserId = currentUserId)

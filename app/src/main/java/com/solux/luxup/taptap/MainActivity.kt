@@ -13,6 +13,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.navigation.NavController
+import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.auth.login.presentation.LoginScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupEmailScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupPasswordScreen
@@ -21,6 +23,7 @@ import com.solux.luxup.taptap.feature.home.main.presentation.CreateButtonScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.IconSelectScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.MainHomeScreen
 import com.solux.luxup.taptap.feature.home.template.presentation.OnboardingTemplateScreen
+import com.solux.luxup.taptap.feature.notification.presentation.NotificationScreen
 import com.solux.luxup.taptap.ui.theme.TapTapTheme
 import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashScreen
 import com.solux.luxup.taptap.feature.splash.presentation.SplashScreen
@@ -31,6 +34,21 @@ import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonInfoRou
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonCreateGraph
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonEditGraph
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonInfoScreen
+import com.solux.luxup.taptap.feature.team.presentation.button.timeline.TeamButtonTimelineRoute
+import com.solux.luxup.taptap.feature.team.presentation.button.timeline.teamButtonTimelineScreen
+
+private fun NavController.navigateToTab(item: BottomNavItem) {
+    val route = when (item) {
+        BottomNavItem.HOME -> "mainHome"
+        BottomNavItem.NOTIFICATION -> "notification"
+        BottomNavItem.TEAM, BottomNavItem.RECORD, BottomNavItem.SETTINGS -> return // TODO: 팀/기록/설정 라우트 연결
+    }
+    navigate(route) {
+        popUpTo("mainHome") { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +103,9 @@ class MainActivity : ComponentActivity() {
                             onNavigateToButtonDetail = {
                                 // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
                                 navController.navigate("buttonDetail")
+                            },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
                             }
                         )
                     }
@@ -92,6 +113,13 @@ class MainActivity : ComponentActivity() {
                         ButtonDetailScreen(
                             onNavigateBack = {
                                 navController.popBackStack()
+                            }
+                        )
+                    }
+                    composable("notification") {
+                        NotificationScreen(
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
                             }
                         )
                     }
@@ -165,6 +193,7 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val teamId = backStackEntry.arguments?.getLong("teamId") ?: 0L
                         TeamDetailScreen(
+                            teamId = teamId,
                             onExit = { navController.popBackStack() },
                             // + → 직접 만들기
                             onCreateButton = {
@@ -177,6 +206,10 @@ class MainActivity : ComponentActivity() {
                             // ⋮ → 버튼 정보
                             onOpenButtonInfo = { buttonId ->
                                 navController.navigate(TeamButtonInfoRoute.route(teamId, buttonId))
+                            },
+                            // 길게 누르기 → 타임라인
+                            onOpenButtonTimeline = { buttonId ->
+                                navController.navigate(TeamButtonTimelineRoute.route(teamId, buttonId))
                             },
                         )
                     }
@@ -197,6 +230,12 @@ class MainActivity : ComponentActivity() {
 
                     // 팀 버튼 정보 — 관리자/비관리자 분기, 우상단 아이콘으로 수정 진입
                     teamButtonInfoScreen(
+                        navController = navController,
+                        currentUserId = 4L,
+                    )
+
+                    // 팀 버튼 타임라인 — 목록에서 길게 누르기로 진입
+                    teamButtonTimelineScreen(
                         navController = navController,
                         currentUserId = 4L,
                     )
