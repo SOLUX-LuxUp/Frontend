@@ -15,6 +15,9 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.NavController
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.feature.auth.account.presentation.AccountInfoScreen
+import com.solux.luxup.taptap.feature.auth.account.presentation.AccountSettingsScreen
+import com.solux.luxup.taptap.feature.auth.account.presentation.ChangePasswordScreen
 import com.solux.luxup.taptap.feature.auth.login.presentation.LoginScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupEmailScreen
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupPasswordScreen
@@ -37,11 +40,16 @@ import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonInfoScr
 import com.solux.luxup.taptap.feature.team.presentation.button.timeline.TeamButtonTimelineRoute
 import com.solux.luxup.taptap.feature.team.presentation.button.timeline.teamButtonTimelineScreen
 
+// TODO: 로그인 유저가 속한 팀 id로 교체 (현재는 임시 고정값)
+private const val CURRENT_TEAM_ID = 1L
+
 private fun NavController.navigateToTab(item: BottomNavItem) {
     val route = when (item) {
         BottomNavItem.HOME -> "mainHome"
         BottomNavItem.NOTIFICATION -> "notification"
-        BottomNavItem.TEAM, BottomNavItem.RECORD, BottomNavItem.SETTINGS -> return // TODO: 팀/기록/설정 라우트 연결
+        BottomNavItem.TEAM -> "teamDetail/$CURRENT_TEAM_ID"
+        BottomNavItem.SETTINGS -> "accountSettings"
+        BottomNavItem.RECORD -> return // TODO: 기록 라우트 연결
     }
     navigate(route) {
         popUpTo("mainHome") { saveState = true }
@@ -57,7 +65,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TapTapTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "teamDetail/1") {
+                NavHost(navController = navController, startDestination = "splash") {
                     composable("splash") {
                         SplashScreen(
                             onNavigateToLogin = {
@@ -118,6 +126,39 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("notification") {
                         NotificationScreen(
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    composable("accountSettings") {
+                        AccountSettingsScreen(
+                            onNavigateToAccountInfo = {
+                                navController.navigate("accountInfo")
+                            },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    composable("accountInfo") {
+                        AccountInfoScreen(
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                            onNavigateToChangePassword = {
+                                navController.navigate("changePassword")
+                            }
+                        )
+                    }
+                    composable("changePassword") {
+                        ChangePasswordScreen(
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                            onChangeComplete = {
+                                navController.popBackStack()
+                            },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             }
@@ -184,9 +225,10 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
                     // ---- 팀 스페이스 ----
 
-                    // 팀 상세 — 활동·인사이트·멤버 탭 셸
+                    // 팀 상세 — 활동·인사이트·멤버 탭 셸 (하단 네비 TEAM 탭 진입점)
                     composable(
                         "teamDetail/{teamId}",
                         arguments = listOf(navArgument("teamId") { type = NavType.LongType })
@@ -210,6 +252,9 @@ class MainActivity : ComponentActivity() {
                             // 길게 누르기 → 타임라인
                             onOpenButtonTimeline = { buttonId ->
                                 navController.navigate(TeamButtonTimelineRoute.route(teamId, buttonId))
+                            },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
                             },
                         )
                     }

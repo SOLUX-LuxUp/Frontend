@@ -59,6 +59,7 @@ fun TeamDetailScreen(
     onEditButton: (Long) -> Unit = {},
     onOpenButtonInfo: (Long) -> Unit = {},
     onOpenButtonTimeline: (Long) -> Unit = {},
+    onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
@@ -67,7 +68,7 @@ fun TeamDetailScreen(
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            BottomNavBar(selected = BottomNavItem.TEAM, onItemSelected = {})
+            BottomNavBar(selected = BottomNavItem.TEAM, onItemSelected = onNavItemSelected)
         },
         containerColor = Color.White
     ) { innerPadding ->
