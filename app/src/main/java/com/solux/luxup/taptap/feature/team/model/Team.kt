@@ -6,6 +6,7 @@ data class Team(
     val teamImageUrl: String?,      // 이미지로 설정 시
     val iconName: String?,          // 아이콘으로 설정 시 ("exercise")
     val iconColor: String?,         // 아이콘 색상 ("red")
+    val isOwner: Boolean,
     val isFavorite: Boolean,
     val maxMember: Int,
     val memberCount: Int,

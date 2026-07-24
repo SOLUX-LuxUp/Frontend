@@ -2,6 +2,7 @@ package com.solux.luxup.taptap.feature.team.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,10 +50,13 @@ private val RecordBlue = Color(0xFF4C9AFF)
 fun TeamCard(
     team: Team,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
     onFavoriteClick: () -> Unit = {}
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFEFE)),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -228,6 +232,7 @@ private fun TeamCardIconPreview() {
                 teamImageUrl = null,
                 iconName = "exercise",
                 iconColor = "blue",
+                isOwner = true,
                 isFavorite = true,
                 maxMember = 30,
                 memberCount = 6,
@@ -254,6 +259,7 @@ private fun TeamCardDefaultProfilePreview() {
                 teamImageUrl = null,
                 iconName = null,
                 iconColor = null,
+                isOwner = false,
                 isFavorite = false,
                 maxMember = 20,
                 memberCount = 4,

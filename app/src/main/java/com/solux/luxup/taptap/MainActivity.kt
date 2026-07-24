@@ -47,6 +47,9 @@ import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonEditGra
 import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonInfoScreen
 import com.solux.luxup.taptap.feature.team.presentation.button.timeline.TeamButtonTimelineRoute
 import com.solux.luxup.taptap.feature.team.presentation.button.timeline.teamButtonTimelineScreen
+import com.solux.luxup.taptap.feature.team.presentation.TeamListScreen
+import com.solux.luxup.taptap.feature.team.presentation.create.TeamCreateRoute
+import com.solux.luxup.taptap.feature.team.presentation.create.teamCreateGraph
 
 // TODO: 로그인 유저가 속한 팀 id로 교체 (현재는 임시 고정값)
 private const val CURRENT_TEAM_ID = 1L
@@ -55,7 +58,7 @@ private fun NavController.navigateToTab(item: BottomNavItem) {
     val route = when (item) {
         BottomNavItem.HOME -> "mainHome"
         BottomNavItem.NOTIFICATION -> "notification"
-        BottomNavItem.TEAM -> "teamDetail/$CURRENT_TEAM_ID"
+        BottomNavItem.TEAM -> "teamList"
         BottomNavItem.SETTINGS -> "accountSettings"
         BottomNavItem.RECORD -> "insightDaily"
     }
@@ -288,6 +291,23 @@ class MainActivity : ComponentActivity() {
                     }
 
                     // ---- 팀 스페이스 ----
+                    // 팀 목록 — 하단 네비 TEAM 탭 진입점
+                    composable("teamList") {
+                        TeamListScreen(
+                            onNavigateToTeamCreate = {
+                                navController.navigate(TeamCreateRoute.GRAPH)
+                            },
+                            onNavigateToTeamDetail = { teamId ->
+                                navController.navigate("teamDetail/$teamId")
+                            },
+                            onJoinTeam = { code ->
+                                // TODO: POST /api/teams/join 연동
+                            },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
+                            },
+                        )
+                    }
 
                     // 팀 상세 — 활동·인사이트·멤버 탭 셸 (하단 네비 TEAM 탭 진입점)
                     composable(
@@ -319,6 +339,15 @@ class MainActivity : ComponentActivity() {
                             },
                         )
                     }
+                    // 팀 생성 — 만들기 / 초대코드 공유 / 템플릿 선택 (ViewModel 공유)
+                    teamCreateGraph(
+                        navController = navController,
+                        onFinish = { teamId ->
+                            navController.navigate("teamDetail/$teamId") {
+                                popUpTo("teamList")
+                            }
+                        },
+                    )
 
                     // 팀 버튼 생성 — 만들기 / 아이콘 선택 / 멤버 권한 설정 (ViewModel 공유)
                     teamButtonCreateGraph(
