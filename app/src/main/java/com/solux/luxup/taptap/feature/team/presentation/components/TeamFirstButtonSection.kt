@@ -62,9 +62,9 @@ fun TeamFirstButtonSection(
     ) {
         Text(
             text = "첫 번째 버튼을 만들어보세요",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF1A1A1A),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF6D6D6D),
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
 

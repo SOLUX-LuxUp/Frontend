@@ -225,7 +225,7 @@ private fun EmptyRecordBanner(modifier: Modifier = Modifier) {
         ) {
             Text(
                 text = "아직 기록이 없어요",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
             )
