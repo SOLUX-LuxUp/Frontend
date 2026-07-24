@@ -16,10 +16,9 @@ import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.feature.team.data.mockTeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingRow
+import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingSpec
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingTopBar
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingValueText
-
-private val ScreenPadding = 40.dp
 
 /**
  * 팀 관리 화면. 팀 설정 → 팀 관리 로 진입하며 팀장만 접근한다.
@@ -44,10 +43,10 @@ fun TeamManageScreen(
         SettingTopBar(
             title = "팀 관리",
             onBack = onBack,
-            modifier = Modifier.padding(horizontal = ScreenPadding),
+            modifier = Modifier.padding(horizontal = SettingSpec.ScreenPadding),
         )
 
-        Column(modifier = Modifier.padding(horizontal = ScreenPadding)) {
+        Column(modifier = Modifier.padding(horizontal = SettingSpec.ScreenPadding)) {
             Spacer(Modifier.height(24.dp))
 
             // 시안에는 화살표 없이 "최대 N명" 만 있지만, 팀원 관리 페이지로 이동한다.
@@ -72,7 +71,7 @@ fun TeamManageScreen(
             SettingRow(
                 label = "팀 삭제하기",
                 trailing = { ChevronRightIcon(tint = Color(0xFFFF9B9B)) },
-                labelColor = Color(0xFFFF6B6B),
+                labelColor = SettingSpec.DangerColor,
                 onClick = onDeleteTeamClick,
             )
         }

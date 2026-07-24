@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.solux.luxup.taptap.R
 
@@ -25,12 +26,13 @@ import com.solux.luxup.taptap.R
 fun BackArrowIcon(
     modifier: Modifier = Modifier,
     tint: Color = Color(0xFF8E8E93),
+    size: Dp = 24.dp,
 ) {
     Image(
         painter = painterResource(R.drawable.ic_arrow_back),
         contentDescription = "뒤로 가기",
         colorFilter = ColorFilter.tint(tint),
-        modifier = modifier.size(24.dp),
+        modifier = modifier.size(size),
     )
 }
 
@@ -47,17 +49,19 @@ fun ChevronDownIcon(
     )
 }
 
-/** 설정 행 오른쪽 화살표 */
+/** 설정 행 오른쪽 화살표. 시안 기준 14 x 25 */
 @Composable
 fun ChevronRightIcon(
     modifier: Modifier = Modifier,
     tint: Color = Color(0xFF8E8E93),
+    width: Dp = 14.dp,
+    height: Dp = 25.dp,
 ) {
     Image(
         painter = painterResource(R.drawable.ic_right),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
-        modifier = modifier.size(20.dp),
+        modifier = modifier.size(width = width, height = height),
     )
 }
 
@@ -79,12 +83,13 @@ fun SearchIcon(
 fun InfoIcon(
     modifier: Modifier = Modifier,
     tint: Color = Color(0xFF8E8E93),
+    size: Dp = 18.dp,
 ) {
     Image(
         painter = painterResource(R.drawable.ic_information),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
-        modifier = modifier.size(18.dp),
+        modifier = modifier.size(size),
     )
 }
 
@@ -93,12 +98,13 @@ fun InfoIcon(
 fun BellIcon(
     modifier: Modifier = Modifier,
     tint: Color = Color(0xFF8E8E93),
+    size: Dp = 18.dp,
 ) {
     Image(
         painter = painterResource(R.drawable.ic_bell),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
-        modifier = modifier.size(18.dp),
+        modifier = modifier.size(size),
     )
 }
 
@@ -107,12 +113,13 @@ fun BellIcon(
 fun InviteIcon(
     modifier: Modifier = Modifier,
     tint: Color = Color(0xFF8E8E93),
+    size: Dp = 18.dp,
 ) {
     Image(
         painter = painterResource(R.drawable.ic_invite),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
-        modifier = modifier.size(18.dp),
+        modifier = modifier.size(size),
     )
 }
 
@@ -121,29 +128,31 @@ fun InviteIcon(
 fun LeaveIcon(
     modifier: Modifier = Modifier,
     tint: Color = Color(0xFFFF6B6B),
+    size: Dp = 18.dp,
 ) {
     Image(
         painter = painterResource(R.drawable.ic_out),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
-        modifier = modifier.size(18.dp),
+        modifier = modifier.size(size),
     )
 }
 
 /**
  * 우상단 확인 버튼. SVG에 파란 원이 포함된 형태라 tint 없이 그대로 그리고,
- * 비활성 상태는 alpha로 처리한다.
+ * 비활성 상태는 alpha로 처리한다. 시안 기준 28dp.
  */
 @Composable
 fun ConfirmCheckIcon(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    size: Dp = 28.dp,
 ) {
     Image(
         painter = painterResource(R.drawable.ic_confirm_check),
         contentDescription = "확인",
         modifier = modifier
-            .size(26.dp)
+            .size(size)
             .alpha(if (enabled) 1f else 0.35f),
     )
 }

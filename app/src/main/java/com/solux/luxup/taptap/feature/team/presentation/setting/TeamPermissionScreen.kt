@@ -20,11 +20,10 @@ import com.solux.luxup.taptap.feature.team.data.mockTeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamButtonPermission
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingRow
+import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingSpec
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingTopBar
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingValueText
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.TeamPermissionSelectModal
-
-private val ScreenPadding = 40.dp
 
 /** 어떤 권한을 수정 중인지 */
 enum class TeamPermissionTarget {
@@ -37,6 +36,7 @@ enum class TeamPermissionTarget {
  * 팀 권한 관리 화면. 팀 관리 → 팀 권한 관리 로 진입하며 팀장만 접근한다.
  *
  * 세 항목 모두 PATCH /api/teams/{team_id}/settings 하나로 갱신한다.
+ * 부분 업데이트라 바뀐 필드 하나만 보내면 된다.
  */
 @Composable
 fun TeamPermissionScreen(
@@ -55,10 +55,10 @@ fun TeamPermissionScreen(
         SettingTopBar(
             title = "팀 권한 관리",
             onBack = onBack,
-            modifier = Modifier.padding(horizontal = ScreenPadding),
+            modifier = Modifier.padding(horizontal = SettingSpec.ScreenPadding),
         )
 
-        Column(modifier = Modifier.padding(horizontal = ScreenPadding)) {
+        Column(modifier = Modifier.padding(horizontal = SettingSpec.ScreenPadding)) {
             Spacer(Modifier.height(24.dp))
 
             SettingRow(

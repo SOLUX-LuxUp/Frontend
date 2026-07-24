@@ -54,13 +54,12 @@ import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamInviteCodeModal
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingRow
+import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingSpec
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingSwitch
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingTopBar
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingValueText
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.TeamLeaveConfirmModal
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.TeamMaxMemberModal
-
-private val ScreenPadding = 40.dp
 
 /**
  * 팀 설정 화면. 멤버 탭 우측 상단 톱니바퀴로 진입한다.
@@ -103,16 +102,16 @@ fun TeamSettingScreen(
         SettingTopBar(
             title = "팀 설정",
             onBack = onBack,
-            modifier = Modifier.padding(horizontal = ScreenPadding),
+            modifier = Modifier.padding(horizontal = SettingSpec.ScreenPadding),
         )
 
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = ScreenPadding),
+                .padding(horizontal = SettingSpec.ScreenPadding),
         ) {
-            Spacer(Modifier.height(36.dp))
+            Spacer(Modifier.height(52.dp))
 
             TeamProfileHeader(
                 teamName = settings.teamName,
@@ -125,7 +124,7 @@ fun TeamSettingScreen(
                 onTeamNameChange = onTeamNameChange,
             )
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(38.dp))
 
             // 팀 규모 — 팀장만 수정 가능
             SettingRow(
@@ -175,7 +174,7 @@ fun TeamSettingScreen(
                     label = "팀 나가기",
                     leadingIcon = { LeaveIcon() },
                     trailing = { ChevronRightIcon(tint = Color(0xFFFF9B9B)) },
-                    labelColor = Color(0xFFFF6B6B),
+                    labelColor = SettingSpec.DangerColor,
                     onClick = { showLeaveModal = true },
                 )
             }
@@ -273,7 +272,7 @@ private fun TeamProfileHeader(
             onClick = { if (isOwner) onProfileClick() },
         )
 
-        Spacer(Modifier.width(20.dp))
+        Spacer(Modifier.width(30.dp))
 
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -286,11 +285,11 @@ private fun TeamProfileHeader(
                             .focusRequester(focusRequester),
                         singleLine = true,
                         textStyle = TextStyle(
-                            fontSize = 24.sp,
+                            fontSize = 25.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1A1A1A),
                         ),
-                        cursorBrush = SolidColor(Color(0xFF2680EB)),
+                        cursorBrush = SolidColor(Color(0xFF2085FF)),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { commitName() }),
                     )
@@ -299,7 +298,7 @@ private fun TeamProfileHeader(
                         text = "확인",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF2680EB),
+                        color = Color(0xFF2085FF),
                         modifier = Modifier.clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
@@ -308,7 +307,7 @@ private fun TeamProfileHeader(
                 } else {
                     Text(
                         text = teamName,
-                        fontSize = 24.sp,
+                        fontSize = 25.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A1A1A),
                     )
@@ -331,13 +330,13 @@ private fun TeamProfileHeader(
                 }
             }
 
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
 
             Text(
                 text = "멤버 ${memberCount}명",
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF9E9E9E),
+                color = Color(0xFF6D6D6D),
             )
         }
     }

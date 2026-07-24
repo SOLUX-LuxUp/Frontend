@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,8 +40,7 @@ import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.feature.team.data.mockTeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
-
-private val ScreenPadding = 40.dp
+import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingSpec
 
 /**
  * 팀 삭제 확인 화면. 모달이 아니라 전체 화면이다.
@@ -70,10 +69,11 @@ fun TeamDeleteScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .padding(horizontal = ScreenPadding),
+                .padding(horizontal = SettingSpec.ScreenPadding),
             contentAlignment = Alignment.CenterStart,
         ) {
             BackArrowIcon(
+                size = SettingSpec.BackIconSize,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -86,28 +86,32 @@ fun TeamDeleteScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = ScreenPadding),
+                .padding(horizontal = SettingSpec.ScreenPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(62.dp))
 
             Text(
                 text = "정말 팀을 삭제할까요?",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp,
+                lineHeight = 22.sp,
+                fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF1A1A1A),
+                textAlign = TextAlign.Center,
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(14.dp))
 
             Text(
                 text = "삭제 결정 후, 3일 뒤 팀이 삭제됩니다",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                lineHeight = 14.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF6D6D6D),
+                textAlign = TextAlign.Center,
             )
 
-            Spacer(Modifier.height(36.dp))
+            Spacer(Modifier.height(38.dp))
 
             TeamProfileCircle(
                 imageUrl = settings.teamImageUrl,
@@ -116,110 +120,117 @@ fun TeamDeleteScreen(
                 onClick = {},
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(14.dp))
 
             Text(
                 text = settings.teamName,
-                fontSize = 24.sp,
+                fontSize = 25.sp,
+                lineHeight = 25.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1A1A1A),
             )
 
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
 
             Text(
                 text = "멤버 ${settings.memberCount}명",
-                fontSize = 13.sp,
+                fontSize = 14.sp,
+                lineHeight = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF9E9E9E),
+                color = Color(0xFF6D6D6D),
             )
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(38.dp))
 
             Text(
                 text = "팀에 저장된 모든 기록이 삭제됩니다\n" +
                         "팀을 삭제하면 복구할 수 없습니다\n" +
                         "팀의 모든 멤버에게 안내가 발송됩니다",
-                fontSize = 12.sp,
-                lineHeight = 20.sp,
+                fontSize = 14.sp,
+                lineHeight = 22.sp,
+                fontWeight = FontWeight.Medium,
                 color = Color(0xFF6D6D6D),
                 textAlign = TextAlign.Center,
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(20.dp))
 
             Row(
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                 ) { agreed = !agreed },
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier = Modifier
-                        .size(14.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(if (agreed) Color(0xFFF08A8A) else Color.White)
-                        .border(1.dp, Color(0xFFF08A8A), RoundedCornerShape(3.dp)),
+                        .size(12.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(if (agreed) Color(0xFFF6989C) else Color.White)
+                        .border(1.dp, Color(0xFFF6989C), RoundedCornerShape(2.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    if (agreed) CheckMarkIcon(modifier = Modifier.size(10.dp))
+                    if (agreed) CheckMarkIcon(modifier = Modifier.size(9.dp))
                 }
 
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(6.dp))
 
                 Text(
                     text = "주의사항을 확인했으며\n[${settings.teamName}]을 삭제합니다",
-                    fontSize = 11.sp,
-                    lineHeight = 17.sp,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    fontWeight = FontWeight.Medium,
                     color = Color(0xFF6D6D6D),
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(48.dp))
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                DeletePrimaryButton(
-                    label = "팀 삭제",
-                    enabled = agreed,
-                    onClick = onDeleteTeam,
-                )
-                DeleteSecondaryButton(
-                    label = "취소",
-                    onClick = onBack,
-                )
-            }
+            DeleteActionButton(
+                label = "팀 삭제",
+                enabled = agreed,
+                onClick = onDeleteTeam,
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            DeleteActionButton(
+                label = "취소",
+                enabled = true,
+                onClick = onBack,
+            )
 
             Spacer(Modifier.height(40.dp))
         }
     }
 }
 
-/** 동의 전에는 회색, 동의하면 푸른 그라데이션 */
+/**
+ * 97 x 33 알약 버튼. 평소 #D9D9D9, 누르는 동안만 파란 그라데이션.
+ */
 @Composable
-private fun DeletePrimaryButton(
+private fun DeleteActionButton(
     label: String,
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // TODO Figma 그라데이션 값 확정되면 교체
-    val background = if (enabled) {
-        Brush.horizontalGradient(listOf(Color(0xFF5AB0FF), Color(0xFF2680EB)))
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+
+    val background = if (pressed && enabled) {
+        Brush.horizontalGradient(listOf(Color(0xFF4BB4FF), Color(0xFF2085FF)))
     } else {
-        Brush.horizontalGradient(listOf(Color(0xFFC4C4C4), Color(0xFFC4C4C4)))
+        Brush.horizontalGradient(listOf(Color(0xFFD9D9D9), Color(0xFFD9D9D9)))
     }
 
     Box(
         modifier = modifier
-            .size(width = 110.dp, height = 38.dp)
-            .clip(RoundedCornerShape(100.dp))
+            .size(width = 97.dp, height = 33.dp)
+            .clip(RoundedCornerShape(16.5.dp))
             .background(background)
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled,
                 onClick = onClick,
@@ -229,35 +240,9 @@ private fun DeletePrimaryButton(
         Text(
             text = label,
             fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.White,
-        )
-    }
-}
-
-@Composable
-private fun DeleteSecondaryButton(
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(width = 110.dp, height = 38.dp)
-            .clip(RoundedCornerShape(100.dp))
-            .background(Color(0xFFD9D9D9))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.White,
+            lineHeight = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black,
         )
     }
 }
