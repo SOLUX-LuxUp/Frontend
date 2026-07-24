@@ -34,36 +34,52 @@ import com.solux.luxup.taptap.core.ui.theme.Pretendard
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
-private enum class InsightPeriod(val label: String) {
+enum class InsightPeriod(val label: String) {
     DAILY("Daily"), WEEKLY("Weekly"), MONTHLY("Monthly")
 }
 
-/** "레포트" 타이틀 + Daily/Weekly/Monthly 토글 (⚠ Weekly/Monthly 미구현 — 탭만 존재) */
+/**
+ * "레포트" 타이틀 + Daily/Weekly/Monthly 토글 (⚠ Monthly 미구현 — 탭만 존재)
+ * [onBack]을 넘기면 타이틀 좌측에 뒤로가기 화살표가 함께 표시된다 (전체보기류 화면에서 사용).
+ */
 @Composable
 fun InsightReportTitle(
+    selected: InsightPeriod = InsightPeriod.DAILY,
+    onSelectDaily: () -> Unit = {},
     onSelectWeekly: () -> Unit = {},
     onSelectMonthly: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "레포트",
-            fontFamily = Pretendard,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF1A1A1A),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 0.dp),
-            textAlign = TextAlign.Center
-        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            if (onBack != null) {
+                BackArrowIcon(
+                    tint = Color(0xFFB1B1B1),
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .clickable(onClick = onBack)
+                        .padding(4.dp)
+                        .size(30.dp)
+                )
+            }
+            Text(
+                text = "레포트",
+                fontFamily = Pretendard,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1A1A1A),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
         Spacer(Modifier.height(20.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             InsightPeriod.entries.forEach { period ->
-                val isSelected = period == InsightPeriod.DAILY
+                val isSelected = period == selected
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -84,9 +100,9 @@ fun InsightReportTitle(
                             indication = null
                         ) {
                             when (period) {
+                                InsightPeriod.DAILY -> onSelectDaily()
                                 InsightPeriod.WEEKLY -> onSelectWeekly()
                                 InsightPeriod.MONTHLY -> onSelectMonthly()
-                                InsightPeriod.DAILY -> {}
                             }
                         }
                         .padding(vertical = 10.dp),

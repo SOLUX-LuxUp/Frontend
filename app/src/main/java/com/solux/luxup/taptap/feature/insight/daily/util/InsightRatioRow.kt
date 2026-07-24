@@ -115,7 +115,7 @@ fun InsightRatioRow(
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .width(53.dp)
+                .width(60.dp)
                 .padding(vertical = 25.dp)
         )
 

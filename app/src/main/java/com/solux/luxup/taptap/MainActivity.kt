@@ -34,6 +34,10 @@ import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightDailyScr
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightRatioAllScreen
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightTimelineAllScreen
 import com.solux.luxup.taptap.feature.insight.daily.util.shiftDate
+import com.solux.luxup.taptap.feature.insight.weekly.data.MockInsightWeekly
+import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyRatioAllScreen
+import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyScreen
+import com.solux.luxup.taptap.feature.insight.weekly.util.shiftWeek
 import com.solux.luxup.taptap.feature.notification.presentation.NotificationScreen
 import com.solux.luxup.taptap.ui.theme.TapTapTheme
 import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashScreen
@@ -161,8 +165,44 @@ class MainActivity : ComponentActivity() {
                             },
                             onPrevDay = { targetDate = targetDate.shiftDate(-1) },
                             onNextDay = { targetDate = targetDate.shiftDate(1) },
+                            onSelectWeekly = {
+                                navController.navigate("insightWeekly")
+                            },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    composable("insightWeekly") {
+                        var weekStart by remember { mutableStateOf(MockInsightWeekly.weekStart) }
+                        InsightWeeklyScreen(
+                            data = MockInsightWeekly.copy(weekStart = weekStart),
+                            onNavigateToRatioAll = {
+                                navController.navigate("insightWeeklyRatioAll")
+                            },
+                            onPrevWeek = { weekStart = weekStart.shiftWeek(-1) },
+                            onNextWeek = { weekStart = weekStart.shiftWeek(1) },
+                            onSelectDaily = {
+                                navController.popBackStack()
+                            },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    composable("insightWeeklyRatioAll") {
+                        var weekStart by remember { mutableStateOf(MockInsightWeekly.weekStart) }
+                        InsightWeeklyRatioAllScreen(
+                            weekStart = weekStart,
+                            dailyTapCounts = MockInsightWeekly.dailyTapCounts,
+                            categoryTapCounts = MockInsightWeekly.categoryTapCounts,
+                            buttonTapCounts = MockInsightWeekly.buttonTapCounts,
+                            totalTapCount = MockInsightWeekly.totalTapCount,
+                            onBack = { navController.popBackStack() },
+                            onPrevWeek = { weekStart = weekStart.shiftWeek(-1) },
+                            onNextWeek = { weekStart = weekStart.shiftWeek(1) },
+                            onSelectDaily = {
+                                navController.navigate("insightDaily")
                             }
                         )
                     }

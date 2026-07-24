@@ -43,8 +43,8 @@ fun InsightIconBadge(
             .shadow(
                 elevation = 4.8.dp,
                 shape = CircleShape,
-                ambientColor = Color.Black.copy(alpha = 0.24f),
-                spotColor = Color.Black.copy(alpha = 0.24f)
+                ambientColor = Color.Black.copy(alpha = 0.5f),
+                spotColor = Color.Black.copy(alpha = 0.5f)
             )
             .clip(CircleShape)
             .background(Color.White),
