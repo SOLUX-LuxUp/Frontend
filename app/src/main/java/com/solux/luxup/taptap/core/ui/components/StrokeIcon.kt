@@ -47,6 +47,20 @@ fun ChevronDownIcon(
     )
 }
 
+/** 설정 행 오른쪽 화살표 */
+@Composable
+fun ChevronRightIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Color(0xFF8E8E93),
+) {
+    Image(
+        painter = painterResource(R.drawable.ic_right),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(tint),
+        modifier = modifier.size(20.dp),
+    )
+}
+
 @Composable
 fun SearchIcon(
     modifier: Modifier = Modifier,
@@ -54,6 +68,62 @@ fun SearchIcon(
 ) {
     Image(
         painter = painterResource(R.drawable.ic_search),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(tint),
+        modifier = modifier.size(18.dp),
+    )
+}
+
+/** 팀 규모 · 팀 관리 등 안내성 항목 */
+@Composable
+fun InfoIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Color(0xFF8E8E93),
+) {
+    Image(
+        painter = painterResource(R.drawable.ic_information),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(tint),
+        modifier = modifier.size(18.dp),
+    )
+}
+
+/** 알림 */
+@Composable
+fun BellIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Color(0xFF8E8E93),
+) {
+    Image(
+        painter = painterResource(R.drawable.ic_bell),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(tint),
+        modifier = modifier.size(18.dp),
+    )
+}
+
+/** 초대하기 */
+@Composable
+fun InviteIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Color(0xFF8E8E93),
+) {
+    Image(
+        painter = painterResource(R.drawable.ic_invite),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(tint),
+        modifier = modifier.size(18.dp),
+    )
+}
+
+/** 팀 나가기 */
+@Composable
+fun LeaveIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Color(0xFFFF6B6B),
+) {
+    Image(
+        painter = painterResource(R.drawable.ic_out),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
         modifier = modifier.size(18.dp),
