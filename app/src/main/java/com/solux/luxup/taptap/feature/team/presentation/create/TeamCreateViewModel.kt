@@ -94,9 +94,13 @@ class TeamCreateViewModel : ViewModel() {
         onSuccess()
     }
 
-    /** POST /api/teams/{team_id}/template/skip — 백엔드 추가 예정 */
+    /** POST /api/teams/{team_id}/template/skip — body 없음, 성공 시 isSkipped: true */
     fun skipTemplate(onSuccess: () -> Unit) {
+        if (isSubmitting) return
+        isSubmitting = true
         // TODO: 실제 API 호출로 교체
+        //  401 토큰 / 403 팀장 권한 없음 / 404 팀 없음 / 409 이미 템플릿 선택함
+        isSubmitting = false
         onSuccess()
     }
 
