@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,15 +33,19 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.ui.components.CheckMarkIcon
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import com.solux.luxup.taptap.core.util.UserAvatar
+
+private val AccentRed = Color(0xFFF6989C)
+private val NeutralGrey = Color(0xFFB1B1B1)
 
 /**
  * 팀 스페이스의 "정말 ~할까요?" 확인 모달.
  *
- * 팀 나가기 · 멤버 내보내기 · 팀장 위임 이 같은 틀을 쓰므로 문구만 갈아끼운다.
- * 주의사항 동의 체크를 해야 확인 버튼이 활성화된다.
+ * 팀 나가기 · 멤버 내보내기 · 팀장 위임이 같은 틀을 쓰고 문구만 다르다.
+ * 팀 나가기만 대상이 팀명이라 아바타가 없고, 나머지는 [highlightLeading] 으로
+ * 멤버 아바타가 이름 앞에 붙는다.
  *
- * 버튼 색은 위치로 고정된다 — 왼쪽 분홍(#F08A8A) / 오른쪽 회청(#9BA6B5).
- * 시안상 팀 나가기만 왼쪽이 실행 버튼이라 [confirmFirst] 로 순서를 바꾼다.
+ * 주의사항 동의 체크를 해야 확인(왼쪽 붉은) 버튼이 눌린다.
  */
 @Composable
 fun TeamConfirmModal(
@@ -53,8 +56,6 @@ fun TeamConfirmModal(
     confirmText: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    cancelText: String = "취소",
-    confirmFirst: Boolean = false,
     highlightLeading: (@Composable () -> Unit)? = null,
 ) {
     Dialog(
@@ -67,8 +68,6 @@ fun TeamConfirmModal(
             description = description,
             agreementText = agreementText,
             confirmText = confirmText,
-            cancelText = cancelText,
-            confirmFirst = confirmFirst,
             highlightLeading = highlightLeading,
             onConfirm = onConfirm,
             onCancel = onDismiss,
@@ -87,142 +86,119 @@ fun TeamConfirmModalContent(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
-    cancelText: String = "취소",
-    confirmFirst: Boolean = false,
     highlightLeading: (@Composable () -> Unit)? = null,
 ) {
     var agreed by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
-            .width(300.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFFDEEFFF))
-            .padding(horizontal = 22.dp, vertical = 22.dp),
+            .width(268.dp)
+            .clip(RoundedCornerShape(28.dp))
+            .background(Color(0xFFDEEFFF)),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Spacer(Modifier.height(40.dp))
+
         Text(
             text = title,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            lineHeight = 18.sp,
+            fontWeight = FontWeight.Medium,
             color = Color(0xFF6D6D6D),
         )
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(17.dp))
 
-        // 대상 (팀 이름 / 멤버 이름) — 멤버일 때는 앞에 프로필 아바타가 붙는다
+        // 대상 (팀명 / 멤버 이름) 칸 — 204 x 52, radius 100
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .width(204.dp)
+                .height(52.dp)
                 .clip(RoundedCornerShape(100.dp))
-                .background(Color.White)
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .background(Color(0xFFFEFEFE)),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = if (highlightLeading != null) {
-                Arrangement.Start
-            } else {
-                Arrangement.Center
-            },
+            horizontalArrangement = Arrangement.Center,
         ) {
             if (highlightLeading != null) {
                 highlightLeading()
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
             }
             Text(
                 text = highlight,
-                fontSize = 20.sp,
+                fontSize = 25.sp,
+                lineHeight = 25.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF8E8E93),
+                color = NeutralGrey,
+                textAlign = TextAlign.Center,
             )
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(31.dp))
 
         Text(
             text = description,
-            fontSize = 11.sp,
+            fontSize = 13.sp,
             lineHeight = 18.sp,
+            fontWeight = FontWeight.Medium,
             color = Color(0xFF6D6D6D),
             textAlign = TextAlign.Center,
         )
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .width(204.dp)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                 ) { agreed = !agreed },
-            verticalAlignment = Alignment.Top,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
-            AgreementCheckBox(checked = agreed)
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (agreed) AccentRed else Color.White)
+                    .border(1.dp, AccentRed, RoundedCornerShape(2.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (agreed) CheckMarkIcon(modifier = Modifier.size(9.dp))
+            }
+
             Spacer(Modifier.width(8.dp))
+
             Text(
                 text = agreementText,
-                fontSize = 11.sp,
-                lineHeight = 17.sp,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium,
                 color = Color(0xFF6D6D6D),
             )
         }
 
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(21.dp))
 
-        val confirmColor = if (agreed) Color(0xFF9BA6B5) else Color(0xFFD9D9D9)
-
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            if (confirmFirst) {
-                ConfirmPillButton(
-                    label = confirmText,
-                    contentColor = if (agreed) Color(0xFFF08A8A) else Color(0xFFEBC5C5),
-                    enabled = agreed,
-                    onClick = onConfirm,
-                )
-                ConfirmPillButton(
-                    label = cancelText,
-                    contentColor = Color(0xFF9BA6B5),
-                    enabled = true,
-                    onClick = onCancel,
-                )
-            } else {
-                ConfirmPillButton(
-                    label = cancelText,
-                    contentColor = Color(0xFFF08A8A),
-                    enabled = true,
-                    onClick = onCancel,
-                )
-                ConfirmPillButton(
-                    label = confirmText,
-                    contentColor = confirmColor,
-                    enabled = agreed,
-                    onClick = onConfirm,
-                )
-            }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            ConfirmPillButton(
+                label = confirmText,
+                contentColor = AccentRed,
+                enabled = agreed,
+                onClick = onConfirm,
+            )
+            ConfirmPillButton(
+                label = "취소",
+                contentColor = NeutralGrey,
+                enabled = true,
+                onClick = onCancel,
+            )
         }
+        Spacer(Modifier.height(20.dp))
     }
 }
 
-@Composable
-private fun AgreementCheckBox(
-    checked: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(14.dp)
-            .clip(RoundedCornerShape(3.dp))
-            .background(if (checked) Color(0xFFF08A8A) else Color.White)
-            .border(1.dp, Color(0xFFF08A8A), RoundedCornerShape(3.dp)),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (checked) {
-            CheckMarkIcon(modifier = Modifier.size(10.dp))
-        }
-    }
-}
-
+/** 99 x 43, radius 100, 테두리 버튼 */
 @Composable
 private fun ConfirmPillButton(
     label: String,
@@ -231,12 +207,14 @@ private fun ConfirmPillButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val color = if (enabled) contentColor else contentColor.copy(alpha = 0.4f)
+
     Box(
         modifier = modifier
-            .size(width = 100.dp, height = 38.dp)
+            .size(width = 99.dp, height = 43.dp)
             .clip(RoundedCornerShape(100.dp))
             .background(Color.White)
-            .border(1.dp, contentColor, RoundedCornerShape(100.dp))
+            .border(1.dp, color, RoundedCornerShape(100.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -247,16 +225,17 @@ private fun ConfirmPillButton(
     ) {
         Text(
             text = label,
-            fontSize = 14.sp,
+            fontSize = 18.sp,
+            lineHeight = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = contentColor,
+            color = color,
         )
     }
 }
 
 // ── 사용처별 래퍼 ────────────────────────────────────────
 
-/** 팀 나가기 — DELETE /api/teams/{team_id}/leave */
+/** 팀 나가기 — DELETE /api/teams/{team_id}/leave. 팀명이라 아바타 없음 */
 @Composable
 fun TeamLeaveConfirmModal(
     teamName: String,
@@ -269,7 +248,6 @@ fun TeamLeaveConfirmModal(
         description = "다시 팀에 가입할 수 있습니다\n나의 팀 기록은 자동으로 삭제되지 않습니다",
         agreementText = "주의사항을 확인했으며, 팀을 탈퇴합니다",
         confirmText = "나가기",
-        confirmFirst = true,
         onConfirm = onConfirm,
         onDismiss = onDismiss,
     )
@@ -287,7 +265,7 @@ fun TeamMemberKickConfirmModal(
         title = "정말 멤버를 내보낼까요?",
         highlight = memberName,
         description = "위 멤버는 다시 팀에 가입할 수 있습니다\n멤버의 팀 기록은 자동으로 삭제되지 않습니다",
-        agreementText = "주의사항을 확인했으며,\n멤버를 팀에서 내보냅니다",
+        agreementText = "주의사항을 확인했으며, 멤버를 팀에서 내보냅니다",
         confirmText = "확인",
         highlightLeading = avatar,
         onConfirm = onConfirm,
@@ -307,7 +285,7 @@ fun TeamOwnerDelegateConfirmModal(
         title = "정말 팀장을 위임할까요?",
         highlight = memberName,
         description = "위 멤버에게 팀장 권한이 위임됩니다\n이 작업은 되돌릴 수 없습니다",
-        agreementText = "주의사항을 확인했으며,\n팀장을 ${memberName}에게 위임합니다",
+        agreementText = "주의사항을 확인했으며, 팀장을 위임합니다",
         confirmText = "확인",
         highlightLeading = avatar,
         onConfirm = onConfirm,
@@ -315,33 +293,55 @@ fun TeamOwnerDelegateConfirmModal(
     )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF666666)
+@Preview(showBackground = true, backgroundColor = 0xFF666666, name = "팀 나가기")
 @Composable
-private fun TeamConfirmModalPreview() {
+private fun TeamLeaveModalPreview() {
     PreviewContainer {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            TeamConfirmModalContent(
-                title = "정말 팀을 나갈까요?",
-                highlight = "LUX-UP",
-                description = "다시 팀에 가입할 수 있습니다\n나의 팀 기록은 자동으로 삭제되지 않습니다",
-                agreementText = "주의사항을 확인했으며, 팀을 탈퇴합니다",
-                confirmText = "나가기",
-                confirmFirst = true,
-                onConfirm = {},
-                onCancel = {},
-            )
-            TeamConfirmModalContent(
-                title = "정말 멤버를 내보낼까요?",
-                highlight = "하연",
-                description = "위 멤버는 다시 팀에 가입할 수 있습니다\n멤버의 팀 기록은 자동으로 삭제되지 않습니다",
-                agreementText = "주의사항을 확인했으며,\n멤버를 팀에서 내보냅니다",
-                confirmText = "확인",
-                onConfirm = {},
-                onCancel = {},
-            )
-        }
+        TeamConfirmModalContent(
+            title = "정말 팀을 나갈까요?",
+            highlight = "LUX-UP",
+            description = "다시 팀에 가입할 수 있습니다\n나의 팀 기록은 자동으로 삭제되지 않습니다",
+            agreementText = "주의사항을 확인했으며, 팀을 탈퇴합니다",
+            confirmText = "나가기",
+            onConfirm = {},
+            onCancel = {},
+            modifier = Modifier.padding(24.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF666666, name = "멤버 내보내기")
+@Composable
+private fun TeamKickModalPreview() {
+    PreviewContainer {
+        TeamConfirmModalContent(
+            title = "정말 멤버를 내보낼까요?",
+            highlight = "하연",
+            description = "위 멤버는 다시 팀에 가입할 수 있습니다\n멤버의 팀 기록은 자동으로 삭제되지 않습니다",
+            agreementText = "주의사항을 확인했으며, 멤버를 팀에서 내보냅니다",
+            confirmText = "확인",
+            highlightLeading = { UserAvatar(imageUrl = null, size = 30.dp) },
+            onConfirm = {},
+            onCancel = {},
+            modifier = Modifier.padding(24.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF666666, name = "팀장 위임")
+@Composable
+private fun TeamDelegateModalPreview() {
+    PreviewContainer {
+        TeamConfirmModalContent(
+            title = "정말 팀장을 위임할까요?",
+            highlight = "하연",
+            description = "위 멤버에게 팀장 권한이 위임됩니다\n이 작업은 되돌릴 수 없습니다",
+            agreementText = "주의사항을 확인했으며, 팀장을 위임합니다",
+            confirmText = "확인",
+            highlightLeading = { UserAvatar(imageUrl = null, size = 30.dp) },
+            onConfirm = {},
+            onCancel = {},
+            modifier = Modifier.padding(24.dp),
+        )
     }
 }

@@ -85,6 +85,7 @@ fun TeamDeleteScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = SettingSpec.ScreenPadding),
             horizontalAlignment = Alignment.CenterHorizontally,

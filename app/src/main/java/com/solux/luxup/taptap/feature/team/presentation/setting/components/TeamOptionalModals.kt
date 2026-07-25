@@ -39,7 +39,7 @@ private fun OptionPillModalContent(
 ) {
     Column(
         modifier = modifier
-            .width(210.dp)
+            .width(268.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(Color(0xFFDEEFFF))
             .padding(horizontal = 16.dp, vertical = 16.dp),

@@ -7,9 +7,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,20 +20,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.solux.luxup.taptap.core.ui.theme.Pretendard
+import androidx.compose.ui.window.DialogProperties
+import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 
 @Composable
 fun TeamInviteCodeModal(
     inviteCode: String,
     onDismiss: () -> Unit,
-    onShare: () -> Unit,                 // 공유 방식 미정 → 콜백만
+    onShare: () -> Unit,
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
         InviteCodeContent(inviteCode = inviteCode, onShare = onShare)
     }
 }
@@ -41,78 +45,81 @@ fun TeamInviteCodeModal(
 private fun InviteCodeContent(
     inviteCode: String,
     onShare: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth(0.8f)                          // 화면 대비 폭 (조정 가능)
+        modifier = modifier
+            .size(width = 268.dp, height = 178.dp)
             .clip(RoundedCornerShape(28.dp))
-            .background(Color(0xFFDEEFFF))                // 연파랑
-            .padding(vertical = 14.dp, horizontal = 30.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {24
-        // "팀 코드" 라벨
+            .background(Color(0xFFDEEFFF)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.height(18.dp))
+
         Text(
             text = "팀 코드",
-            fontFamily = Pretendard,
             fontSize = 18.sp,
+            lineHeight = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF6D6D6D)
+            color = Color(0xFF6D6D6D),
         )
-        Spacer(Modifier.height(16.dp))
 
-        // 코드 박스 (흰색)
+        Spacer(Modifier.height(11.dp))
+
+        // 코드 박스 204 x 56, radius 10
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White)
-                .padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
+                .width(204.dp)
+                .height(56.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = inviteCode,
-                fontFamily = Pretendard,
                 fontSize = 25.sp,
+                lineHeight = 25.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFB1B1B1)
+                color = Color(0xFFB1B1B1),
             )
         }
-        Spacer(Modifier.height(10.dp))
 
-        // 공유하기 버튼 (흰색)
-        // 공유하기 버튼 (흰색 + 테두리)
+        Spacer(Modifier.height(9.dp))
+
+        // 공유하기 버튼 204 x 43, radius 100, 테두리 #B1B1B1
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(11.dp))                    // 12 → 11
-                .background(Color(0xFFFEFEFE))                      // #FEFEFE
-                .border(1.dp, Color(0xFFB1B1B1), RoundedCornerShape(11.dp))   // 테두리 추가
+                .width(204.dp)
+                .height(43.dp)
+                .clip(RoundedCornerShape(100.dp))
+                .background(Color(0xFFFEFEFE))
+                .border(1.dp, Color(0xFFB1B1B1), RoundedCornerShape(100.dp))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) { onShare() }
-                .padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
+                    indication = null,
+                    onClick = onShare,
+                ),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = "공유하기",
-                fontFamily = Pretendard,
                 fontSize = 18.sp,
+                lineHeight = 18.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFFB1B1B1)
+                color = Color(0xFFB1B1B1),
             )
         }
     }
 }
 
-// 프리뷰는 Dialog 없이 내용만 → 렌더됨
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 390)
+@Preview(showBackground = true, backgroundColor = 0xFF666666)
 @Composable
 private fun TeamInviteCodeModalPreview() {
-    androidx.compose.foundation.layout.Box(
-        modifier = Modifier.padding(40.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        InviteCodeContent(inviteCode = "SE4EDI", onShare = {})
+    PreviewContainer {
+        InviteCodeContent(
+            inviteCode = "SE4EDI",
+            onShare = {},
+            modifier = Modifier.padding(24.dp),
+        )
     }
 }
