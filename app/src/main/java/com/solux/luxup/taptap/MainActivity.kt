@@ -54,6 +54,8 @@ import com.solux.luxup.taptap.feature.team.presentation.button.timeline.teamButt
 import com.solux.luxup.taptap.feature.team.presentation.TeamListScreen
 import com.solux.luxup.taptap.feature.team.presentation.create.TeamCreateRoute
 import com.solux.luxup.taptap.feature.team.presentation.create.teamCreateGraph
+import com.solux.luxup.taptap.feature.team.presentation.setting.TeamSettingRoute
+import com.solux.luxup.taptap.feature.team.presentation.setting.teamSettingGraph
 
 // TODO: 로그인 유저가 속한 팀 id로 교체 (현재는 임시 고정값)
 private const val CURRENT_TEAM_ID = 1L
@@ -357,10 +359,14 @@ class MainActivity : ComponentActivity() {
                         val teamId = backStackEntry.arguments?.getLong("teamId") ?: 0L
                         TeamDetailScreen(
                             teamId = teamId,
+                            currentUserId = 1L,   // mockTeamSettings.ownerUserId = 1 과 맞춰야 팀장 화면. API 연결 시 로그인 id로 교체
                             onExit = { navController.popBackStack() },
                             // + → 직접 만들기
                             onCreateButton = {
                                 navController.navigate(TeamButtonCreateRoute.graph(teamId))
+                            },
+                            onOpenTeamSettings = {                                   // 멤버 탭 톱니바퀴 → 팀 설정 그래프
+                                navController.navigate(TeamSettingRoute.graph(teamId))
                             },
                             // 버튼 정보 화면의 수정 아이콘에서 진입하므로 현재는 미사용
                             onEditButton = { buttonId ->
@@ -413,6 +419,22 @@ class MainActivity : ComponentActivity() {
                     teamButtonTimelineScreen(
                         navController = navController,
                         currentUserId = 4L,
+                    )
+
+                    // 팀 설정 · 팀 관리 — 6개 화면이 TeamSettingViewModel 공유
+                    teamSettingGraph(
+                        navController = navController,
+                        currentUserId = 1L,   // 위 TeamDetailScreen 과 동일 값 유지
+                        onExitTeam = {
+                            // 팀 나가기 / 팀 삭제 후 팀 목록으로. 팀 스페이스 스택을 걷어낸다.
+                            navController.navigate("teamList") {
+                                popUpTo("teamList") { inclusive = true }
+                            }
+                        },
+                        onNavItemSelected = { item ->
+                            // 하단 탭 바에서 다른 탭 선택 → 팀 스페이스를 벗어나 해당 탭으로
+                            navController.navigateToTab(item)
+                        },
                     )
                 }
             }
