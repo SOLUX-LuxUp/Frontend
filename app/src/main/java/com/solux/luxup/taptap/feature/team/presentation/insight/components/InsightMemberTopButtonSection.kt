@@ -32,6 +32,7 @@ import com.solux.luxup.taptap.feature.team.model.TeamInsightMemberTopButton
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 // ⚠ 임시 색 — 마지막에 Color.kt 토큰으로 교체
 private val TitleColor = Color(0xFF6D6D6D)
@@ -107,6 +108,7 @@ private fun MemberTopButtonRow(
             Box(
                 modifier = Modifier
                     .size(28.dp)
+                    .figmaDropShadow(cornerRadius = 17.5.dp)
                     .clip(CircleShape)
                     .background(Color.White)
                     .border(1.dp, IconCircleBorder, CircleShape),

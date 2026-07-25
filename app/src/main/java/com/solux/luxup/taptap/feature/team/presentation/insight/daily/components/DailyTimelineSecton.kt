@@ -3,6 +3,7 @@ package com.solux.luxup.taptap.feature.team.presentation.insight.daily.component
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -42,6 +43,7 @@ import java.util.Locale
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 
 // ⚠ 임시 색 — 마지막에 Color.kt 토큰으로 교체
@@ -57,31 +59,47 @@ private val TimeFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
 @Composable
 fun DailyTimelineSection(
     timeline: List<TeamInsightTimelineItem>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    maxVisible: Int? = 3,              // null이면 전체, 숫자면 그만큼만
+    onSeeAll: (() -> Unit)? = null     // null이면 "전체보기" 안 보임
 ) {
     SectionCard(
         modifier = modifier,
         borderColor = CardBorder,
         contentPadding = PaddingValues(horizontal = 18.dp, vertical = 18.dp)
     ) {
-        Text(
-            text = "타임라인",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = TitleColor
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "타임라인",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF6D6D6D),
+                modifier = Modifier.weight(1f)
+            )
+            if (onSeeAll != null) {
+                Text(
+                    text = "전체보기",
+                    fontSize = 12.sp,
+                    color = SubColor,
+                    modifier = Modifier.clickable { onSeeAll() }
+                )
+            }
+        }
         Spacer(Modifier.height(16.dp))
 
         if (timeline.isEmpty()) {
             Text("아직 오늘 기록이 없어요", fontSize = 14.sp, color = SubColor)
         } else {
-            // 최신순 정렬 (API가 정렬해 주면 이 줄 제거 가능)
             val sorted = timeline.sortedByDescending { it.tappedAt }
-            sorted.forEachIndexed { index, item ->
+            val visible = if (maxVisible != null) sorted.take(maxVisible) else sorted
+            visible.forEachIndexed { index, item ->
                 TimelineRow(
                     item = item,
                     isFirst = index == 0,
-                    isLast = index == sorted.lastIndex
+                    isLast = index == visible.lastIndex
                 )
             }
         }
@@ -128,6 +146,7 @@ private fun TimelineRow(
             Box(
                 modifier = Modifier
                     .size(35.dp)
+                    .figmaDropShadow(cornerRadius = 17.5.dp)
                     .clip(CircleShape)
                     .background(Color.White)
                     .border(1.dp, IconCircleBorder, CircleShape),

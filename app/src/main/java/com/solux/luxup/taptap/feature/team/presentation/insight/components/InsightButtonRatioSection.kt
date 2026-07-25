@@ -41,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.SectionCard
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
@@ -224,6 +225,7 @@ private fun ConnectorIcon(
         Box(
             modifier = Modifier
                 .size(35.dp)
+                .figmaDropShadow(cornerRadius = 17.5.dp)
                 .clip(CircleShape)
                 .background(Color.White)
                 .border(1.dp, CircleBorder, CircleShape),
