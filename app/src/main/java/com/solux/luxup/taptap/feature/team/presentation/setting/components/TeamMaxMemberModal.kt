@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.team.presentation.create
+package com.solux.luxup.taptap.feature.team.presentation.setting.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -40,17 +41,22 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
-import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
+import com.solux.luxup.taptap.feature.team.model.TeamSizePolicy
 
 /**
- * 최대 인원을 고르는 모달.
- * 5단위 스텝, 5~30. 저장을 눌러야 반영되고 취소하면 변경되지 않는다.
+ * 최대 인원을 고르는 모달. 5단위 스텝, 5~30.
+ * 저장을 눌러야 반영되고 취소하면 변경되지 않는다.
+ *
+ * @param minSelectable 고를 수 있는 최소값. 팀 설정에서 인원을 줄일 때
+ *  현재 팀원 수보다 작게는 못 줄이기 때문에 필요하다.
+ *  (서버가 maxMember < memberCount 를 400 으로 막는다)
  */
 @Composable
 fun TeamMaxMemberModal(
     currentValue: Int,
     onDismiss: () -> Unit,
     onSave: (Int) -> Unit,
+    minSelectable: Int = 0,
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -60,20 +66,29 @@ fun TeamMaxMemberModal(
             currentValue = currentValue,
             onDismiss = onDismiss,
             onSave = onSave,
+            minSelectable = minSelectable,
         )
     }
 }
 
-/** Dialog는 preview가 불가하므로 내용만 분리 */
+/** Dialog 는 preview 가 불가하므로 내용만 분리 */
 @Composable
 fun TeamMaxMemberModalContent(
     currentValue: Int,
     onDismiss: () -> Unit,
     onSave: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    minSelectable: Int = 0,
 ) {
+    // 하한 미만은 아예 목록에서 뺀다
+    val options = remember(minSelectable) {
+        TeamSizePolicy.selectableOptions(minSelectable)
+    }
+
     // 저장 전까지는 화면에 반영하지 않는다
-    var pendingValue by remember { mutableIntStateOf(currentValue) }
+    var pendingValue by remember {
+        mutableIntStateOf(currentValue.coerceAtLeast(options.firstOrNull() ?: currentValue))
+    }
 
     Column(
         modifier = modifier
@@ -95,6 +110,7 @@ fun TeamMaxMemberModalContent(
         Row(verticalAlignment = Alignment.CenterVertically) {
             MaxMemberWheel(
                 value = pendingValue,
+                options = options,
                 onValueChange = { pendingValue = it },
             )
             Spacer(modifier = Modifier.width(10.dp))
@@ -109,12 +125,12 @@ fun TeamMaxMemberModalContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            PillButton(
+            MaxMemberPillButton(
                 label = "취소",
                 contentColor = Color(0xFFF08A8A),
                 onClick = onDismiss,
             )
-            PillButton(
+            MaxMemberPillButton(
                 label = "저장",
                 contentColor = Color(0xFF9BA6B5),
                 onClick = { onSave(pendingValue) },
@@ -123,22 +139,20 @@ fun TeamMaxMemberModalContent(
     }
 }
 
-/**
- * 5단위 휠. 가운데 항목이 선택값이며 위아래로 이웃 값이 흐리게 보인다.
- */
+/** 5단위 휠. 가운데 항목이 선택값이며 위아래로 이웃 값이 흐리게 보인다. */
 @Composable
 private fun MaxMemberWheel(
     value: Int,
+    options: List<Int>,
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val itemHeight = 30.dp
     val visibleCount = 3
 
-    val options = TeamCreateForm.MAX_MEMBER_OPTIONS
     val itemHeightPx = with(LocalDensity.current) { itemHeight.toPx() }
 
-    val initialIndex = remember { options.indexOf(value).coerceAtLeast(0) }
+    val initialIndex = remember(options) { options.indexOf(value).coerceAtLeast(0) }
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
 
     val selectedIndex by remember {
@@ -149,7 +163,7 @@ private fun MaxMemberWheel(
         }
     }
 
-    androidx.compose.runtime.LaunchedEffect(selectedIndex) {
+    LaunchedEffect(selectedIndex) {
         options.getOrNull(selectedIndex)?.let { selected ->
             if (selected != value) onValueChange(selected)
         }
@@ -190,7 +204,7 @@ private fun MaxMemberWheel(
 }
 
 @Composable
-private fun PillButton(
+private fun MaxMemberPillButton(
     label: String,
     contentColor: Color,
     onClick: () -> Unit,
@@ -218,12 +232,26 @@ private fun PillButton(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF666666)
+@Preview(showBackground = true, backgroundColor = 0xFF666666, name = "제약 없음")
 @Composable
 private fun TeamMaxMemberModalPreview() {
     PreviewContainer {
         TeamMaxMemberModalContent(
             currentValue = 10,
+            onDismiss = {},
+            onSave = {},
+            modifier = Modifier.padding(24.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF666666, name = "현재 7명 — 5 제외")
+@Composable
+private fun TeamMaxMemberModalMinPreview() {
+    PreviewContainer {
+        TeamMaxMemberModalContent(
+            currentValue = 10,
+            minSelectable = 7,
             onDismiss = {},
             onSave = {},
             modifier = Modifier.padding(24.dp),
