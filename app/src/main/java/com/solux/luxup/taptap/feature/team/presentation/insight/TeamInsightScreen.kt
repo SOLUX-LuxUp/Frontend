@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +34,7 @@ import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.presentation.insight.daily.TeamInsightDailyScreen
 import com.solux.luxup.taptap.feature.team.presentation.insight.monthly.TeamInsightMonthlyScreen
+import com.solux.luxup.taptap.feature.team.presentation.insight.timeline.TeamInsightTimelineAllScreen
 import com.solux.luxup.taptap.feature.team.presentation.insight.weekly.TeamInsightWeeklyScreen
 
 enum class InsightPeriod(val label: String) {
@@ -43,12 +43,18 @@ enum class InsightPeriod(val label: String) {
     MONTHLY("Monthly")
 }
 
+/** 인사이트 콘텐츠 표시 모드 */
+enum class InsightViewMode {
+    NORMAL,        // 일반 (섹션들)
+    TIMELINE_ALL   // 전체 타임라인
+}
 @Composable
 fun TeamInsightScreen(
     currentUserId: Long,
     modifier: Modifier = Modifier
 ) {
     var period by remember { mutableStateOf(InsightPeriod.DAILY) }
+    var viewMode by remember { mutableStateOf(InsightViewMode.NORMAL) }
 
     Column(
         modifier = modifier
@@ -57,10 +63,13 @@ fun TeamInsightScreen(
     ) {
         Spacer(Modifier.padding(top = 8.dp))
 
-        // Daily / Weekly / Monthly 토글
+        // Daily / Weekly / Monthly 토글 — 누르면 전체보기 해제하고 해당 기간 일반 화면으로
         InsightPeriodToggle(
             selected = period,
-            onSelect = { period = it }
+            onSelect = {
+                period = it
+                viewMode = InsightViewMode.NORMAL   // 전체보기 리셋
+            }
         )
 
         Spacer(Modifier.padding(top = 12.dp))
@@ -70,24 +79,35 @@ fun TeamInsightScreen(
 
         Spacer(Modifier.padding(top = 12.dp))
 
-        // 기간별 내용
-        when (period) {
-            InsightPeriod.DAILY -> {
-                TeamInsightDailyScreen(
-                    data = MockTeamInsightDaily,   // ⚠ API 연결 시 ViewModel 상태로 교체
-                    currentUserId = currentUserId
-                )
+        // 기간별 내용 — 전체보기 모드면 전체 타임라인, 아니면 일반
+        when (viewMode) {
+            InsightViewMode.NORMAL -> {
+                when (period) {
+                    InsightPeriod.DAILY -> {
+                        TeamInsightDailyScreen(
+                            data = MockTeamInsightDaily,
+                            currentUserId = currentUserId,
+                            onTimelineSeeAll = { viewMode = InsightViewMode.TIMELINE_ALL }  // 추가
+                        )
+                    }
+                    InsightPeriod.WEEKLY -> {
+                        TeamInsightWeeklyScreen(
+                            data = MockTeamInsightWeekly,
+                            currentUserId = currentUserId
+                        )
+                    }
+                    InsightPeriod.MONTHLY -> {
+                        TeamInsightMonthlyScreen(
+                            data = MockTeamInsightMonthly,
+                            currentUserId = currentUserId
+                        )
+                    }
+                }
             }
-            InsightPeriod.WEEKLY -> {
-                TeamInsightWeeklyScreen(
-                    data = MockTeamInsightWeekly,
-                    currentUserId = currentUserId
-                )
-            }
-            InsightPeriod.MONTHLY -> {
-                TeamInsightMonthlyScreen(
-                    data = MockTeamInsightMonthly,   // ⚠ API 연결 시 ViewModel 상태로 교체
-                    currentUserId = currentUserId
+            InsightViewMode.TIMELINE_ALL -> {
+                TeamInsightTimelineAllScreen(
+                    timeline = MockTeamInsightDaily.timeline,
+                    onBack = { viewMode = InsightViewMode.NORMAL }   // 뒤로가기
                 )
             }
         }

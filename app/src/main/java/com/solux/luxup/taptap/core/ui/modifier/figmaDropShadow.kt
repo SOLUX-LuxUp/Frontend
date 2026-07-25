@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 fun Modifier.figmaDropShadow(
     cornerRadius: Dp,
     color: Color = Color.Black,
-    alpha: Float = 0.15f,
-    blurRadius: Dp = 7.dp
+    alpha: Float = 0.12f,
+    blurRadius: Dp = 7.8.dp
 ): Modifier = this.drawBehind {
 
     val shadowColor = color.copy(alpha = alpha).toArgb()

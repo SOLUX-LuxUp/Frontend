@@ -29,6 +29,7 @@ import com.solux.luxup.taptap.feature.team.presentation.insight.daily.components
 fun TeamInsightDailyScreen(
     data: TeamInsightDaily,
     currentUserId: Long,
+    onTimelineSeeAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // 오늘 팀 기록 0건 → 통짜 빈 상태
@@ -50,8 +51,12 @@ fun TeamInsightDailyScreen(
         )
         Spacer(Modifier.height(28.dp))
 
-        // 타임라인 (⚠ 8.1.8 응답 요청 대기 — 지금은 목데이터)
-        DailyTimelineSection(timeline = data.timeline)
+        // ③ 타임라인
+        DailyTimelineSection(
+            timeline = data.timeline,
+            maxVisible = 3,                    // 3개만
+            onSeeAll = onTimelineSeeAll        // 전체보기 콜백
+        )
         Spacer(Modifier.height(28.dp))
 
         // ③ 기록 비율
@@ -99,23 +104,10 @@ private fun TeamInsightDailyScreenPreview() {
     PreviewContainer {
         TeamInsightDailyScreen(
             data = MockTeamInsightDaily,
-            currentUserId = 4L // ⚠ 하드코딩 — 정수민 인증 연동 후 실제 값으로
+            currentUserId = 4L,
+            onTimelineSeeAll = {},             // ← 추가 (프리뷰엔 빈 람다)
+            modifier = Modifier.padding(horizontal = 40.dp)
         )
     }
 }
 
-@Preview(showBackground = true, name = "빈 상태", heightDp = 400)
-@Composable
-private fun TeamInsightDailyScreenEmptyPreview() {
-    PreviewContainer {
-        TeamInsightDailyScreen(
-            data = MockTeamInsightDaily.copy(
-                totalTapCount = 0,
-                topButton = null,
-                buttonTapCounts = emptyList(),
-                memberActivity = emptyList()
-            ),
-            currentUserId = 4L
-        )
-    }
-}

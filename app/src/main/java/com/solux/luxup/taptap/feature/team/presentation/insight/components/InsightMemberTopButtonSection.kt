@@ -29,7 +29,11 @@ import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.util.UserAvatar
 import com.solux.luxup.taptap.feature.team.model.TeamInsightMemberActivity
 import com.solux.luxup.taptap.feature.team.model.TeamInsightMemberTopButton
-
+import com.solux.luxup.taptap.core.ui.theme.IconColor
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 // ⚠ 임시 색 — 마지막에 Color.kt 토큰으로 교체
 private val TitleColor = Color(0xFF6D6D6D)
 private val NameColor = Color(0xFF6D6D6D)    // 시안 natural 70
@@ -104,17 +108,17 @@ private fun MemberTopButtonRow(
             Box(
                 modifier = Modifier
                     .size(28.dp)
+                    .figmaDropShadow(cornerRadius = 17.5.dp)
                     .clip(CircleShape)
                     .background(Color.White)
                     .border(1.dp, IconCircleBorder, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                // ⚠ SVG 매핑 대기 → 이니셜 대체
-                Text(
-                    text = top.buttonName.take(1),
-                    color = top.iconColor.toHexColor(),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    painter = painterResource(ButtonIcons.resOf(top.iconName)),
+                    contentDescription = null,
+                    tint = IconColor.from(top.iconColor).color,
+                    modifier = Modifier.size(16.dp)
                 )
             }
 
@@ -150,13 +154,6 @@ private fun MemberTopButtonRow(
     }
 }
 
-/** ⚠ 임시 — iconColor null(요청 대기)이면 회색. core 공용 파서 생기면 교체 */
-private fun String.toHexColor(): Color =
-    try {
-        Color(("FF" + this.removePrefix("#")).toLong(16))
-    } catch (_: Exception) {
-        Color(0xFFB0B8C1)
-    }
 
 @Preview(showBackground = true, heightDp = 320)
 @Composable
