@@ -169,7 +169,7 @@ val MockTeamInsightWeekly = TeamInsightWeekly(
 
 /* --------------------------------- MONTHLY --------------------------------- */
 
-/** 먼슬리 목데이터 — 2026년 5월, 시안 기준(총 40회) */
+/** 먼슬리 목데이터 — 8.1.8 monthly 응답 명세 기준 (색상 이름 표기) */
 val MockTeamInsightMonthly = TeamInsightMonthly(
     teamId = 1L,
     year = 2026,
@@ -179,7 +179,7 @@ val MockTeamInsightMonthly = TeamInsightMonthly(
         teamButtonId = 5L,
         buttonName = "출석",
         iconName = "check-circle",
-        iconColor = "#FFC107",
+        iconColor = "orange",              // 명세: 색 이름
         tapCount = 78,
         tappedMembers = listOf(
             MockMemberNuri, MockMemberHayeon, MockMemberHeegyeong, MockMemberSumin
@@ -199,25 +199,25 @@ val MockTeamInsightMonthly = TeamInsightMonthly(
         TeamInsightCalendarDay("2026-05-31", 8),    // LV1
     ),
     categoryTapCounts = listOf(  // ⚠ 현재 화면 미사용
-        TeamInsightCategoryCount(10L, "건강", "#4C8DFF", 20, 0.51),
-        TeamInsightCategoryCount(20L, "자기계발", "#FFB84C", 20, 0.49),
+        TeamInsightCategoryCount(10L, "건강", "blue", 20, 0.51),      // 명세: 색 이름
+        TeamInsightCategoryCount(20L, "자기계발", "orange", 20, 0.49),
     ),
     memberActivity = listOf(
         TeamInsightMemberActivity(
             userId = 2L, displayName = "누리", profileImageUrl = null, tapCount = 10,
-            topButton = TeamInsightMemberTopButton(6L, "기획서 업데이트", "document", "#FFC107", 1)
+            topButton = TeamInsightMemberTopButton(6L, "기획서 업데이트", "document", "orange", 1)
         ),
         TeamInsightMemberActivity(
             userId = 4L, displayName = "희경", profileImageUrl = null, tapCount = 4,
-            topButton = TeamInsightMemberTopButton(7L, "피그마 업데이트", "pencil", "#FF5C5C", 4)
+            topButton = TeamInsightMemberTopButton(7L, "피그마 업데이트", "pencil", "red", 4)
         ),
         TeamInsightMemberActivity(
             userId = 5L, displayName = "수민", profileImageUrl = null, tapCount = 5,
-            topButton = TeamInsightMemberTopButton(1L, "프론트 코드 수정", "code", "#4C8DFF", 5)
+            topButton = TeamInsightMemberTopButton(1L, "프론트 코드 수정", "code", "blue", 5)
         ),
         TeamInsightMemberActivity(
             userId = 3L, displayName = "하연", profileImageUrl = null, tapCount = 2,
-            topButton = TeamInsightMemberTopButton(5L, "출석", "check-circle", "#FFC107", 5)
+            topButton = TeamInsightMemberTopButton(5L, "출석", "check-circle", "orange", 5)
         ),
     )
 )

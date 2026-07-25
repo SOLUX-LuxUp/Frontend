@@ -39,6 +39,8 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.solux.luxup.taptap.core.ui.theme.IconColor
+
 
 // ⚠ 임시 색 — 마지막에 Color.kt 토큰으로 교체
 private val TitleColor = Color(0xFF6D6D6D)
@@ -132,7 +134,7 @@ private fun TimelineRow(
                 // ⚠ SVG 매핑 대기 → 이니셜 대체
                 Text(
                     text = item.buttonName.take(1),
-                    color = item.iconColor.toHexColor(),
+                    color = IconColor.from(item.iconColor).color,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -203,13 +205,7 @@ private fun String.toElapsedText(): String =
         ""
     }
 
-/** ⚠ 임시 hex 파서 — core/util 공용 생기면 교체 */
-private fun String.toHexColor(): Color =
-    try {
-        Color(("FF" + this.removePrefix("#")).toLong(16))
-    } catch (_: Exception) {
-        Color(0xFFB0B8C1)
-    }
+
 
 @Preview(showBackground = true, heightDp = 340)
 @Composable

@@ -44,6 +44,7 @@ import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 import androidx.compose.foundation.layout.PaddingValues
 import com.solux.luxup.taptap.core.ui.components.SectionCard
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 
 // ⚠ 임시 색 — 마지막에 Color.kt 토큰으로 교체
 private val TitleColor = Color(0xFF6D6D6D)
@@ -125,8 +126,7 @@ private fun RatioRow(
         animationSpec = tween(durationMillis = 600),
         label = "ratioBar"
     )
-    val iconColor = item.iconColor.toHexColor()
-
+    val iconColor = IconColor.from(item.iconColor).color
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -236,13 +236,6 @@ private fun ConnectorIcon(
     }
 }
 
-/// 파서 교체
-private fun String.toHexColor(): Color =
-    try {
-        Color(("FF" + this.removePrefix("#")).toLong(16))
-    } catch (_: Exception) {
-        Color(0xFFB0B8C1)
-    }
 
 @Preview(showBackground = true, heightDp = 500)
 @Composable

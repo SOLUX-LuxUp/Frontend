@@ -29,7 +29,7 @@ import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.util.UserAvatar
 import com.solux.luxup.taptap.feature.team.model.TeamInsightMemberActivity
 import com.solux.luxup.taptap.feature.team.model.TeamInsightMemberTopButton
-
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 // ⚠ 임시 색 — 마지막에 Color.kt 토큰으로 교체
 private val TitleColor = Color(0xFF6D6D6D)
 private val NameColor = Color(0xFF6D6D6D)    // 시안 natural 70
@@ -112,7 +112,7 @@ private fun MemberTopButtonRow(
                 // ⚠ SVG 매핑 대기 → 이니셜 대체
                 Text(
                     text = top.buttonName.take(1),
-                    color = top.iconColor.toHexColor(),
+                    color = IconColor.from(top.iconColor).color,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
