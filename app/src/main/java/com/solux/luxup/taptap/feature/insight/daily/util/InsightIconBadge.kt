@@ -34,17 +34,24 @@ fun InsightIconBadge(
     iconName: String?,
     iconColor: String?,
     modifier: Modifier = Modifier,
-    size: Dp = 50.dp
+    size: Dp = 50.dp,
+    showShadow: Boolean = true
 ) {
     val tint = parseHexColor(iconColor)
     Box(
         modifier = modifier
             .size(size)
-            .shadow(
-                elevation = 4.8.dp,
-                shape = CircleShape,
-                ambientColor = Color.Black.copy(alpha = 0.5f),
-                spotColor = Color.Black.copy(alpha = 0.5f)
+            .then(
+                if (showShadow) {
+                    Modifier.shadow(
+                        elevation = 4.8.dp,
+                        shape = CircleShape,
+                        ambientColor = Color.Black.copy(alpha = 0.5f),
+                        spotColor = Color.Black.copy(alpha = 0.5f)
+                    )
+                } else {
+                    Modifier
+                }
             )
             .clip(CircleShape)
             .background(Color.White),

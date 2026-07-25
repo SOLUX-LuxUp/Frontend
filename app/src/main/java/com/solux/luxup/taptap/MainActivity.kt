@@ -34,6 +34,11 @@ import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightDailyScr
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightRatioAllScreen
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightTimelineAllScreen
 import com.solux.luxup.taptap.feature.insight.daily.util.shiftDate
+import com.solux.luxup.taptap.feature.insight.lifestyle.data.MockInsightLifestyle
+import com.solux.luxup.taptap.feature.insight.lifestyle.presentation.InsightLifestyleScreen
+import com.solux.luxup.taptap.feature.insight.monthly.data.MockInsightMonthly
+import com.solux.luxup.taptap.feature.insight.monthly.presentation.InsightMonthlyScreen
+import com.solux.luxup.taptap.feature.insight.monthly.util.shiftMonth
 import com.solux.luxup.taptap.feature.insight.weekly.data.MockInsightWeekly
 import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyRatioAllScreen
 import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyScreen
@@ -170,6 +175,9 @@ class MainActivity : ComponentActivity() {
                             onSelectWeekly = {
                                 navController.navigate("insightWeekly")
                             },
+                            onSelectMonthly = {
+                                navController.navigate("insightMonthly")
+                            },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             }
@@ -187,8 +195,47 @@ class MainActivity : ComponentActivity() {
                             onSelectDaily = {
                                 navController.popBackStack()
                             },
+                            onSelectMonthly = {
+                                navController.navigate("insightMonthly")
+                            },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    composable("insightMonthly") {
+                        var yearMonth by remember {
+                            mutableStateOf(MockInsightMonthly.year to MockInsightMonthly.month)
+                        }
+                        InsightMonthlyScreen(
+                            data = MockInsightMonthly.copy(year = yearMonth.first, month = yearMonth.second),
+                            onPrevMonth = { yearMonth = shiftMonth(yearMonth.first, yearMonth.second, -1) },
+                            onNextMonth = { yearMonth = shiftMonth(yearMonth.first, yearMonth.second, 1) },
+                            onSelectDaily = {
+                                navController.navigate("insightDaily")
+                            },
+                            onSelectWeekly = {
+                                navController.popBackStack()
+                            },
+                            onNavigateToLifestyle = {
+                                navController.navigate("insightLifestyle")
+                            },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    composable("insightLifestyle") {
+                        InsightLifestyleScreen(
+                            data = MockInsightLifestyle,
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                            onAddRecommendation = {
+                                // TODO: 라이프스타일 추천 수락(ADD) API 연결
+                            },
+                            onDeleteRecommendation = {
+                                // TODO: 라이프스타일 추천 수락(DELETE) API 연결
                             }
                         )
                     }
