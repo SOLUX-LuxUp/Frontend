@@ -40,7 +40,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import com.solux.luxup.taptap.core.ui.theme.IconColor
-
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 
 // ⚠ 임시 색 — 마지막에 Color.kt 토큰으로 교체
 private val TitleColor = Color(0xFF6D6D6D)
@@ -131,12 +133,11 @@ private fun TimelineRow(
                     .border(1.dp, IconCircleBorder, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                // ⚠ SVG 매핑 대기 → 이니셜 대체
-                Text(
-                    text = item.buttonName.take(1),
-                    color = IconColor.from(item.iconColor).color,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    painter = painterResource(ButtonIcons.resOf(item.iconName)),
+                    contentDescription = item.buttonName,
+                    tint = IconColor.from(item.iconColor).color,
+                    modifier = Modifier.size(24.dp)   // ⚠ 시안 아이콘 크기로 조정
                 )
             }
         }

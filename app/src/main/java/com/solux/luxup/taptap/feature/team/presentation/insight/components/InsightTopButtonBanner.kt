@@ -31,6 +31,10 @@ import com.solux.luxup.taptap.feature.team.model.TeamInsightTopButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 
 // 팀리스트 카드와 동일한 가로 그라데이션
 private val BannerGradient = Brush.horizontalGradient(
@@ -76,16 +80,16 @@ fun InsightTopButtonBanner(
                     // 아이콘 원 (흰 꽉 찬 원 + 컬러 아이콘, SVG 보류 → 이니셜)
                     Box(
                         modifier = Modifier
-                            .size(54.dp)               // ⚠ 추정 — 시안 원 지름으로 교체
+                            .size(50.dp)               // ⚠ 추정 — 시안 원 지름으로 교체
                             .clip(CircleShape)
                             .background(Color.White),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = topButton.buttonName.take(1),
-                            color = topButton.iconColor.toBannerIconColor(),
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
+                        Icon(
+                            painter = painterResource(ButtonIcons.resOf(topButton.iconName)),
+                            contentDescription = topButton.buttonName,
+                            tint = IconColor.from(topButton.iconColor).color,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
 
