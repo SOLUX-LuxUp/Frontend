@@ -65,7 +65,10 @@ fun TeamDetailScreen(
     var selectedTab by remember { mutableStateOf(initialTab) }
     var selectedMemberId by remember { mutableStateOf(initialMemberId) }
     var showCreateOption by remember { mutableStateOf(false) }
-    Scaffold(
+    var quickCreateMode by remember { mutableStateOf(false) }
+    // TODO: GET /api/teams/{teamId}/template 의 hasSelectedTemplate 로 교체
+    val hasSelectedTemplate = true
+        Scaffold(
         modifier = modifier,
         bottomBar = {
             BottomNavBar(selected = BottomNavItem.TEAM, onItemSelected = onNavItemSelected)
@@ -90,7 +93,13 @@ fun TeamDetailScreen(
                 onActionClick = {
                     when (selectedTab) {
                         TeamDetailTab.MEMBER -> onOpenTeamSettings()
-                        else -> showCreateOption = true
+                        else -> {
+                            if (hasSelectedTemplate) {
+                                showCreateOption = true
+                            } else {
+                                onCreateButton()
+                            }
+                        }
                     }
                 }
             )
@@ -108,6 +117,8 @@ fun TeamDetailScreen(
                     currentUserId = currentUserId,
                     onNavigateToTimeline = { onOpenButtonTimeline(it.teamButtonId) },
                     onNavigateToInfo = { onOpenButtonInfo(it.teamButtonId) },
+                    isQuickCreateMode = quickCreateMode,
+                    onCloseQuickCreate = { quickCreateMode = false },
                 )
                 TeamDetailTab.INSIGHT  -> TeamInsightScreen(
                     currentUserId = currentUserId,
@@ -141,7 +152,10 @@ fun TeamDetailScreen(
                     showCreateOption = false
                     onCreateButton()
                 },
-                onSelectQuick = { showCreateOption = false },
+                onSelectQuick = {
+                    showCreateOption = false
+                    quickCreateMode = true
+                },
             )
         }
     }

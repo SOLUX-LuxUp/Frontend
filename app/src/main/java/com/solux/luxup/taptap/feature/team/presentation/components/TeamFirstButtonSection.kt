@@ -38,35 +38,60 @@ import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.feature.team.data.mockSuggestionsTogether
 import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
+import com.solux.luxup.taptap.R
 
 /**
- * 활동 탭에서 버튼이 아직 없을 때 노출되는 유도 섹션.
+ * 버튼을 빠르게 만들도록 돕는 유도 섹션.
  *
- * - 템플릿 건너뛴 팀: 라벨만
- * - 템플릿 선택한 팀: 라벨 + 카테고리 탭 + 추천 버튼 리스트(섹션 내부 스크롤)
+ * 두 상황에서 노출된다.
+ *  - 아직 버튼이 하나도 없는 팀 → "첫 번째 버튼을 만들어보세요" (활동 탭 진입 시 자동)
+ *  - 버튼이 있는 팀에서 "+" → 빠르게 만들기 → "버튼을 빠르게 만들어보세요" (닫기 버튼 노출)
  *
+ * 템플릿을 선택한 팀만 추천 리스트가 채워지며, 카테고리 탭으로 분류해 보여준다.
  * 추천 항목 탭 → POST /api/teams/{team_id}/buttons 로 개별 생성.
  * 생성된 항목은 다음 조회부터 목록에서 자동 제외된다.
  *
- * 첫 기록이 생기기 전까지 유지되며, 추천이 모두 소진되면(빈 배열) 라벨만 남는다.
+ * @param isFirstButton 버튼이 아직 없는 팀이면 true. 헤더 문구를 결정한다
+ * @param onClose null이 아니면 우측 상단에 닫기 버튼을 노출한다 (빠르게 만들기 모드)
  */
 @Composable
 fun TeamFirstButtonSection(
     suggestions: List<TeamButtonSuggestion>,
     onSuggestionClick: (TeamButtonSuggestion) -> Unit,
     modifier: Modifier = Modifier,
+    isFirstButton: Boolean = true,
+    onClose: (() -> Unit)? = null,
 ) {
     SectionCard(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
     ) {
-        Text(
-            text = "첫 번째 버튼을 만들어보세요",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF6D6D6D),
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = if (isFirstButton) "첫 번째 버튼을 만들어보세요"
+                else "버튼을 빠르게 만들어보세요",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF6D6D6D),
+                modifier = Modifier.align(Alignment.Center),
+            )
+
+            if (onClose != null) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_x),
+                    contentDescription = "닫기",
+                    tint = Color(0xFFB1B1B1),
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(16.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onClose,
+                        ),
+                )
+            }
+        }
 
         if (suggestions.isEmpty()) return@SectionCard
 

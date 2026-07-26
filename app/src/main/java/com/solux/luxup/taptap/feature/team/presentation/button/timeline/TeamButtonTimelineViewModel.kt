@@ -88,11 +88,19 @@ class TeamButtonTimelineViewModel(
 
     /**
      * 기록 삭제.
-     * TODO(백엔드): 팀 기록 삭제 API가 명세에 없음.
-     *  개인은 DELETE /api/buttons/{button_id}/records/{record_id} 가 있으나 팀 버전 확인 필요.
+     * DELETE /api/teams/{teamId}/buttons/{teamButtonId}/records/{record.recordId}
+     *
+     * 에러 정책 (연동 시 상태 코드로 분기):
+     *  - 404: 화면을 열어둔 사이 버튼이 삭제됨 → "삭제된 버튼이에요" 안내 후 목록으로 back
+     *  - 403: 본인 기록이 아님 → "본인 기록만 삭제할 수 있어요" (그 자리 유지)
+     *  - 그 외: "잠시 후 다시 시도해 주세요"
+     *
+     *  참고: 본인 기록에서만 액션 메뉴가 열리므로 403은 정상 플로우에선 발생하지 않지만,
+     *        상태가 바뀌는 경우를 대비해 방어적으로 처리한다.
      */
     fun deleteRecord(record: TeamButtonTimelineRecord) {
         viewModelScope.launch {
+            // TODO: 실제 호출로 교체
             runCatching { delay(200) }
                 .onSuccess { load() }
                 .onFailure { errorMessage = "기록을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요." }
@@ -101,11 +109,19 @@ class TeamButtonTimelineViewModel(
 
     /**
      * 메모·이모지 저장.
-     * TODO(백엔드): 팀 기록 상세 수정 API가 명세에 없음.
-     *  개인은 PATCH .../records/{record_id}/detail 가 있으나 팀 버전 확인 필요.
+     * PATCH /api/teams/{teamId}/buttons/{teamButtonId}/records/{record.recordId}/detail
+     *  body: { memo, emoji } — 키 생략 시 기존 값 유지, null이면 삭제, 값이 있으면 수정.
+     *  둘 다 키가 없으면 400이므로, 최소 한쪽은 키를 포함해 보낸다.
+     *
+     * 에러 정책 (연동 시 상태 코드로 분기):
+     *  - 400: memo·emoji 둘 다 없음 → 전송 전에 막아 발생하지 않도록 한다
+     *  - 404: 버튼이 삭제됨 → "삭제된 버튼이에요" 안내 후 목록으로 back
+     *  - 403: 본인 기록 아님 → "본인 기록만 수정할 수 있어요"
+     *  - 그 외: "잠시 후 다시 시도해 주세요"
      */
     fun saveMemo(record: TeamButtonTimelineRecord, memo: String?, emoji: String?) {
         viewModelScope.launch {
+            // TODO: 실제 호출로 교체
             runCatching { delay(200) }
                 .onSuccess { load() }
                 .onFailure { errorMessage = "메모를 저장하지 못했어요.\n잠시 후 다시 시도해 주세요." }

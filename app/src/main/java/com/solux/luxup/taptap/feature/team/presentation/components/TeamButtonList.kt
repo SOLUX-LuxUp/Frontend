@@ -18,13 +18,18 @@ fun TeamButtonList(
     onButtonClick: (TeamButton) -> Unit = {},
     onButtonLongClick: (TeamButton) -> Unit = {},
     onButtonMenuClick: (TeamButton) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    header: (@Composable () -> Unit)? = null,   // 추가
+
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 40.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        if (header != null) {
+            item { header() }
+        }
         items(buttons, key = { it.teamButtonId }) { button ->
             TeamButtonCard(
                 button = button,
