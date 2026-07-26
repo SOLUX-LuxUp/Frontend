@@ -65,7 +65,6 @@ data class TeamButtonDetail(
 data class MyButtonPermission(
     val hasTapPermission: Boolean,
     val permissionStatus: String?,
-    val isNotificationEnabled: Boolean,
 )
 
 /**
