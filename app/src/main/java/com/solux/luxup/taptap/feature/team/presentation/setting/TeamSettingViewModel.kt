@@ -90,7 +90,7 @@ class TeamSettingViewModel(
     fun toggleNotification() {
         val s = settings ?: return
         settings = s.copy(notificationEnabled = !s.notificationEnabled)
-        // TODO: PATCH 후 응답 isEnabled 로 최종 보정
+        // TODO: PATCH 후 응답 notificationEnabled 로 최종 보정 (API 명세 확정, data.notificationEnabled)
     }
 
     // ---- 멤버 액션 ----

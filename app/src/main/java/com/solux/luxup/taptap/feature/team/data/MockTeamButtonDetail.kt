@@ -25,7 +25,6 @@ object MockTeamButtonDetail {
         myPermission = MyButtonPermission(
             hasTapPermission = true,
             permissionStatus = "granted",
-            isNotificationEnabled = true,
         ),
         canEdit = true,
         canDelete = false,
