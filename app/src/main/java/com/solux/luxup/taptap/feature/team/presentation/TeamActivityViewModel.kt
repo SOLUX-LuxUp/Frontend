@@ -11,6 +11,8 @@ import com.solux.luxup.taptap.feature.team.data.mockTeamButtons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.solux.luxup.taptap.feature.team.data.mockSuggestionsTogether
+import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 
 /**
  * 팀 활동 탭 — 팀 공유 버튼 목록.
@@ -25,6 +27,9 @@ class TeamActivityViewModel(
 ) : ViewModel() {
 
     var buttons by mutableStateOf<List<TeamButton>>(emptyList())
+        private set
+
+    var suggestions by mutableStateOf<List<TeamButtonSuggestion>>(emptyList())
         private set
 
     var isLoading by mutableStateOf(true)
@@ -51,7 +56,30 @@ class TeamActivityViewModel(
             // TODO: GET /api/teams/{teamId}/buttons
             delay(200)
             buttons = mockTeamButtons
+            // TODO: GET /api/teams/{teamId}/template/suggestions
+            //  건너뛴 팀이면 빈 배열이 온다
+            suggestions = mockSuggestionsTogether
             isLoading = false
+        }
+    }
+
+    /**
+     * 추천 버튼 하나를 골라 팀 공유 버튼으로 생성한다.
+     * POST /api/teams/{teamId}/buttons
+     *  body: buttonName·iconName·iconColor·categoryId (description=null, tapPermission="all")
+     *  생성 성공 시 다음 조회부터 목록에서 자동 제외된다.
+     */
+    fun createFromSuggestion(suggestion: TeamButtonSuggestion) {
+        viewModelScope.launch {
+            // TODO: POST /api/teams/{teamId}/buttons 로 생성 후 재조회
+            runCatching { delay(200) }
+                .onSuccess {
+                    toastMessage = "'${suggestion.buttonName}' 버튼을 추가했어요"
+                    load()
+                }
+                .onFailure {
+                    errorMessage = "버튼을 추가하지 못했어요.\n잠시 후 다시 시도해 주세요."
+                }
         }
     }
 

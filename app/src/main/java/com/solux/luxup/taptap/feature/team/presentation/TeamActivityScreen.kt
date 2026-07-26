@@ -70,12 +70,11 @@ fun TeamActivityRoute(
             viewModel.consumeToast()
         }
     }
-
-    // TODO: ViewModel에 suggestions 상태 추가 후 아래 두 파라미터 연결
-    //  suggestions = viewModel.suggestions,
-    //  onSuggestionClick = viewModel::createFromSuggestion,
+    
     TeamActivityScreen(
         buttons = viewModel.buttons,
+        suggestions = viewModel.suggestions,                    // 추가
+        onSuggestionClick = viewModel::createFromSuggestion,
         isQuickCreateMode = isQuickCreateMode,
         onCloseQuickCreate = onCloseQuickCreate,
         onRecordTap = viewModel::recordTap,
