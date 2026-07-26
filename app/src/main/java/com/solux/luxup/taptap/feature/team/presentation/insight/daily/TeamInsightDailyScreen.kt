@@ -30,6 +30,7 @@ fun TeamInsightDailyScreen(
     data: TeamInsightDaily,
     currentUserId: Long,
     onTimelineSeeAll: () -> Unit,
+    onButtonSeeAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // 오늘 팀 기록 0건 → 통짜 빈 상태
@@ -78,7 +79,9 @@ fun TeamInsightDailyScreen(
         // ⑤ 가장 많이 기록한 버튼
         InsightMemberTopButtonSection(
             memberActivity = data.memberActivity,
-            currentUserId = currentUserId)
+            currentUserId = currentUserId,
+            onSeeAll = onButtonSeeAll
+        )
     }
 }
 
@@ -105,7 +108,8 @@ private fun TeamInsightDailyScreenPreview() {
         TeamInsightDailyScreen(
             data = MockTeamInsightDaily,
             currentUserId = 4L,
-            onTimelineSeeAll = {},             // ← 추가 (프리뷰엔 빈 람다)
+            onTimelineSeeAll = {},
+            onButtonSeeAll = {},
             modifier = Modifier.padding(horizontal = 40.dp)
         )
     }

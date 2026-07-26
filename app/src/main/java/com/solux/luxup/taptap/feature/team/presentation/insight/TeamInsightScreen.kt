@@ -51,6 +51,7 @@ enum class InsightViewMode {
 @Composable
 fun TeamInsightScreen(
     currentUserId: Long,
+    onNavigateToButtonAll: (InsightPeriod) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var period by remember { mutableStateOf(InsightPeriod.DAILY) }
@@ -87,19 +88,22 @@ fun TeamInsightScreen(
                         TeamInsightDailyScreen(
                             data = MockTeamInsightDaily,
                             currentUserId = currentUserId,
-                            onTimelineSeeAll = { viewMode = InsightViewMode.TIMELINE_ALL }  // 추가
+                            onTimelineSeeAll = { viewMode = InsightViewMode.TIMELINE_ALL },
+                            onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.DAILY) }
                         )
                     }
                     InsightPeriod.WEEKLY -> {
                         TeamInsightWeeklyScreen(
                             data = MockTeamInsightWeekly,
-                            currentUserId = currentUserId
+                            currentUserId = currentUserId,
+                            onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.WEEKLY) }
                         )
                     }
                     InsightPeriod.MONTHLY -> {
                         TeamInsightMonthlyScreen(
                             data = MockTeamInsightMonthly,
-                            currentUserId = currentUserId
+                            currentUserId = currentUserId,
+                            onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.MONTHLY) }
                         )
                     }
                 }
@@ -107,7 +111,7 @@ fun TeamInsightScreen(
             InsightViewMode.TIMELINE_ALL -> {
                 TeamInsightTimelineAllScreen(
                     timeline = MockTeamInsightDaily.timeline,
-                    onBack = { viewMode = InsightViewMode.NORMAL }   // 뒤로가기
+                    onBack = { viewMode = InsightViewMode.NORMAL }
                 )
             }
         }
@@ -211,5 +215,8 @@ private fun InsightDateNav(period: InsightPeriod) {
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 390, heightDp = 700)
 @Composable
 private fun TeamInsightScreenPreview() {
-    TeamInsightScreen(currentUserId = 4L)
+    TeamInsightScreen(
+        currentUserId = 4L,
+        onNavigateToButtonAll = {}
+    )
 }
