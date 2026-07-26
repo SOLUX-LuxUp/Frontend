@@ -287,8 +287,8 @@ private fun ReadOnlyField(
     Box(
         modifier = modifier
             .height(minHeight)
-            .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(10.dp))
+            .figmaDropShadow(cornerRadius = 10.dp)
+            .background(Color.White, RoundedCornerShape(10.dp))
             .padding(horizontal = 14.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -303,8 +303,8 @@ private fun ReadOnlyDescriptionField(text: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(91.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(10.dp))
+            .figmaDropShadow(cornerRadius = 10.dp)
+            .background(Color.White, RoundedCornerShape(10.dp))
             .padding(14.dp),
     ) {
         Text(text = text, fontSize = 14.sp, color = Color(0xFF6D6D6D))
@@ -327,19 +327,18 @@ private fun MemberPermissionSection(
 ) {
     Column {
         // 이미 권한이 있거나 요청 중이면 다시 요청할 수 없다 (409 방지)
+        // 요청 가능하면 진한 회색, 이미 권한 있음/요청됨이면 연한 회색
         val isPending = permissionStatus == PermissionStatus.PENDING
         val requestEnabled = !hasTapPermission && !isPending
 
+        val borderColor = if (requestEnabled) Color(0xFF6D6D6D) else Color(0xFFDADADA)
+        val textColor = if (requestEnabled) Color(0xFF6D6D6D) else Color(0xFFB1B1B1)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(41.dp)
-                .clip(RoundedCornerShape(11.dp))
-                .border(
-                    1.dp,
-                    if (requestEnabled) Color(0xFF6D6D6D) else Color(0xFFDADADA),
-                    RoundedCornerShape(11.dp),
-                )
+                .padding(horizontal = 1.dp)
+                .height(35.dp)
+                .border(1.dp, borderColor, RoundedCornerShape(17.5.dp))
                 .clickable(enabled = requestEnabled, onClick = onRequestPermission),
             contentAlignment = Alignment.Center,
         ) {
@@ -350,8 +349,8 @@ private fun MemberPermissionSection(
                     else -> "권한 요청"
                 },
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (requestEnabled) Color(0xFF6D6D6D) else Color(0xFFB1B1B1),
+                fontWeight = FontWeight.Medium,
+                color = textColor,
             )
         }
 
@@ -478,13 +477,13 @@ private fun MemberRow(
 private fun ApproveButton(onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(22.dp)
+            .size(24.dp)
             .clip(CircleShape)
-            .background(Brush.horizontalGradient(listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))))
+            .background(Color(0xFF2085FF))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        CheckMarkIcon(modifier = Modifier.size(13.dp), tint = Color.White, strokeRatio = 0.18f)
+        CheckMarkIcon(modifier = Modifier.size(14.dp), tint = Color.White, strokeRatio = 0.18f)
     }
 }
 
@@ -492,9 +491,9 @@ private fun ApproveButton(onClick: () -> Unit) {
 private fun DenyButton(onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(22.dp)
+            .size(24.dp)
             .clip(CircleShape)
-            .background(Color(0xFFDADADA))
+            .background(Color(0xFFB1B1B1))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -502,7 +501,7 @@ private fun DenyButton(onClick: () -> Unit) {
             painter = painterResource(R.drawable.ic_x),
             contentDescription = "거부",
             colorFilter = ColorFilter.tint(Color.White),
-            modifier = Modifier.size(9.dp),
+            modifier = Modifier.size(12.dp),
         )
     }
 }

@@ -109,7 +109,7 @@ fun TeamButtonTimelineScreen(
                         painter = painterResource(ButtonIcons.resOf(latest.iconName)),
                         contentDescription = null,
                         tint = IconColor.from(latest.iconColor).color,
-                        modifier = Modifier.size(27.dp),
+                        modifier = Modifier.size(38.dp),
                     )
                 }
                 Spacer(Modifier.width(18.dp))

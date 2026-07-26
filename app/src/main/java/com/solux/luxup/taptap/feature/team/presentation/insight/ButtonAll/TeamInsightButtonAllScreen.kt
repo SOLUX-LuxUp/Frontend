@@ -24,6 +24,7 @@ import com.solux.luxup.taptap.feature.team.presentation.insight.components.Membe
 // ⚠ 공용 헤더 — 실제 이름/경로로 교체
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingTopBar
 
+
 private val TitleColor = Color(0xFF1A1D22)
 private val SubColor = Color(0xFF8A94A6)
 
@@ -43,20 +44,20 @@ fun TeamInsightButtonAllScreen(
         SettingTopBar(
             title = teamName,
             onBack = onBack,
-            modifier = Modifier.padding(horizontal = 20.dp)   // ⚠ 다른 화면과 동일 값으로
+            modifier = Modifier.padding(horizontal = 40.dp)   // ⚠ 다른 화면과 동일 값으로
         )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(horizontal = 40.dp, vertical = 12.dp)
         ) {
             Text(
                 text = "가장 많이 기록한 버튼",
-                fontSize = 16.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = TitleColor
+                color = Color(0xFF1A1A1A)
             )
             Spacer(Modifier.height(16.dp))
 

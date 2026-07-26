@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.emoji2.emojipicker.EmojiPickerView
 import com.solux.luxup.taptap.feature.team.model.TeamButtonTimelineRecord
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -80,7 +82,10 @@ fun TeamRecordActionMenu(
     onDeleteClick: () -> Unit,
     onMemoClick: () -> Unit,
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
         TeamRecordActionMenuContent(
             hasMemo = hasMemo,
             onDeleteClick = onDeleteClick,
@@ -99,22 +104,25 @@ fun TeamRecordActionMenuContent(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
+            .width(268.dp)
+            .height(178.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(DialogBackground)
-            .padding(30.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+            .padding(horizontal = 29.dp, vertical = 26.dp),
+        verticalArrangement = Arrangement.spacedBy(11.dp),
     ) {
         DialogOutlinedButton(
             text = "기록 삭제",
             contentColor = DangerColor,
             onClick = onDeleteClick,
+            height = 57.dp,
         )
         DialogOutlinedButton(
             // 이미 메모가 있으면 "메모 수정"
             text = if (hasMemo) "메모 수정" else "메모 추가",
             contentColor = TextColor,
             onClick = onMemoClick,
+            height = 57.dp,
         )
     }
 }
@@ -127,7 +135,10 @@ fun TeamRecordDeleteConfirmDialog(
     onDismiss: () -> Unit,
     onConfirmDelete: () -> Unit,
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
         TeamRecordDeleteConfirmContent(
             recordedAt = record.recordedAt,
             onCancel = onDismiss,
@@ -148,66 +159,69 @@ fun TeamRecordDeleteConfirmContent(
 
     Column(
         modifier = modifier
-            .fillMaxWidth()
+            .width(268.dp)
+            .height(178.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(DialogBackground)
-            .padding(30.dp),
+            .padding(horizontal = 26.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Spacer(Modifier.height(22.dp))
+
         Text(
             "정말로 기록을 삭제할까요?",
             fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Medium,
             color = TextColor,
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(17.dp))
 
         // 어떤 기록을 지우는지 확인할 수 있게 시각과 경과 시간을 함께 보여준다
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .width(210.dp)
+                .height(43.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .padding(vertical = 14.dp, horizontal = 20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .background(Color.White),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = parsed?.let { timeOfDay(it) } ?: "-",
-                fontSize = 15.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = TextColor,
             )
+            Spacer(Modifier.width(25.dp))
             Text(
                 text = parsed?.let { elapsedText(it) }.orEmpty(),
-                fontSize = 15.sp,
-                color = Color(0xFFB1B1B1),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextColor,
             )
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(11.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
             DialogOutlinedButton(
                 text = "취소",
-                contentColor = TextColor,
+                contentColor = Color(0xFFB1B1B1),
                 onClick = onCancel,
-                modifier = Modifier.weight(1f),
-                verticalPadding = 12.dp,
-                fontSize = 16.sp,
-                cornerRadius = 22.dp,
+                modifier = Modifier.width(99.dp),
+                height = 43.dp,
+                fontSize = 18.sp,
+                cornerRadius = 100.dp,
             )
             DialogOutlinedButton(
                 text = "삭제",
-                contentColor = DangerColor,
+                contentColor = Color(0xFFF6989C),
                 onClick = onConfirmDelete,
-                modifier = Modifier.weight(1f),
-                verticalPadding = 12.dp,
-                fontSize = 16.sp,
-                cornerRadius = 22.dp,
+                modifier = Modifier.width(99.dp),
+                height = 43.dp,
+                fontSize = 18.sp,
+                cornerRadius = 100.dp,
             )
         }
     }
@@ -226,7 +240,10 @@ fun TeamMemoEmojiDialog(
     onDismiss: () -> Unit,
     onSave: (memo: String?, emoji: String?) -> Unit,
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
         TeamMemoEmojiContent(
             initialMemo = record.memo,
             initialEmoji = record.emoji,
@@ -253,11 +270,13 @@ fun TeamMemoEmojiContent(
 
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(DialogBackground)
-            .padding(30.dp),
+            .width(215.dp)
+            .clip(RoundedCornerShape(21.dp))
+            .background(Color(0xFFDEF0FF))
+            .padding(horizontal = 15.dp),
     ) {
+        Spacer(Modifier.height(16.dp))
+
         Row(modifier = Modifier.fillMaxWidth()) {
             MemoEmojiTab.entries.forEach { tab ->
                 TabItem(
@@ -269,7 +288,7 @@ fun TeamMemoEmojiContent(
             }
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
 
         when (selectedTab) {
             MemoEmojiTab.MEMO -> {
@@ -279,7 +298,7 @@ fun TeamMemoEmojiContent(
                     placeholder = { Text("메모를 입력하세요.", color = Color(0xFFB1B1B1)) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp),
+                        .height(102.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedContainerColor = Color.White,
@@ -301,20 +320,20 @@ fun TeamMemoEmojiContent(
             }
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(13.dp),
         ) {
             DialogOutlinedButton(
                 text = "취소",
                 contentColor = Color(0xFFFF7B7B),
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f),
-                verticalPadding = 12.dp,
-                fontSize = 16.sp,
-                cornerRadius = 22.dp,
+                height = 37.dp,
+                fontSize = 18.sp,
+                cornerRadius = 100.dp,
             )
             DialogOutlinedButton(
                 text = "저장",
@@ -324,11 +343,12 @@ fun TeamMemoEmojiContent(
                     onSave(memoText.ifBlank { null }, selectedEmoji)
                 },
                 modifier = Modifier.weight(1f),
-                verticalPadding = 12.dp,
-                fontSize = 16.sp,
-                cornerRadius = 22.dp,
+                height = 37.dp,
+                fontSize = 18.sp,
+                cornerRadius = 100.dp,
             )
         }
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -358,7 +378,7 @@ private fun TabItem(
         Text(
             label,
             fontSize = 18.sp,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+            fontWeight = FontWeight.Medium,
             color = TextColor,
         )
         Spacer(Modifier.height(15.dp))
@@ -545,18 +565,20 @@ private fun DialogOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     verticalPadding: Dp = 20.dp,
+    height: Dp? = null,
     fontSize: androidx.compose.ui.unit.TextUnit = 20.sp,
-    cornerRadius: Dp = 10.dp,
+    cornerRadius: Dp = 11.dp,
 ) {
     val shape = RoundedCornerShape(cornerRadius)
+    val base = modifier
+        .fillMaxWidth()
+        .let { if (height != null) it.height(height) else it }
+        .clip(shape)
+        .background(Color.White)
+        .border(1.dp, contentColor, shape)
+        .clickable(onClick = onClick)
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(Color.White)
-            .border(1.dp, contentColor, shape)
-            .clickable(onClick = onClick)
-            .padding(vertical = verticalPadding),
+        modifier = if (height != null) base else base.padding(vertical = verticalPadding),
         contentAlignment = Alignment.Center,
     ) {
         Text(text, fontSize = fontSize, fontWeight = FontWeight.Medium, color = contentColor)
@@ -598,7 +620,7 @@ private fun TeamRecordDeleteConfirmPreview() {
     )
 }
 
-@Preview(name = "메모 탭", showBackground = true, widthDp = 390, heightDp = 520)
+@Preview(name = "메모 탭", showBackground = true, widthDp = 390)
 @Composable
 private fun TeamMemoEmojiMemoPreview() {
     TeamMemoEmojiContent(
@@ -608,7 +630,7 @@ private fun TeamMemoEmojiMemoPreview() {
     )
 }
 
-@Preview(name = "이모지 탭", showBackground = true, widthDp = 390, heightDp = 600)
+@Preview(name = "이모지 탭", showBackground = true, widthDp = 390)
 @Composable
 private fun TeamMemoEmojiEmojiPreview() {
     TeamMemoEmojiContent(

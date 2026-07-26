@@ -26,14 +26,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.util.UserAvatar
 import com.solux.luxup.taptap.core.util.formatTimeAgo
 import com.solux.luxup.taptap.core.util.formatTimeOfDay
+import com.solux.luxup.taptap.feature.team.data.MockTeamButtonTimeline
 import com.solux.luxup.taptap.feature.team.model.TeamButtonTimelineRecord
 import com.solux.luxup.taptap.feature.team.model.TimelineDayGroup
-import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 /**
  * 팀 타임라인 일자 섹션.
@@ -67,7 +68,7 @@ fun TeamRecordTimelineSection(
 }
 
 private val MarkerAnchorHeight = 70.dp
-private val MarkerSlotSize = 40.dp
+private val MarkerSlotSize = 30.dp
 private val ConnectorGap = 6.dp
 
 @Composable
@@ -85,11 +86,11 @@ private fun TeamRecordTimelineItem(
             .height(IntrinsicSize.Min)
             // 본인이 남긴 기록에서만 액션 메뉴가 열린다
             .clickable(enabled = isMine) { onClick() }
-            .padding(horizontal = 15.dp)
+            .padding(horizontal = 5.dp)
     ) {
         Box(
             modifier = Modifier
-                .width(30.dp)
+                .width(18.dp)
                 .fillMaxHeight()
         ) {
             val connectorClearance = MarkerAnchorHeight / 2 + MarkerSlotSize / 2 + ConnectorGap
@@ -112,7 +113,7 @@ private fun TeamRecordTimelineItem(
                         .background(Color(0xFFD0D0D0))
                 )
             }
-            val markerSize = if (record.emoji != null) 40.dp else 10.dp
+            val markerSize = if (record.emoji != null) 30.dp else 10.dp
             val markerTopOffset = (MarkerAnchorHeight - markerSize) / 2
             if (record.emoji != null) {
                 Box(
@@ -124,8 +125,8 @@ private fun TeamRecordTimelineItem(
                 ) {
                     Text(
                         text = record.emoji,
-                        fontSize = 30.sp,
-                        lineHeight = 30.sp,
+                        fontSize = 24.sp,
+                        lineHeight = 24.sp,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -155,7 +156,7 @@ private fun TeamRecordTimelineItem(
             ) {
                 Text(
                     text = formatTimeAgo(record.recordedAt),
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = Color(0xFF6D6D6D),
                     modifier = Modifier.width(60.dp)
                 )
@@ -168,19 +169,19 @@ private fun TeamRecordTimelineItem(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(7.dp)
+                            .size(6.dp)
                             .clip(CircleShape)
-                            .background(BlueGradientStart)
+                            .background(Color(0xFF2085FF))
                     )
                 }
                 Text(
                     text = formatTimeOfDay(record.recordedAt),
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF6D6D6D)
                 )
                 Spacer(Modifier.width(12.dp))
-                UserAvatar(imageUrl = record.recordedBy.profileImageUrl, size = 24.dp)
+                UserAvatar(imageUrl = record.recordedBy.profileImageUrl, size = 31.dp)
                 Spacer(Modifier.width(6.dp))
                 Text(
                     text = record.recordedBy.displayName,
@@ -199,6 +200,33 @@ private fun TeamRecordTimelineItem(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+        }
+    }
+}
+
+@Preview(name = "타임라인 섹션 - 오늘", showBackground = true, widthDp = 390)
+@Composable
+private fun TeamRecordTimelineSectionPreview() {
+    val group = groupTeamRecordsByDay(MockTeamButtonTimeline.records).first()
+    TeamRecordTimelineSection(
+        group = group,
+        currentUserId = 1L,
+        onItemClick = {},
+        modifier = Modifier.padding(vertical = 20.dp),
+    )
+}
+
+@Preview(name = "타임라인 섹션 - 전체", showBackground = true, widthDp = 390, heightDp = 700)
+@Composable
+private fun TeamRecordTimelineAllPreview() {
+    Column(modifier = Modifier.padding(vertical = 20.dp)) {
+        groupTeamRecordsByDay(MockTeamButtonTimeline.records).forEach { group ->
+            TeamRecordTimelineSection(
+                group = group,
+                currentUserId = 1L,
+                onItemClick = {},
+            )
+            Spacer(Modifier.height(20.dp))
         }
     }
 }
