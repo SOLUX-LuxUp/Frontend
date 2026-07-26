@@ -59,7 +59,7 @@ fun TeamDetailScreen(
     onEditButton: (Long) -> Unit = {},
     onOpenButtonInfo: (Long) -> Unit = {},
     onOpenButtonTimeline: (Long) -> Unit = {},
-    onNavItemSelected: (BottomNavItem) -> Unit = {},
+    onNavigateToInsightButtonAll: (teamId: Long, period: String) -> Unit = { _, _ -> },    onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
@@ -109,7 +109,12 @@ fun TeamDetailScreen(
                     onNavigateToTimeline = { onOpenButtonTimeline(it.teamButtonId) },
                     onNavigateToInfo = { onOpenButtonInfo(it.teamButtonId) },
                 )
-                TeamDetailTab.INSIGHT  -> TeamInsightScreen(currentUserId = currentUserId)
+                TeamDetailTab.INSIGHT  -> TeamInsightScreen(
+                    currentUserId = currentUserId,
+                    onNavigateToButtonAll = { period ->
+                        onNavigateToInsightButtonAll(teamId, period.name)   // 위로 전달
+                    }
+                )
                 TeamDetailTab.MEMBER   -> {
                     val memberId = selectedMemberId
                     if (memberId == null) {

@@ -61,6 +61,11 @@ import com.solux.luxup.taptap.feature.team.presentation.create.TeamCreateRoute
 import com.solux.luxup.taptap.feature.team.presentation.create.teamCreateGraph
 import com.solux.luxup.taptap.feature.team.presentation.setting.TeamSettingRoute
 import com.solux.luxup.taptap.feature.team.presentation.setting.teamSettingGraph
+import com.solux.luxup.taptap.feature.team.data.MockTeamInsightDaily
+import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
+import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
+import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllRoute
+import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllScreen
 
 // TODO: 로그인 유저가 속한 팀 id로 교체 (현재는 임시 고정값)
 private const val CURRENT_TEAM_ID = 1L
@@ -430,8 +435,37 @@ class MainActivity : ComponentActivity() {
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             },
+                            onNavigateToInsightButtonAll = { tId, period ->
+                                navController.navigate(TeamInsightButtonAllRoute.route(tId, period))
+                            },
                         )
                     }
+
+                    composable(
+                        TeamInsightButtonAllRoute.ROUTE,
+                        arguments = listOf(
+                            navArgument(TeamInsightButtonAllRoute.ARG_TEAM_ID) { type = NavType.LongType },
+                            navArgument(TeamInsightButtonAllRoute.ARG_PERIOD) { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val teamId = backStackEntry.arguments?.getLong(TeamInsightButtonAllRoute.ARG_TEAM_ID) ?: 0L
+                        val period = backStackEntry.arguments?.getString(TeamInsightButtonAllRoute.ARG_PERIOD) ?: "DAILY"
+
+                        // period로 어느 Mock 쓸지 결정
+                        val memberActivity = when (period) {
+                            "WEEKLY" -> MockTeamInsightWeekly.memberActivity
+                            "MONTHLY" -> MockTeamInsightMonthly.memberActivity
+                            else -> MockTeamInsightDaily.memberActivity
+                        }
+
+                        TeamInsightButtonAllScreen(
+                            teamName = "LUX-UP",              // TODO: 실제 팀명 조회로 교체 (지금은 Mock)
+                            memberActivity = memberActivity,
+                            currentUserId = 1L,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+
                     // 팀 생성 — 만들기 / 초대코드 공유 / 템플릿 선택 (ViewModel 공유)
                     teamCreateGraph(
                         navController = navController,

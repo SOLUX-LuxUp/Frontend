@@ -30,6 +30,7 @@ import com.solux.luxup.taptap.feature.team.presentation.insight.weekly.component
 fun TeamInsightWeeklyScreen(
     data: TeamInsightWeekly,
     currentUserId: Long,
+    onButtonSeeAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // 이번 주 기록 0건 → 통짜 빈 상태
@@ -76,7 +77,8 @@ fun TeamInsightWeeklyScreen(
         // ⑥ 가장 많이 기록한 버튼
         InsightMemberTopButtonSection(
             memberActivity = data.memberActivity,
-            currentUserId = currentUserId
+            currentUserId = currentUserId,
+            onSeeAll = onButtonSeeAll
         )
     }
 }
@@ -104,6 +106,7 @@ private fun TeamInsightWeeklyScreenPreview() {
         TeamInsightWeeklyScreen(
             data = MockTeamInsightWeekly,
             currentUserId = 4L, // ⚠ 하드코딩 — 정수민 인증 연동 후 실제 값으로
+            onButtonSeeAll = {},
             modifier = Modifier.padding(horizontal = 40.dp) // 셸 여백 흉내
         )
     }
@@ -121,7 +124,8 @@ private fun TeamInsightWeeklyScreenEmptyPreview() {
                 buttonTapCounts = emptyList(),
                 memberActivity = emptyList()
             ),
-            currentUserId = 4L
+            currentUserId = 4L,
+            onButtonSeeAll = {},
         )
     }
 }
