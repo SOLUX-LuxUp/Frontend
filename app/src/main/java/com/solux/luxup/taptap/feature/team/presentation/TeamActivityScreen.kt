@@ -55,6 +55,8 @@ fun TeamActivityRoute(
     onNavigateToTimeline: (TeamButton) -> Unit,
     onNavigateToInfo: (TeamButton) -> Unit,
     modifier: Modifier = Modifier,
+    isQuickCreateMode: Boolean = false,
+    onCloseQuickCreate: () -> Unit = {},
 ) {
     val viewModel: TeamActivityViewModel = viewModel(
         factory = TeamActivityViewModel.factory(teamId, currentUserId),
@@ -69,11 +71,12 @@ fun TeamActivityRoute(
         }
     }
 
-    // TODO: ViewModel에 suggestions 상태 추가 후 아래 두 파라미터 연결
-    //  suggestions = viewModel.suggestions,
-    //  onSuggestionClick = viewModel::createFromSuggestion,
     TeamActivityScreen(
         buttons = viewModel.buttons,
+        suggestions = viewModel.suggestions,                    // 추가
+        onSuggestionClick = viewModel::createFromSuggestion,
+        isQuickCreateMode = isQuickCreateMode,
+        onCloseQuickCreate = onCloseQuickCreate,
         onRecordTap = viewModel::recordTap,
         onDeleteButton = viewModel::deleteButton,
         onNavigateToTimeline = onNavigateToTimeline,
@@ -102,6 +105,8 @@ fun TeamActivityScreen(
     buttons: List<TeamButton>,
     suggestions: List<TeamButtonSuggestion> = emptyList(),
     onSuggestionClick: (TeamButtonSuggestion) -> Unit = {},
+    isQuickCreateMode: Boolean = false,
+    onCloseQuickCreate: () -> Unit = {},
     onRecordTap: (TeamButton) -> Unit = {},
     onDeleteButton: (TeamButton) -> Unit = {},
     onNavigateToTimeline: (TeamButton) -> Unit = {},
@@ -141,26 +146,37 @@ fun TeamActivityScreen(
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
         }
 
-        if (buttons.isEmpty()) {
-            TeamFirstButtonSection(
-                suggestions = suggestions,
-                onSuggestionClick = onSuggestionClick,
-                modifier = Modifier.padding(horizontal = 40.dp, vertical = 12.dp),
-            )
-        } else {
-            TeamButtonList(
-                buttons = buttons,
-                onButtonClick = { button ->
-                    // tapPermission=custom이고 권한이 없으면 기록할 수 없다
-                    if (button.hasTapPermission) {
-                        onRecordTap(button)
-                    } else {
-                        localNotice = NO_TAP_PERMISSION_MESSAGE
-                    }
-                },
-                onButtonLongClick = onNavigateToTimeline,
-                onButtonMenuClick = { menuTarget = it },
-            )
+        when {
+            buttons.isEmpty() -> {
+                TeamFirstButtonSection(
+                    suggestions = suggestions,
+                    onSuggestionClick = onSuggestionClick,
+                    isFirstButton = true,
+                    modifier = Modifier.padding(horizontal = 40.dp, vertical = 12.dp),
+                )
+            }
+
+            else -> {
+                TeamButtonList(
+                    buttons = buttons,
+                    onButtonClick = { button ->
+                        if (button.hasTapPermission) onRecordTap(button)
+                        else localNotice = NO_TAP_PERMISSION_MESSAGE
+                    },
+                    onButtonLongClick = onNavigateToTimeline,
+                    onButtonMenuClick = { menuTarget = it },
+                    header = if (isQuickCreateMode) {
+                        {
+                            TeamFirstButtonSection(
+                                suggestions = suggestions,
+                                onSuggestionClick = onSuggestionClick,
+                                isFirstButton = false,
+                                onClose = onCloseQuickCreate,
+                            )
+                        }
+                    } else null,
+                )
+            }
         }
     }
 
@@ -242,7 +258,7 @@ private fun TeamActivityScreenPreview() {
     TeamActivityScreen(buttons = mockTeamButtons)
 }
 
-/** 템플릿을 선택한 팀의 초기 화면 */
+/** 템플릿을 선택한 팀의 초기 화면 (버튼 없음) */
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, heightDp = 700)
 @Composable
 private fun TeamActivityScreenTemplatePreview() {
@@ -252,12 +268,23 @@ private fun TeamActivityScreenTemplatePreview() {
     )
 }
 
-/** 템플릿을 건너뛴 팀의 초기 화면 */
+/** 템플릿을 건너뛴 팀의 초기 화면 (버튼 없음) */
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, heightDp = 700)
 @Composable
 private fun TeamActivityScreenSkipPreview() {
     TeamActivityScreen(
         buttons = emptyList(),
         suggestions = emptyList(),
+    )
+}
+
+/** 버튼이 있는 팀에서 빠르게 만들기 모드 */
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, heightDp = 700)
+@Composable
+private fun TeamActivityScreenQuickCreatePreview() {
+    TeamActivityScreen(
+        buttons = mockTeamButtons,
+        suggestions = mockSuggestionsTogether,
+        isQuickCreateMode = true,
     )
 }
