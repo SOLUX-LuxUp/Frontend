@@ -120,7 +120,11 @@ fun TeamListScreen(
                 showJoinModal = false
                 joinCode = ""
             },
-            onSubmit = { onJoinTeam(joinCode) },
+            onSubmit = {
+                onJoinTeam(joinCode)     // 바깥에 알림 (API 연결)
+                showJoinModal = false    // 여기서 닫기
+                joinCode = ""
+            },
             errorMessage = joinErrorMessage,
         )
     }

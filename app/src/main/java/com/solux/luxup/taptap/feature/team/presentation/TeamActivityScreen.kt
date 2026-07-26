@@ -70,7 +70,7 @@ fun TeamActivityRoute(
             viewModel.consumeToast()
         }
     }
-    
+
     TeamActivityScreen(
         buttons = viewModel.buttons,
         suggestions = viewModel.suggestions,                    // 추가
