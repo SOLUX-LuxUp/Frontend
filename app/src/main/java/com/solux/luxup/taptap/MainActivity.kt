@@ -430,9 +430,14 @@ class MainActivity : ComponentActivity() {
                             sessionId = backStackEntry.id,
                             teamId = teamId,
                         )
+                        val teamDetailViewModel = hiltViewModel<
+                            com.solux.luxup.taptap.feature.team.presentation.TeamDetailViewModel,
+                            com.solux.luxup.taptap.feature.team.presentation.TeamDetailViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(teamId) })
                         TeamDetailScreen(
                             teamId = teamId,
                             currentUserId = currentUserId,
+                            hasSelectedTemplate = teamDetailViewModel.hasSelectedTemplate,
                             onExit = { navController.popBackStack() },
                             // + → 직접 만들기
                             onCreateButton = {

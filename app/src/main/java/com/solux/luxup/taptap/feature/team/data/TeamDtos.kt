@@ -161,3 +161,60 @@ data class LeaveTeamResponseDto(
     val userId: Long,
     val leftAt: String,
 )
+
+// ---- team-template-controller ----
+
+@Serializable
+data class TeamTemplateDto(
+    val templateId: Long,
+    val templateType: String,
+    val templateName: String,
+    val description: String? = null,
+    val subDescription: String? = null,
+)
+
+@Serializable
+data class TeamTemplateStatusResponseDto(
+    val hasSelectedTemplate: Boolean = false,
+    val isSkipped: Boolean = false,
+    val templateId: Long? = null,
+    val templateType: String? = null,
+    val templateName: String? = null,
+)
+
+@Serializable
+data class ApplyTeamTemplateRequestDto(
+    val templateId: Long,
+)
+
+@Serializable
+data class TeamButtonCategoryResponseDto(
+    val categoryId: Long,
+    val categoryName: String? = null,
+    val categoryColor: String? = null,
+    val displayOrder: Int? = null,
+)
+
+@Serializable
+data class ApplyTeamTemplateResponseDto(
+    val teamId: Long,
+    val templateId: Long,
+    val templateType: String? = null,
+    val templateName: String? = null,
+    val categories: List<TeamButtonCategoryResponseDto> = emptyList(),
+)
+
+@Serializable
+data class SkipTeamTemplateResponseDto(
+    val teamId: Long,
+    val isSkipped: Boolean,
+)
+
+@Serializable
+data class TemplateSuggestionDto(
+    val buttonName: String,
+    val iconName: String,
+    val iconColor: String,
+    val categoryId: Long? = null,
+    val categoryName: String? = null,
+)

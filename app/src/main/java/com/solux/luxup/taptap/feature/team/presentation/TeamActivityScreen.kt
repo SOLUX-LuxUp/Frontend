@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.util.CategoryDropdown
 import com.solux.luxup.taptap.core.util.SearchBar
@@ -58,8 +58,8 @@ fun TeamActivityRoute(
     isQuickCreateMode: Boolean = false,
     onCloseQuickCreate: () -> Unit = {},
 ) {
-    val viewModel: TeamActivityViewModel = viewModel(
-        factory = TeamActivityViewModel.factory(teamId, currentUserId),
+    val viewModel: TeamActivityViewModel = hiltViewModel<TeamActivityViewModel, TeamActivityViewModel.Factory>(
+        creationCallback = { factory -> factory.create(teamId, currentUserId) },
     )
     val context = LocalContext.current
 

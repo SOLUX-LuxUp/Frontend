@@ -54,6 +54,8 @@ fun TeamDetailScreen(
     initialTab: TeamDetailTab = TeamDetailTab.ACTIVITY,
     initialMemberId: Long? = null,               // ← 추가: 프리뷰/딥링크용 초기 선택 멤버
     currentUserId: Long = 4L,                    // 임시 (로그인 유저 id, API 연결 시 교체)
+    /** GET /api/teams/{team_id}/template 의 hasSelectedTemplate. 호출부(MainActivity)에서 채워준다 */
+    hasSelectedTemplate: Boolean = true,
     onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
     onCreateButton: () -> Unit = {},
     onOpenTeamSettings: () -> Unit = {},
@@ -67,8 +69,6 @@ fun TeamDetailScreen(
     var selectedMemberId by remember { mutableStateOf(initialMemberId) }
     var showCreateOption by remember { mutableStateOf(false) }
     var quickCreateMode by remember { mutableStateOf(false) }
-    // TODO: GET /api/teams/{teamId}/template 의 hasSelectedTemplate 로 교체
-    val hasSelectedTemplate = true
         Scaffold(
         modifier = modifier,
         bottomBar = {
