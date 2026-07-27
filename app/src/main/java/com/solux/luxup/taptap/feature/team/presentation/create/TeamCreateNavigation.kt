@@ -2,7 +2,7 @@ package com.solux.luxup.taptap.feature.team.presentation.create
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -158,5 +158,5 @@ private fun androidx.navigation.NavBackStackEntry.sharedCreateViewModel(
     val parentEntry = remember(this) {
         navController.getBackStackEntry(TeamCreateRoute.GRAPH)
     }
-    return viewModel(parentEntry)
+    return hiltViewModel(parentEntry)
 }

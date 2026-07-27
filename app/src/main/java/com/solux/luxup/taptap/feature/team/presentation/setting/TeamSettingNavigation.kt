@@ -9,7 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -70,10 +70,9 @@ private fun NavBackStackEntry.settingViewModel(
         navController.getBackStackEntry(TeamSettingRoute.GRAPH_PATTERN)
     }
     val teamId = parentEntry.teamId()
-    return viewModel(
+    return hiltViewModel<TeamSettingViewModel, TeamSettingViewModel.Factory>(
         viewModelStoreOwner = parentEntry,
-        factory = TeamSettingViewModel.factory(teamId, currentUserId),
-    )
+    ) { factory -> factory.create(teamId, currentUserId) }
 }
 
 /**

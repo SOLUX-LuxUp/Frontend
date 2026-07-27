@@ -60,6 +60,7 @@ fun TeamListScreen(
     onNavigateToTeamCreate: () -> Unit = {},
     onNavigateToTeamDetail: (Long) -> Unit = {},
     onJoinTeam: (String) -> Unit = {},
+    onFavoriteClick: (Long) -> Unit = {},
     joinErrorMessage: String? = null,
     onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier
@@ -94,6 +95,7 @@ fun TeamListScreen(
                     TeamCard(
                         team = team,
                         onClick = { onNavigateToTeamDetail(team.teamId) },   // teamId만 전달
+                        onFavoriteClick = { onFavoriteClick(team.teamId) },
                     )
                 }
             }
