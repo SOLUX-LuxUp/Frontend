@@ -118,6 +118,7 @@ fun LoginScreen(
                 .height(54.dp),
             shape = RoundedCornerShape(10.dp),
             visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = Color(0xFFEEEEEE),
                 focusedContainerColor = Color(0xFFEEEEEE),

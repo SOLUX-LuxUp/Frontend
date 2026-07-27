@@ -13,7 +13,10 @@ class AuthRepository @Inject constructor(
 ) {
     suspend fun login(email: String, password: String): Result<LoginResponseDto> =
         apiCallHandler.execute { authApi.login(LoginRequestDto(email, password)) }
-            .onSuccess { tokenManager.saveTokens(it.accessToken, it.refreshToken) }
+            .onSuccess {
+                tokenManager.saveTokens(it.accessToken, it.refreshToken)
+                tokenManager.saveUserId(it.userId)
+            }
 
     suspend fun register(
         email: String,
@@ -23,11 +26,17 @@ class AuthRepository @Inject constructor(
     ): Result<RegisterResponseDto> =
         apiCallHandler.execute {
             authApi.register(RegisterRequestDto(email, verificationCode, password, username))
-        }.onSuccess { tokenManager.saveTokens(it.accessToken, it.refreshToken) }
+        }.onSuccess {
+            tokenManager.saveTokens(it.accessToken, it.refreshToken)
+            tokenManager.saveUserId(it.userId)
+        }
 
     suspend fun googleLogin(idToken: String): Result<GoogleLoginResponseDto> =
         apiCallHandler.execute { authApi.googleLogin(GoogleLoginRequestDto(idToken)) }
-            .onSuccess { tokenManager.saveTokens(it.accessToken, it.refreshToken) }
+            .onSuccess {
+                tokenManager.saveTokens(it.accessToken, it.refreshToken)
+                tokenManager.saveUserId(it.userId)
+            }
 
     suspend fun sendVerificationCode(email: String): Result<VerificationCodeResponseDto> =
         apiCallHandler.execute { authApi.sendVerificationCode(VerificationCodeRequestDto(email)) }

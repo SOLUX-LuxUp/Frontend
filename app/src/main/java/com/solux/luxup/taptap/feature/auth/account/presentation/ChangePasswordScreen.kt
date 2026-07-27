@@ -49,6 +49,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -182,7 +183,10 @@ fun ChangePasswordScreen(
                 },
                 isError = currentPasswordError,
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next
+                ),
                 keyboardActions = KeyboardActions(
                     onNext = {
                         if (tryLeaveCurrentPassword()) {
@@ -244,6 +248,7 @@ fun ChangePasswordScreen(
                 onValueChange = { newPassword = it },
                 placeholder = { Text("새로운 비밀번호", color = Color(0xFFB1B1B1)) },
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
@@ -275,6 +280,7 @@ fun ChangePasswordScreen(
                         )
                     }
                 },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
