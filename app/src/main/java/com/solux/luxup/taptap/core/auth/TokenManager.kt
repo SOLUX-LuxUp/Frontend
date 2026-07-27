@@ -43,15 +43,23 @@ class TokenManager @Inject constructor(
         prefs.edit().putString(KEY_ACCESS_TOKEN, accessToken).apply()
     }
 
+    @Synchronized
+    fun saveUserId(userId: Long) {
+        prefs.edit().putLong(KEY_USER_ID, userId).apply()
+    }
+
     fun getAccessToken(): String? = prefs.getString(KEY_ACCESS_TOKEN, null)
 
     fun getRefreshToken(): String? = prefs.getString(KEY_REFRESH_TOKEN, null)
+
+    fun getUserId(): Long? = prefs.getLong(KEY_USER_ID, -1L).takeIf { it != -1L }
 
     @Synchronized
     fun clearTokens() {
         prefs.edit()
             .remove(KEY_ACCESS_TOKEN)
             .remove(KEY_REFRESH_TOKEN)
+            .remove(KEY_USER_ID)
             .apply()
     }
 
@@ -61,5 +69,6 @@ class TokenManager @Inject constructor(
         const val PREFS_FILE_NAME = "auth_secure_prefs"
         const val KEY_ACCESS_TOKEN = "access_token"
         const val KEY_REFRESH_TOKEN = "refresh_token"
+        const val KEY_USER_ID = "user_id"
     }
 }

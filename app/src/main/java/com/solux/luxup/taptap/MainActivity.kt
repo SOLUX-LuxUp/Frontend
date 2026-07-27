@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.NavController
+import com.solux.luxup.taptap.core.auth.TokenManager
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountInfoScreen
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountSettingsScreen
@@ -67,6 +68,7 @@ import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
 import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllRoute
 import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllScreen
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 // TODO: 로그인 유저가 속한 팀 id로 교체 (현재는 임시 고정값)
 private const val CURRENT_TEAM_ID = 1L
@@ -88,9 +90,15 @@ private fun NavController.navigateToTab(item: BottomNavItem) {
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // 로그인 시 AuthRepository가 저장한 userId. 로그인 화면을 거치지 않고는 이 지점에 도달하지 않는다.
+        val currentUserId = tokenManager.getUserId() ?: -1L
         setContent {
             TapTapTheme {
                 val navController = rememberNavController()
@@ -401,7 +409,7 @@ class MainActivity : ComponentActivity() {
                         )
                         TeamDetailScreen(
                             teamId = teamId,
-                            currentUserId = 1L,   // mockTeamSettings.ownerUserId = 1 과 맞춰야 팀장 화면. API 연결 시 로그인 id로 교체
+                            currentUserId = currentUserId,
                             onExit = { navController.popBackStack() },
                             // + → 직접 만들기
                             onCreateButton = {
@@ -452,7 +460,7 @@ class MainActivity : ComponentActivity() {
                             teamName = "LUX-UP",              // TODO: 실제 팀명 조회로 교체 (지금은 Mock)
                             teamId = teamId,
                             memberActivity = memberActivity,
-                            currentUserId = 1L,
+                            currentUserId = currentUserId,
                             onBack = { navController.popBackStack() }
                         )
                     }
@@ -470,33 +478,33 @@ class MainActivity : ComponentActivity() {
                     // 팀 버튼 생성 — 만들기 / 아이콘 선택 / 멤버 권한 설정 (ViewModel 공유)
                     teamButtonCreateGraph(
                         navController = navController,
-                        currentUserId = 4L,   // TODO: 로그인 유저 id로 교체
+                        currentUserId = currentUserId,
                         onCreated = { navController.popBackStack() }
                     )
 
                     // 팀 버튼 수정 — 생성 화면을 공유하고 상세 조회로 초기값을 채운다
                     teamButtonEditGraph(
                         navController = navController,
-                        currentUserId = 4L,
+                        currentUserId = currentUserId,
                         onUpdated = { navController.popBackStack() }
                     )
 
                     // 팀 버튼 정보 — 관리자/비관리자 분기, 우상단 아이콘으로 수정 진입
                     teamButtonInfoScreen(
                         navController = navController,
-                        currentUserId = 4L,
+                        currentUserId = currentUserId,
                     )
 
                     // 팀 버튼 타임라인 — 목록에서 길게 누르기로 진입
                     teamButtonTimelineScreen(
                         navController = navController,
-                        currentUserId = 4L,
+                        currentUserId = currentUserId,
                     )
 
                     // 팀 설정 · 팀 관리 — 6개 화면이 TeamSettingViewModel 공유
                     teamSettingGraph(
                         navController = navController,
-                        currentUserId = 1L,   // 위 TeamDetailScreen 과 동일 값 유지
+                        currentUserId = currentUserId,
                         onExitTeam = {
                             // 팀 나가기 / 팀 삭제 후 팀 목록으로. 팀 스페이스 스택을 걷어낸다.
                             navController.navigate("teamList") {
