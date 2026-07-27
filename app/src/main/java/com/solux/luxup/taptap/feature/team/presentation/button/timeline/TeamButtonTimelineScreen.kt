@@ -60,6 +60,7 @@ fun TeamButtonTimelineScreen(
     latest: TeamButtonLatest,
     records: List<TeamButtonTimelineRecord>,
     currentUserId: Long,
+    teamId: Long,
     hasMore: Boolean,
     onBack: () -> Unit,
     onEditButton: () -> Unit,
@@ -83,6 +84,8 @@ fun TeamButtonTimelineScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
+        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -235,6 +238,7 @@ private fun TeamButtonTimelineScreenPreview() {
         latest = MockTeamButtonTimeline.latest,
         records = MockTeamButtonTimeline.records,
         currentUserId = 1L,
+        teamId = 1L,
         hasMore = true,
         onBack = {},
         onEditButton = {},

@@ -91,7 +91,10 @@ fun TeamListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(teams) { team ->
-                    TeamCard(team = team)
+                    TeamCard(
+                        team = team,
+                        onClick = { onNavigateToTeamDetail(team.teamId) },   // teamId만 전달
+                    )
                 }
             }
         }

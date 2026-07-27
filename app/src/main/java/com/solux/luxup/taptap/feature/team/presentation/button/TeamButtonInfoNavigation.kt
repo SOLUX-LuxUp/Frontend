@@ -56,6 +56,7 @@ fun NavGraphBuilder.teamButtonInfoScreen(
             TeamButtonInfoScreen(
                 detail = detail,
                 currentUserId = currentUserId,
+                teamId = teamId,
                 allowedMembers = viewModel.allowedMembers,
                 permissionRequests = viewModel.permissionRequests,
                 onBack = { navController.popBackStack() },

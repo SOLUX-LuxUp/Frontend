@@ -409,6 +409,10 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("teamId") { type = NavType.LongType })
                     ) { backStackEntry ->
                         val teamId = backStackEntry.arguments?.getLong("teamId") ?: 0L
+                        com.solux.luxup.taptap.feature.team.presentation.components.ResetTeamDeletionDismissalOnEntry(
+                            sessionId = backStackEntry.id,
+                            teamId = teamId,
+                        )
                         TeamDetailScreen(
                             teamId = teamId,
                             currentUserId = 1L,   // mockTeamSettings.ownerUserId = 1 과 맞춰야 팀장 화면. API 연결 시 로그인 id로 교체
@@ -460,6 +464,7 @@ class MainActivity : ComponentActivity() {
 
                         TeamInsightButtonAllScreen(
                             teamName = "LUX-UP",              // TODO: 실제 팀명 조회로 교체 (지금은 Mock)
+                            teamId = teamId,
                             memberActivity = memberActivity,
                             currentUserId = 1L,
                             onBack = { navController.popBackStack() }
