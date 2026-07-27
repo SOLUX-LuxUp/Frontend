@@ -64,6 +64,8 @@ fun TeamDeleteScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
+        Spacer(Modifier.height(70.dp))
+
         // 제목 없이 뒤로가기만 있는 상단바
         Box(
             modifier = Modifier

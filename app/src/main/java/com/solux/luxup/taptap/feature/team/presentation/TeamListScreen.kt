@@ -175,7 +175,7 @@ private fun AppLogo() {
         fontSize = 22.sp,
         fontWeight = FontWeight.SemiBold,
         color = Color(0xFF1A1A1A),
-        modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 16.dp, start = 40.dp, end = 40.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 70.dp, bottom = 16.dp, start = 40.dp, end = 40.dp),
         textAlign = androidx.compose.ui.text.style.TextAlign.Center
     )
 }

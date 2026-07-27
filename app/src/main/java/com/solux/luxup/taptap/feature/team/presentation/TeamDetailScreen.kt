@@ -176,7 +176,7 @@ private fun TeamDetailTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 12.dp),  // top을 팀 목록과 동일하게
+            .padding(start = 16.dp, end = 16.dp, top = 70.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(

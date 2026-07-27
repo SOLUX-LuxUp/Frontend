@@ -187,31 +187,35 @@ fun SettingTopBar(
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = title,
-            fontSize = SettingSpec.TitleSize,
-            lineHeight = SettingSpec.TitleSize,
-            fontWeight = FontWeight.SemiBold,
-            color = SettingSpec.TitleColor,
-        )
-        BackArrowIcon(
-            size = SettingSpec.BackIconSize,
+    Column(modifier = modifier.fillMaxWidth()) {
+        Spacer(Modifier.height(70.dp))
+
+        Box(
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onBack,
-                ),
-        )
-        if (trailing != null) {
-            Box(modifier = Modifier.align(Alignment.CenterEnd)) { trailing() }
+                .fillMaxWidth()
+                .height(56.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = title,
+                fontSize = SettingSpec.TitleSize,
+                lineHeight = SettingSpec.TitleSize,
+                fontWeight = FontWeight.SemiBold,
+                color = SettingSpec.TitleColor,
+            )
+            BackArrowIcon(
+                size = SettingSpec.BackIconSize,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onBack,
+                    ),
+            )
+            if (trailing != null) {
+                Box(modifier = Modifier.align(Alignment.CenterEnd)) { trailing() }
+            }
         }
     }
 }
