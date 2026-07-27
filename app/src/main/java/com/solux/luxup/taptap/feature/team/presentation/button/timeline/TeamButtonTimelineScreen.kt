@@ -92,7 +92,7 @@ fun TeamButtonTimelineScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = ScreenPadding),
         ) {
-            Spacer(Modifier.height(15.dp))
+            Spacer(Modifier.height(70.dp))
 
             TimelineTopBar(onBack = onBack, onEditClick = onEditButton)
 

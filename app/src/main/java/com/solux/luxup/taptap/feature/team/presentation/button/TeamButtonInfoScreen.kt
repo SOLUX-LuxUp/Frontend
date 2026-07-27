@@ -227,7 +227,7 @@ private fun InfoTopBar(
     onEditClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(70.dp))
 
         Box(
             modifier = Modifier

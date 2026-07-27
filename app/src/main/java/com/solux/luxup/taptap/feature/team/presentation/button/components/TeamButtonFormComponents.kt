@@ -53,7 +53,7 @@ fun FormTopBar(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(42.dp))
+        Spacer(Modifier.height(70.dp))
 
         Box(
             modifier = Modifier

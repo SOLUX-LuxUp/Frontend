@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.activity.compose.LocalActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -73,6 +74,9 @@ private fun activityScopedTeamDeletionViewModel(): TeamDeletionViewModel {
  */
 @Composable
 fun TeamDeletionBannerHost(teamId: Long) {
+    // Preview는 실제 Activity 없이 렌더링되어 LocalActivity.current 가 null이다.
+    if (LocalInspectionMode.current) return
+
     val viewModel = activityScopedTeamDeletionViewModel()
 
     LaunchedEffect(teamId) {
@@ -94,6 +98,8 @@ fun TeamDeletionBannerHost(teamId: Long) {
  */
 @Composable
 fun ResetTeamDeletionDismissalOnEntry(sessionId: String, teamId: Long) {
+    if (LocalInspectionMode.current) return
+
     val viewModel = activityScopedTeamDeletionViewModel()
     LaunchedEffect(sessionId) {
         viewModel.enterTeamSpace(sessionId, teamId)

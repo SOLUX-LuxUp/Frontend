@@ -53,7 +53,7 @@ fun TeamInviteCodeScreen(
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(44.5.dp))
+        Spacer(Modifier.height(70.dp))
 
         Box(
             modifier = Modifier
