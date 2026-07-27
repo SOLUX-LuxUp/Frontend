@@ -4,21 +4,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.solux.luxup.taptap.feature.team.data.TeamRepository
 import com.solux.luxup.taptap.feature.team.data.mockTeamTemplates
 import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
 import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
 import com.solux.luxup.taptap.feature.team.model.TeamTemplate
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * 팀 생성 플로우(만들기 → 초대코드 → 템플릿)에서 공유하는 상태.
  * 중첩 그래프 스코프로 생성되어 세 화면이 같은 인스턴스를 본다.
  *
- * TODO: Retrofit 연동 시 실제 API 호출로 교체
- *  - createTeam()        POST /api/teams
+ * TODO: 팀 템플릿 API 연동 시 교체
  *  - applyTemplate()     POST /api/teams/{team_id}/template
- *  - skipTemplate()      POST /api/teams/{team_id}/template/skip (백엔드 추가 예정)
+ *  - skipTemplate()      POST /api/teams/{team_id}/template/skip
  */
-class TeamCreateViewModel : ViewModel() {
+@HiltViewModel
+class TeamCreateViewModel @Inject constructor(
+    private val teamRepository: TeamRepository,
+) : ViewModel() {
 
     /** 팀 만들기 화면 입력값 */
     var form by mutableStateOf(TeamCreateForm())
@@ -61,21 +68,18 @@ class TeamCreateViewModel : ViewModel() {
         if (isSubmitting) return
         isSubmitting = true
 
-        // TODO: 실제 API 호출로 교체
-        val result = TeamCreateResult(
-            teamId = MOCK_TEAM_ID,
-            teamName = form.teamName.ifBlank { "새로운 팀1" },
-            teamImageUrl = form.teamImageUrl,
-            iconName = form.iconName,
-            iconColor = form.iconColor,
-            inviteCode = "SE4EDI",
-            maxMember = form.maxMember,
-            ownerUserId = 1L,
-            createdAt = "2025-05-23T14:32:00",
-        )
-        createdTeam = result
-        isSubmitting = false
-        onSuccess(result.teamId)
+        viewModelScope.launch {
+            teamRepository.createTeam(form)
+                .onSuccess { result ->
+                    createdTeam = result
+                    isSubmitting = false
+                    onSuccess(result.teamId)
+                }
+                .onFailure { e ->
+                    isSubmitting = false
+                    errorMessage = e.message ?: "팀을 생성하지 못했어요."
+                }
+        }
     }
 
     /** GET /api/team-templates */
@@ -106,10 +110,5 @@ class TeamCreateViewModel : ViewModel() {
 
     fun consumeError() {
         errorMessage = null
-    }
-
-    private companion object {
-        // TODO: 실제 생성 응답의 teamId 로 교체
-        const val MOCK_TEAM_ID = 1L
     }
 }

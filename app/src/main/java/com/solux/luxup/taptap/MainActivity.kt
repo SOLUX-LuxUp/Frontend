@@ -58,6 +58,8 @@ import com.solux.luxup.taptap.feature.team.presentation.button.teamButtonInfoScr
 import com.solux.luxup.taptap.feature.team.presentation.button.timeline.TeamButtonTimelineRoute
 import com.solux.luxup.taptap.feature.team.presentation.button.timeline.teamButtonTimelineScreen
 import com.solux.luxup.taptap.feature.team.presentation.TeamListScreen
+import com.solux.luxup.taptap.feature.team.presentation.TeamListViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.solux.luxup.taptap.feature.team.presentation.create.TeamCreateRoute
 import com.solux.luxup.taptap.feature.team.presentation.create.teamCreateGraph
 import com.solux.luxup.taptap.feature.team.presentation.setting.TeamSettingRoute
@@ -381,7 +383,9 @@ class MainActivity : ComponentActivity() {
                     // ---- 팀 스페이스 ----
                     // 팀 목록 — 하단 네비 TEAM 탭 진입점
                     composable("teamList") {
+                        val teamListViewModel: TeamListViewModel = hiltViewModel()
                         TeamListScreen(
+                            teams = teamListViewModel.teams,
                             onNavigateToTeamCreate = {
                                 navController.navigate(TeamCreateRoute.GRAPH)
                             },
@@ -389,8 +393,12 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("teamDetail/$teamId")
                             },
                             onJoinTeam = { code ->
-                                // TODO: POST /api/teams/join 연동
+                                teamListViewModel.joinTeam(code)
                             },
+                            onFavoriteClick = { teamId ->
+                                teamListViewModel.toggleFavorite(teamId)
+                            },
+                            joinErrorMessage = teamListViewModel.joinErrorMessage,
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             },
