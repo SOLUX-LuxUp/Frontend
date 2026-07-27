@@ -26,22 +26,24 @@ import com.solux.luxup.taptap.core.util.AppPopup
 @Composable
 fun SignupPasswordScreen(
     email: String,
+    username: String = "",
+    onUsernameChange: (String) -> Unit = {},
+    password: String = "",
+    onPasswordChange: (String) -> Unit = {},
+    passwordConfirm: String = "",
+    onPasswordConfirmChange: (String) -> Unit = {},
+    isSubmitting: Boolean = false,
+    isRegisterComplete: Boolean = false,
+    errorMessage: String? = null,
     onNavigateBack: () -> Unit = {},
+    onSubmit: () -> Unit = {},
     onSignupComplete: () -> Unit = {}
 ) {
-    var password by remember { mutableStateOf("") }
-    var passwordConfirm by remember { mutableStateOf("") }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var showSuccessDialog by remember { mutableStateOf(false) }
-
-    if (showSuccessDialog) {
+    if (isRegisterComplete) {
         AppPopup(
             message = "가입이 완료되었습니다!",
             confirmText = "확인",
-            onConfirm = {
-                showSuccessDialog = false
-                onSignupComplete()
-            }
+            onConfirm = onSignupComplete
         )
     }
 
@@ -99,10 +101,9 @@ fun SignupPasswordScreen(
         Text(text = "닉네임", fontSize = 16.sp, color = Color(0xFF6D6D6D))
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = username,
+            onValueChange = onUsernameChange,
             placeholder = { Text("닉네임 입력", color = Color(0xFFB1B1B1)) },
-            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
@@ -121,7 +122,7 @@ fun SignupPasswordScreen(
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = onPasswordChange,
             placeholder = { Text("비밀번호 입력", color = Color(0xFFB1B1B1)) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
@@ -142,7 +143,7 @@ fun SignupPasswordScreen(
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
             value = passwordConfirm,
-            onValueChange = { passwordConfirm = it },
+            onValueChange = onPasswordConfirmChange,
             placeholder = { Text("비밀번호 재입력", color = Color(0xFFB1B1B1)) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
@@ -157,13 +158,15 @@ fun SignupPasswordScreen(
             )
         )
 
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(text = errorMessage, color = Color(0xFFFF3B30), fontSize = 13.sp)
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = {
-                isSubmitting = true
-                showSuccessDialog = true
-            },
+            onClick = onSubmit,
             enabled = !isSubmitting,
             modifier = Modifier
                 .fillMaxWidth()

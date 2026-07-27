@@ -23,18 +23,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
-private const val CODE_TIMEOUT_SECONDS = 180
+private const val CODE_TIMEOUT_SECONDS = 300
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignupEmailScreen(
+    email: String = "",
+    onEmailChange: (String) -> Unit = {},
+    code: String = "",
+    onCodeChange: (String) -> Unit = {},
+    isCodeSent: Boolean = false,
+    isSendingCode: Boolean = false,
+    errorMessage: String? = null,
+    onSendCode: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
-    onVerified: (email: String) -> Unit = {}
+    onVerified: () -> Unit = {}
 ) {
-    var email by remember { mutableStateOf("") }
-    var code by remember { mutableStateOf("") }
-    var isCodeSent by remember { mutableStateOf(false) }
-    var isVerifying by remember { mutableStateOf(false) }
     var secondsLeft by remember { mutableStateOf(CODE_TIMEOUT_SECONDS) }
 
     LaunchedEffect(isCodeSent) {
@@ -87,7 +91,7 @@ fun SignupEmailScreen(
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = onEmailChange,
             enabled = !isCodeSent,
             placeholder = { Text("이메일 주소 입력", color = Color(0xFFB1B1B1)) },
             modifier = Modifier
@@ -108,8 +112,8 @@ fun SignupEmailScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            onClick = { isCodeSent = true },
-            enabled = !isCodeSent,
+            onClick = onSendCode,
+            enabled = !isCodeSent && !isSendingCode && email.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp)
@@ -138,6 +142,11 @@ fun SignupEmailScreen(
             }
         }
 
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(text = errorMessage, color = Color(0xFFFF3B30), fontSize = 13.sp)
+        }
+
         if (isCodeSent) {
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -149,7 +158,7 @@ fun SignupEmailScreen(
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
                 value = code,
-                onValueChange = { code = it },
+                onValueChange = onCodeChange,
                 placeholder = { Text("인증번호 입력", color = Color(0xFFB1B1B1)) },
                 trailingIcon = {
                     val mm = secondsLeft / 60
@@ -177,11 +186,8 @@ fun SignupEmailScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = {
-                    isVerifying = true
-                    onVerified(email)
-                },
-                enabled = !isVerifying,
+                onClick = onVerified,
+                enabled = code.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
@@ -194,7 +200,7 @@ fun SignupEmailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
-                            brush = if (!isVerifying) {
+                            brush = if (code.isNotBlank()) {
                                 Brush.horizontalGradient(
                                     colors = listOf(Color(0xFF4BB4FF), Color(0xFF2085FF))
                                 )
