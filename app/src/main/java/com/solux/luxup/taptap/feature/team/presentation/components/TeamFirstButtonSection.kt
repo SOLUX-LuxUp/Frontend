@@ -123,9 +123,9 @@ fun TeamFirstButtonSection(
         Spacer(modifier = Modifier.height(12.dp))
 
         val filtered = remember(suggestions, selectedCategory) {
-            suggestions.filter {
-                (it.categoryName ?: NO_CATEGORY_LABEL) == selectedCategory
-            }
+            suggestions
+                .filter { (it.categoryName ?: NO_CATEGORY_LABEL) == selectedCategory }
+                .shuffled()
         }
 
         // 추천 버튼만 감싸는 내부 스크롤 영역

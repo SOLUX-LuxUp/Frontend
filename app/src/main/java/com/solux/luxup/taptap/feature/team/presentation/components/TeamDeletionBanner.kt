@@ -20,9 +20,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.R
@@ -80,7 +82,7 @@ fun TeamDeletionBanner(
         Image(
             painter = painterResource(R.drawable.ic_x),
             contentDescription = "닫기",
-            colorFilter = ColorFilter.tint(BannerTextColor),
+            colorFilter = ColorFilter.tint(Black),
             modifier = Modifier
                 .size(20.dp)
                 .clickable(
@@ -105,4 +107,22 @@ private fun remainingTimeMessage(scheduledDeletionAt: String): String? {
         val hours = ceil(duration.toMinutes() / 60.0).toInt().coerceAtLeast(1)
         "${hours}시간 뒤 팀이 삭제됩니다."
     }
+}
+
+@Preview(showBackground = true, widthDp = 402, name = "팀 삭제 유예 배너 — D-3")
+@Composable
+private fun TeamDeletionBannerPreview() {
+    TeamDeletionBanner(
+        scheduledDeletionAt = java.time.LocalDateTime.now().plusDays(3).toString(),
+        onDismiss = {},
+    )
+}
+
+@Preview(showBackground = true, widthDp = 402, name = "팀 삭제 유예 배너 — 10시간")
+@Composable
+private fun TeamDeletionBannerHourPreview() {
+    TeamDeletionBanner(
+        scheduledDeletionAt = java.time.LocalDateTime.now().plusHours(10).toString(),
+        onDismiss = {},
+    )
 }
