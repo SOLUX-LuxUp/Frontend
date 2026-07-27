@@ -37,7 +37,71 @@ data class CategoryButtonItemDto(
     val iconName: String? = null,
     val iconColor: String? = null,
     val isFavorite: Boolean = false,
+    val expiryEnabled: Boolean = false,
+    val expiredAt: String? = null,
     val lastRecordedAt: String? = null,
+)
+
+/** POST /api/buttons */
+@Serializable
+data class CreateButtonRequestDto(
+    val buttonName: String,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val categoryId: Long? = null,
+    val expiryEnabled: Boolean? = null,
+    val expiredAt: String? = null,
+)
+
+@Serializable
+data class ButtonResponseDto(
+    val buttonId: Long,
+    val buttonName: String,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val categoryId: Long? = null,
+    val expiryEnabled: Boolean = false,
+    val expiredAt: String? = null,
+    val isFavorite: Boolean = false,
+    val isActive: Boolean = true,
+    val lastRecordedAt: String? = null,
+    val createdAt: String? = null,
+)
+
+/** PATCH /api/buttons/{button_id} */
+@Serializable
+data class UpdateButtonRequestDto(
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val categoryId: Long? = null,
+    val clearCategory: Boolean? = null,
+    val expiryEnabled: Boolean? = null,
+    val expiredAt: String? = null,
+)
+
+@Serializable
+data class UpdateButtonResponseDto(
+    val buttonId: Long,
+    val buttonName: String,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val categoryId: Long? = null,
+    val expiryEnabled: Boolean = false,
+    val expiredAt: String? = null,
+    val updatedAt: String? = null,
+)
+
+/** PATCH /api/buttons/category-order — categoryIds를 원하는 순서 그대로 담아 보낸다 */
+@Serializable
+data class CategoryOrderRequestDto(
+    val categoryIds: List<Long>,
+)
+
+@Serializable
+data class CategoryOrderItemDto(
+    val categoryId: Long,
+    val displayOrder: Int,
 )
 
 // ---- button-category-controller ----

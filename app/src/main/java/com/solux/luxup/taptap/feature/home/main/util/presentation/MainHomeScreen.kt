@@ -95,9 +95,12 @@ fun MainHomeScreen(
     onCreateCategory: (name: String) -> Unit = {},
     onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
     onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
+    onReorderCategories: (categoryIds: List<Long>) -> Unit = {},
     errorMessage: String? = null,
     onErrorConsumed: () -> Unit = {},
     onNavigateToCreateButton: () -> Unit = {},
+    onNavigateToEditButton: (button: HabitButton) -> Unit = {},
+    onDeleteButton: (buttonId: Long) -> Unit = {},
     onNavigateToButtonDetail: (button: HabitButton) -> Unit = {},
     onFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {}
@@ -238,7 +241,7 @@ fun MainHomeScreen(
             } else {
                 HabitButtonGrid(
                     buttons = filteredHabitButtons,
-                    onEditRecord = { /* TODO: 버튼 수정 화면으로 이동하는 플로우 연결 (해당 화면 아직 없음) */ },
+                    onEditRecord = onNavigateToEditButton,
                     onDeleteRecord = { button -> recordPendingDelete = button },
                     onQuickRecord = { /* TODO: 한 번 탭으로 바로 기록하는 API 연결 */ },
                     onOpenDetail = onNavigateToButtonDetail
@@ -278,7 +281,10 @@ fun MainHomeScreen(
                 onRename = { oldName, newName ->
                     categories.find { it.name == oldName }?.let { onRenameCategory(it.id, newName) }
                 },
-                onRequestDelete = { category -> categoryPendingDelete = category }
+                onRequestDelete = { category -> categoryPendingDelete = category },
+                onReorder = { newOrder ->
+                    onReorderCategories(newOrder.mapNotNull { name -> categories.find { it.name == name }?.id })
+                }
             )
         }
     }
@@ -317,7 +323,7 @@ fun MainHomeScreen(
                 recordedAtIsoTimestamp = button.lastRecordedAt,
                 onDismiss = { recordPendingDelete = null },
                 onConfirmDelete = {
-                    // TODO: 실제 기록 삭제 API 연결
+                    onDeleteButton(button.buttonId)
                     recordPendingDelete = null
                 }
             )

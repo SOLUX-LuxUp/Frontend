@@ -148,6 +148,35 @@ class MainHomeViewModel @AssistedInject constructor(
         }
     }
 
+    /**
+     * PATCH /api/buttons/category-order — 드래그로 바뀐 순서를 낙관적으로 먼저 반영하고,
+     * 실패하면 원래 순서로 되돌린다.
+     */
+    fun reorderCategories(categoryIds: List<Long>) {
+        val previous = categories
+        categories = categoryIds.mapNotNull { id -> previous.find { it.id == id } }
+
+        viewModelScope.launch {
+            buttonRepository.updateCategoryOrder(categoryIds)
+                .onFailure {
+                    categories = previous
+                    errorMessage = it.message ?: "카테고리 순서를 변경하지 못했어요."
+                }
+        }
+    }
+
+    /** DELETE /api/buttons/{button_id} — 성공하면 목록에서 즉시 제거한다 */
+    fun deleteButton(buttonId: Long) {
+        viewModelScope.launch {
+            buttonRepository.deleteButton(buttonId)
+                .onSuccess {
+                    habitButtons = habitButtons.filterNot { it.buttonId == buttonId }
+                    favoriteButtons = favoriteButtons.filterNot { it.buttonId == buttonId }
+                }
+                .onFailure { errorMessage = it.message ?: "버튼을 삭제하지 못했어요." }
+        }
+    }
+
     private fun loadRecentRecord() {
         viewModelScope.launch {
             buttonRepository.getRecentRecord()
@@ -175,6 +204,12 @@ class MainHomeViewModel @AssistedInject constructor(
                 }
             isApplying = false
         }
+    }
+
+    /** 버튼 생성 화면 등에서 돌아왔을 때 목록을 다시 불러온다 — 그 화면에서 새 카테고리를 만들었을 수도 있어 카테고리도 함께 새로고침한다 */
+    fun refreshButtons() {
+        loadButtons()
+        loadCategories()
     }
 
     fun consumeError() {
