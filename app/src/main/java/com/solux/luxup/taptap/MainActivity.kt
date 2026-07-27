@@ -21,9 +21,9 @@ import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountInfoScreen
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountSettingsScreen
 import com.solux.luxup.taptap.feature.auth.account.presentation.ChangePasswordScreen
-import com.solux.luxup.taptap.feature.auth.login.presentation.LoginScreen
-import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupEmailScreen
-import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupPasswordScreen
+import com.solux.luxup.taptap.feature.auth.login.presentation.LoginRoute
+import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupRoute
+import com.solux.luxup.taptap.feature.auth.signup.presentation.signupGraph
 import com.solux.luxup.taptap.feature.home.buttondetail.presentation.ButtonDetailScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.CreateButtonScreen
 import com.solux.luxup.taptap.feature.home.main.presentation.IconSelectScreen
@@ -66,6 +66,7 @@ import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
 import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllRoute
 import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllScreen
+import dagger.hilt.android.AndroidEntryPoint
 
 // TODO: 로그인 유저가 속한 팀 id로 교체 (현재는 임시 고정값)
 private const val CURRENT_TEAM_ID = 1L
@@ -85,6 +86,7 @@ private fun NavController.navigateToTab(item: BottomNavItem) {
     }
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,9 +103,9 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("login") {
-                        LoginScreen(
+                        LoginRoute(
                             onNavigateToSignupEmail = {
-                                navController.navigate("signupEmail")
+                                navController.navigate(SignupRoute.GRAPH)
                             },
                             onLoginSuccess = {
                                 navController.navigate("postLoginSplash") {
@@ -356,33 +358,17 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    composable("signupEmail") {
-                        SignupEmailScreen(
-                            onNavigateBack = {
-                                navController.popBackStack()
-                            },
-                            onVerified = { email ->
-                                navController.navigate("signupPassword/$email")
+                    signupGraph(
+                        navController = navController,
+                        onNavigateBack = {
+                            navController.popBackStack()
+                        },
+                        onSignupComplete = {
+                            navController.navigate("login") {
+                                popUpTo("login") { inclusive = true }
                             }
-                        )
-                    }
-                    composable(
-                        "signupPassword/{email}",
-                        arguments = listOf(navArgument("email") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val email = backStackEntry.arguments?.getString("email").orEmpty()
-                        SignupPasswordScreen(
-                            email = email,
-                            onNavigateBack = {
-                                navController.popBackStack()
-                            },
-                            onSignupComplete = {
-                                navController.navigate("login") {
-                                    popUpTo("login") { inclusive = true }
-                                }
-                            }
-                        )
-                    }
+                        }
+                    )
 
                     // ---- 팀 스페이스 ----
                     // 팀 목록 — 하단 네비 TEAM 탭 진입점

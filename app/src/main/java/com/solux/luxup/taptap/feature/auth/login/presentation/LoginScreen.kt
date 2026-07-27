@@ -31,13 +31,16 @@ import com.solux.luxup.taptap.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onNavigateToSignupEmail: () -> Unit = {},
-    onLoginSuccess: () -> Unit = {}
+    email: String = "",
+    onEmailChange: (String) -> Unit = {},
+    password: String = "",
+    onPasswordChange: (String) -> Unit = {},
+    isLoggingIn: Boolean = false,
+    errorMessage: String? = null,
+    onLoginClick: () -> Unit = {},
+    onNavigateToSignupEmail: () -> Unit = {}
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
     var autoLogin by remember { mutableStateOf(false) }
-    var isLoggingIn by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(
@@ -88,7 +91,7 @@ fun LoginScreen(
         // 이메일
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = onEmailChange,
             placeholder = { Text("이메일", color = Color(0xFFB1B1B1)) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,7 +111,7 @@ fun LoginScreen(
         // 비밀번호
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = onPasswordChange,
             placeholder = { Text("비밀번호", color = Color(0xFFB1B1B1)) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -122,6 +125,15 @@ fun LoginScreen(
                 focusedBorderColor = Color.Transparent
             )
         )
+
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = errorMessage,
+                color = Color(0xFFFF3B30),
+                fontSize = 13.sp
+            )
+        }
 
         // 자동로그인
         Row(
@@ -153,10 +165,7 @@ fun LoginScreen(
 
         // 로그인 버튼
         Button(
-            onClick = {
-                isLoggingIn = true
-                onLoginSuccess()
-            },
+            onClick = onLoginClick,
             enabled = !isLoggingIn,
             modifier = Modifier
                 .fillMaxWidth()
