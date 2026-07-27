@@ -31,6 +31,7 @@ private val SubColor = Color(0xFF8A94A6)
 @Composable
 fun TeamInsightButtonAllScreen(
     teamName: String,
+    teamId: Long,
     memberActivity: List<TeamInsightMemberActivity>,
     currentUserId: Long,
     onBack: () -> Unit,
@@ -41,6 +42,7 @@ fun TeamInsightButtonAllScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
+        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         SettingTopBar(
             title = teamName,
             onBack = onBack,
@@ -84,6 +86,7 @@ private fun TeamInsightButtonAllScreenPreview() {
             teamName = "LUX-UP",
             memberActivity = MockTeamInsightDaily.memberActivity,
             currentUserId = 4L,
+            teamId = 1L,
             onBack = {}
         )
     }

@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -16,6 +19,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+
 
 /**
  * 팀 설정 · 팀 관리 라우트.
@@ -94,7 +98,7 @@ fun NavGraphBuilder.teamSettingGraph(
             val vm = entry.settingViewModel(navController, currentUserId)
             val settings = vm.settings ?: return@composable
 
-            TeamSettingTabScaffold(onNavItemSelected) {
+            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
                 TeamSettingScreen(
                     settings = settings,
                     currentUserId = vm.currentUserId,
@@ -117,24 +121,39 @@ fun NavGraphBuilder.teamSettingGraph(
             val teamId = entry.teamId()
             val vm = entry.settingViewModel(navController, currentUserId)
             val settings = vm.settings ?: return@composable
+            var showAlreadyDeletingNotice by remember { mutableStateOf(false) }
 
-            TeamSettingTabScaffold(onNavItemSelected) {
+            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
                 TeamManageScreen(
                     settings = settings,
                     onBack = { navController.popBackStack() },
                     onMemberManageClick = { navController.navigate(TeamSettingRoute.members(teamId)) },
                     onPermissionClick = { navController.navigate(TeamSettingRoute.permission(teamId)) },
                     onDelegateClick = { navController.navigate(TeamSettingRoute.delegate(teamId)) },
-                    onDeleteTeamClick = { navController.navigate(TeamSettingRoute.delete(teamId)) },
+                    onDeleteTeamClick = {
+                        if (settings.isDeleting) {
+                            showAlreadyDeletingNotice = true
+                        } else {
+                            navController.navigate(TeamSettingRoute.delete(teamId))
+                        }
+                    },
+                )
+            }
+
+            if (showAlreadyDeletingNotice) {
+                com.solux.luxup.taptap.core.ui.components.NoticeDialog(
+                    message = "이미 삭제 예정인 팀입니다.",
+                    onDismiss = { showAlreadyDeletingNotice = false },
                 )
             }
         }
 
         // ── 팀원 관리 ────────────────────────────────────
         composable(TeamSettingRoute.MEMBERS_PATTERN, arguments = teamIdArg()) { entry ->
+            val teamId = entry.teamId()
             val vm = entry.settingViewModel(navController, currentUserId)
 
-            TeamSettingTabScaffold(onNavItemSelected) {
+            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
                 TeamMemberManageScreen(
                     members = vm.members,
                     currentUserId = vm.currentUserId,
@@ -146,10 +165,11 @@ fun NavGraphBuilder.teamSettingGraph(
 
         // ── 팀 권한 관리 ─────────────────────────────────
         composable(TeamSettingRoute.PERMISSION_PATTERN, arguments = teamIdArg()) { entry ->
+            val teamId = entry.teamId()
             val vm = entry.settingViewModel(navController, currentUserId)
             val settings = vm.settings ?: return@composable
 
-            TeamSettingTabScaffold(onNavItemSelected) {
+            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected) {
                 TeamPermissionScreen(
                     settings = settings,
                     onBack = { navController.popBackStack() },
@@ -163,7 +183,7 @@ fun NavGraphBuilder.teamSettingGraph(
             val teamId = entry.teamId()
             val vm = entry.settingViewModel(navController, currentUserId)
 
-            TeamSettingTabScaffold(onNavItemSelected) {
+            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
                 TeamOwnerDelegateScreen(
                     members = vm.members,
                     currentUserId = vm.currentUserId,
@@ -206,10 +226,12 @@ fun NavGraphBuilder.teamSettingGraph(
  */
 @Composable
 private fun TeamSettingTabScaffold(
+    teamId: Long,
     onNavItemSelected: (BottomNavItem) -> Unit,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
+        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         Box(modifier = Modifier.weight(1f)) {
             content()
         }

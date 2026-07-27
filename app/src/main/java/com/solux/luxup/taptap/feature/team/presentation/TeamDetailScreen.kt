@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
+import com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost
 import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightScreen
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailScreen
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -76,6 +77,7 @@ fun TeamDetailScreen(
         containerColor = Color.White
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
+            TeamDeletionBannerHost(teamId = teamId)
             TeamDetailTopBar(
                 teamName = teamName,
                 action = when (selectedTab) {

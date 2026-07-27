@@ -26,6 +26,9 @@ data class TeamSettings(
      * 요청 시 값을 보내지 않고, 응답의 isEnabled 로 최종 상태를 맞춘다.
      */
     val notificationEnabled: Boolean,
+    /** 팀 삭제 유예 상태 — 삭제 요청 후 3일(72시간) 동안 true, 실제 하드 삭제될 예정 시각 함께 내려옴 */
+    val isDeleting: Boolean = false,
+    val scheduledDeletionAt: String? = null,
 ) {
     /** 팀장 여부는 응답의 ownerUserId 와 내 userId 비교로 판정한다. */
     fun isOwner(currentUserId: Long): Boolean = ownerUserId == currentUserId

@@ -51,6 +51,7 @@ import com.solux.luxup.taptap.feature.team.data.MOCK_MEMBER_USER_ID
 import com.solux.luxup.taptap.feature.team.data.MOCK_OWNER_USER_ID
 import com.solux.luxup.taptap.feature.team.data.mockTeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
+import com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamInviteCodeModal
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingRow
@@ -99,6 +100,7 @@ fun TeamSettingScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
+        TeamDeletionBannerHost(teamId = settings.teamId)
         SettingTopBar(
             title = "팀 설정",
             onBack = onBack,

@@ -72,6 +72,7 @@ fun TeamButtonCreateScreen(
     modifier: Modifier = Modifier,
     /** 생성 "팀 버튼 만들기" / 수정 "팀 버튼 수정" */
     title: String = "팀 버튼 만들기",
+    teamId: Long? = null,
     bottomBar: @Composable () -> Unit = {},
 ) {
     Column(

@@ -18,6 +18,14 @@ val mockTeamSettings = TeamSettings(
     buttonDeletePermission = TeamButtonPermission.LEADER_ONLY,
     ownerUserId = 1,
     notificationEnabled = true,
+    isDeleting = false,
+    scheduledDeletionAt = null,
+)
+
+/** 배너 미리보기/테스트용 — 삭제 유예 중인 상태 */
+val mockTeamSettingsDeleting = mockTeamSettings.copy(
+    isDeleting = true,
+    scheduledDeletionAt = java.time.LocalDateTime.now().plusHours(10).toString(),
 )
 
 /** 팀장으로 보고 있을 때의 내 userId */

@@ -72,6 +72,7 @@ private const val NO_EDIT_PERMISSION_MESSAGE = "버튼을 수정할 권한이 �
 fun TeamButtonInfoScreen(
     detail: TeamButtonDetail,
     currentUserId: Long,
+    teamId: Long,
     /** allowedUserIds를 팀원 목록과 매칭한 결과 */
     allowedMembers: List<TeamMember>,
     permissionRequests: List<TeamButtonPermissionRequest>,
@@ -99,6 +100,7 @@ fun TeamButtonInfoScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
+        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         InfoTopBar(
             isManager = isManager,
             onBack = onBack,
@@ -512,6 +514,7 @@ private fun TeamButtonInfoManagerPreview() {
     TeamButtonInfoScreen(
         detail = MockTeamButtonDetail.detail,
         currentUserId = 1L, // 생성자 = 관리자
+        teamId = 1L,
         allowedMembers = MockTeamMembers.filter { it.userId in MockTeamButtonDetail.detail.allowedUserIds },
         permissionRequests = MockTeamButtonDetail.permissionRequests,
         onBack = {},
@@ -535,6 +538,7 @@ private fun TeamButtonInfoMemberPreview() {
             ),
         ),
         currentUserId = 5L, // 일반 멤버
+        teamId = 1L,
         allowedMembers = MockTeamMembers.filter { it.userId in MockTeamButtonDetail.detail.allowedUserIds },
         permissionRequests = emptyList(),
         onBack = {},
@@ -552,6 +556,7 @@ private fun TeamButtonInfoManagerRequestTabPreview() {
     TeamButtonInfoScreen(
         detail = MockTeamButtonDetail.detail,
         currentUserId = 1L,
+        teamId = 1L,
         allowedMembers = MockTeamMembers.filter { it.userId in MockTeamButtonDetail.detail.allowedUserIds },
         permissionRequests = MockTeamButtonDetail.permissionRequests,
         onBack = {},
@@ -577,6 +582,7 @@ private fun TeamButtonInfoMemberPendingPreview() {
             ),
         ),
         currentUserId = 5L,
+        teamId = 1L,
         allowedMembers = MockTeamMembers.filter { it.userId in MockTeamButtonDetail.detail.allowedUserIds },
         permissionRequests = emptyList(),
         onBack = {},

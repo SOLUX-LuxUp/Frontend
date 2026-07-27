@@ -49,6 +49,10 @@ fun NavGraphBuilder.teamButtonEditGraph(
 
         composable(TeamButtonEditRoute.FORM) { entry ->
             val viewModel = entry.sharedEditViewModel(navController, currentUserId)
+            val teamId = remember(entry) {                                              // ← 추가
+                navController.getBackStackEntry(TeamButtonEditRoute.GRAPH)
+                    .arguments?.getLong(TeamButtonEditRoute.ARG_TEAM_ID) ?: 0L
+            }
 
             LaunchedEffect(viewModel.isUpdated) {
                 if (viewModel.isUpdated) onUpdated()
@@ -56,6 +60,7 @@ fun NavGraphBuilder.teamButtonEditGraph(
 
             TeamButtonCreateScreen(
                 title = "팀 버튼 수정",
+                teamId = teamId,
                 form = viewModel.form,
                 // TODO: 팀 버튼 카테고리 조회 API 연동 시 교체
                 categories = MockTeamButtonCreate.categories,
