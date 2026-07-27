@@ -49,4 +49,24 @@ interface TeamApi {
 
     @DELETE("api/teams/{team_id}/leave")
     suspend fun leaveTeam(@Path("team_id") teamId: Long): Response<BaseResponse<LeaveTeamResponseDto>>
+
+    // ---- team-template-controller ----
+
+    @GET("api/team-templates")
+    suspend fun listTeamTemplates(): Response<BaseResponse<List<TeamTemplateDto>>>
+
+    @GET("api/teams/{team_id}/template")
+    suspend fun getTemplateStatus(@Path("team_id") teamId: Long): Response<BaseResponse<TeamTemplateStatusResponseDto>>
+
+    @POST("api/teams/{team_id}/template")
+    suspend fun selectTemplate(
+        @Path("team_id") teamId: Long,
+        @Body request: ApplyTeamTemplateRequestDto,
+    ): Response<BaseResponse<ApplyTeamTemplateResponseDto>>
+
+    @POST("api/teams/{team_id}/template/skip")
+    suspend fun skipTemplate(@Path("team_id") teamId: Long): Response<BaseResponse<SkipTeamTemplateResponseDto>>
+
+    @GET("api/teams/{team_id}/template/suggestions")
+    suspend fun getTemplateSuggestions(@Path("team_id") teamId: Long): Response<BaseResponse<List<TemplateSuggestionDto>>>
 }

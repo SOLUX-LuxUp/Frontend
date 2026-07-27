@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.solux.luxup.taptap.feature.team.data.TeamRepository
-import com.solux.luxup.taptap.feature.team.data.mockTeamTemplates
 import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
 import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
 import com.solux.luxup.taptap.feature.team.model.TeamTemplate
@@ -17,10 +16,6 @@ import javax.inject.Inject
 /**
  * 팀 생성 플로우(만들기 → 초대코드 → 템플릿)에서 공유하는 상태.
  * 중첩 그래프 스코프로 생성되어 세 화면이 같은 인스턴스를 본다.
- *
- * TODO: 팀 템플릿 API 연동 시 교체
- *  - applyTemplate()     POST /api/teams/{team_id}/template
- *  - skipTemplate()      POST /api/teams/{team_id}/template/skip
  */
 @HiltViewModel
 class TeamCreateViewModel @Inject constructor(
@@ -85,27 +80,47 @@ class TeamCreateViewModel @Inject constructor(
     /** GET /api/team-templates */
     fun loadTemplates() {
         if (templates.isNotEmpty()) return
-        // TODO: 실제 API 호출로 교체
-        templates = mockTeamTemplates
+        viewModelScope.launch {
+            teamRepository.listTeamTemplates()
+                .onSuccess { templates = it }
+                .onFailure { errorMessage = it.message ?: "템플릿을 불러오지 못했어요." }
+        }
     }
 
-    /** POST /api/teams/{team_id}/template — 팀당 1회, 재선택 불가 */
+    /** POST /api/teams/{team_id}/template — 팀당 1회, 재선택 불가. 409면 이미 선택한 팀 */
     fun applyTemplate(templateId: Long, onSuccess: () -> Unit) {
+        val teamId = createdTeam?.teamId ?: return
         if (isSubmitting) return
         isSubmitting = true
-        // TODO: 실제 API 호출로 교체. 409면 이미 선택한 팀
-        isSubmitting = false
-        onSuccess()
+        viewModelScope.launch {
+            teamRepository.selectTemplate(teamId, templateId)
+                .onSuccess {
+                    isSubmitting = false
+                    onSuccess()
+                }
+                .onFailure { e ->
+                    isSubmitting = false
+                    errorMessage = e.message ?: "템플릿을 적용하지 못했어요."
+                }
+        }
     }
 
     /** POST /api/teams/{team_id}/template/skip — body 없음, 성공 시 isSkipped: true */
     fun skipTemplate(onSuccess: () -> Unit) {
+        val teamId = createdTeam?.teamId ?: return
         if (isSubmitting) return
         isSubmitting = true
-        // TODO: 실제 API 호출로 교체
-        //  401 토큰 / 403 팀장 권한 없음 / 404 팀 없음 / 409 이미 템플릿 선택함
-        isSubmitting = false
-        onSuccess()
+        viewModelScope.launch {
+            teamRepository.skipTemplate(teamId)
+                .onSuccess {
+                    isSubmitting = false
+                    onSuccess()
+                }
+                .onFailure { e ->
+                    isSubmitting = false
+                    errorMessage = e.message ?: "건너뛰지 못했어요."
+                }
+        }
     }
 
     fun consumeError() {

@@ -8,9 +8,12 @@ import com.solux.luxup.taptap.feature.team.model.Team
 import com.solux.luxup.taptap.feature.team.model.TeamButtonPermission
 import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
 import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
+import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 import com.solux.luxup.taptap.feature.team.model.TeamMember
 import com.solux.luxup.taptap.feature.team.model.TeamMemberRole
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
+import com.solux.luxup.taptap.feature.team.model.TeamTemplate
+import com.solux.luxup.taptap.feature.team.model.TeamTemplateStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -62,6 +65,24 @@ class TeamRepository @Inject constructor(
 
     suspend fun leaveTeam(teamId: Long): Result<LeaveTeamResponseDto> =
         apiCallHandler.execute { teamApi.leaveTeam(teamId) }
+
+    // ---- team-template-controller ----
+
+    suspend fun listTeamTemplates(): Result<List<TeamTemplate>> =
+        apiCallHandler.execute { teamApi.listTeamTemplates() }.mapCatching { list -> list.map { it.toModel() } }
+
+    /** 활동 탭 초기 분기 · "+" 빠르게 생성 노출 여부 판단용 (아직 소비하는 화면 없음) */
+    suspend fun getTemplateStatus(teamId: Long): Result<TeamTemplateStatus> =
+        apiCallHandler.execute { teamApi.getTemplateStatus(teamId) }.mapCatching { it.toModel() }
+
+    suspend fun selectTemplate(teamId: Long, templateId: Long): Result<ApplyTeamTemplateResponseDto> =
+        apiCallHandler.execute { teamApi.selectTemplate(teamId, ApplyTeamTemplateRequestDto(templateId)) }
+
+    suspend fun skipTemplate(teamId: Long): Result<SkipTeamTemplateResponseDto> =
+        apiCallHandler.execute { teamApi.skipTemplate(teamId) }
+
+    suspend fun getTemplateSuggestions(teamId: Long): Result<List<TeamButtonSuggestion>> =
+        apiCallHandler.execute { teamApi.getTemplateSuggestions(teamId) }.mapCatching { list -> list.map { it.toModel() } }
 }
 
 private fun MemberProfileDto.toModel() = MemberProfile(
@@ -131,4 +152,28 @@ private fun TeamMemberListItemDto.toModel() = TeamMember(
     role = TeamMemberRole.from(role),
     joinedAt = joinedAt,
     latestRecord = latestRecord?.let { MemberLatestRecord(it.buttonName.orEmpty(), it.recordedAt.orEmpty()) },
+)
+
+private fun TeamTemplateDto.toModel() = TeamTemplate(
+    templateId = templateId,
+    templateType = templateType,
+    templateName = templateName,
+    description = description.orEmpty(),
+    subDescription = subDescription.orEmpty(),
+)
+
+private fun TeamTemplateStatusResponseDto.toModel() = TeamTemplateStatus(
+    hasSelectedTemplate = hasSelectedTemplate,
+    isSkipped = isSkipped,
+    templateId = templateId,
+    templateType = templateType,
+    templateName = templateName,
+)
+
+private fun TemplateSuggestionDto.toModel() = TeamButtonSuggestion(
+    buttonName = buttonName,
+    iconName = iconName,
+    iconColor = iconColor,
+    categoryId = categoryId,
+    categoryName = categoryName,
 )

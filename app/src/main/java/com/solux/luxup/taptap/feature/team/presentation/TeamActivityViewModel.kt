@@ -5,14 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import com.solux.luxup.taptap.feature.team.data.TeamRepository
 import com.solux.luxup.taptap.feature.team.data.mockTeamButtons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
+import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.solux.luxup.taptap.feature.team.data.mockSuggestionsTogether
-import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 
 /**
  * 팀 활동 탭 — 팀 공유 버튼 목록.
@@ -20,11 +22,22 @@ import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
  *  - GET    /api/teams/{teamId}/buttons                        목록 (8.1.1)
  *  - POST   /api/teams/{teamId}/buttons/{buttonId}/records     탭 기록 (8.1.5)
  *  - DELETE /api/teams/{teamId}/buttons/{buttonId}             삭제 (8.1.2)
+ *  - GET    /api/teams/{teamId}/template/suggestions           추천 버튼 목록
  */
-class TeamActivityViewModel(
-    private val teamId: Long,
-    val currentUserId: Long,
+@HiltViewModel(assistedFactory = TeamActivityViewModel.Factory::class)
+class TeamActivityViewModel @AssistedInject constructor(
+    @Assisted("teamId") private val teamId: Long,
+    @Assisted("currentUserId") val currentUserId: Long,
+    private val teamRepository: TeamRepository,
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("teamId") teamId: Long,
+            @Assisted("currentUserId") currentUserId: Long,
+        ): TeamActivityViewModel
+    }
 
     var buttons by mutableStateOf<List<TeamButton>>(emptyList())
         private set
@@ -53,12 +66,16 @@ class TeamActivityViewModel(
     private fun load() {
         viewModelScope.launch {
             isLoading = true
-            // TODO: GET /api/teams/{teamId}/buttons
+            // TODO: GET /api/teams/{teamId}/buttons (팀 공유버튼 API 브랜치에서 교체)
             delay(200)
             buttons = mockTeamButtons
-            // TODO: GET /api/teams/{teamId}/template/suggestions
-            //  건너뛴 팀이면 빈 배열이 온다
-            suggestions = mockSuggestionsTogether
+
+            // 건너뛴 팀이면 빈 배열이 온다. 추천 목록은 활동 탭 핵심 기능이 아니라
+            // 조회 실패 시 에러 모달 없이 빈 목록으로 조용히 넘어간다.
+            teamRepository.getTemplateSuggestions(teamId)
+                .onSuccess { suggestions = it }
+                .onFailure { suggestions = emptyList() }
+
             isLoading = false
         }
     }
@@ -134,11 +151,5 @@ class TeamActivityViewModel(
 
     fun consumeError() {
         errorMessage = null
-    }
-
-    companion object {
-        fun factory(teamId: Long, currentUserId: Long) = viewModelFactory {
-            initializer { TeamActivityViewModel(teamId, currentUserId) }
-        }
     }
 }
