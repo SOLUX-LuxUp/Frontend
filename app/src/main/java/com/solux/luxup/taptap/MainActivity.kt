@@ -4,11 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
@@ -382,8 +385,20 @@ class MainActivity : ComponentActivity() {
 
                     // ---- 팀 스페이스 ----
                     // 팀 목록 — 하단 네비 TEAM 탭 진입점
-                    composable("teamList") {
+                    composable("teamList") { backStackEntry ->
                         val teamListViewModel: TeamListViewModel = hiltViewModel()
+                        // 팀 생성/참여 후 이 화면으로 돌아왔을 때(back navigation)는
+                        // ViewModel 인스턴스가 재사용되어 init{} 이 다시 안 불리므로,
+                        // 화면이 다시 보일 때(RESUME)마다 목록을 새로고침한다.
+                        DisposableEffect(backStackEntry) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) {
+                                    teamListViewModel.loadTeams()
+                                }
+                            }
+                            backStackEntry.lifecycle.addObserver(observer)
+                            onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+                        }
                         TeamListScreen(
                             teams = teamListViewModel.teams,
                             onNavigateToTeamCreate = {
