@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.SectionCard
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
-import com.solux.luxup.taptap.core.util.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.feature.insight.daily.data.MockInsightDaily
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightButtonTapCount
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightCategoryTapCount

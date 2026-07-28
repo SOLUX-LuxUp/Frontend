@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.home.main.util
+package com.solux.luxup.taptap.core.util.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,16 +42,20 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
 
-// "카테고리 수정" 팝업 - 카테고리 추가/삭제 및 순서 확인
+/**
+ * "카테고리 수정" 팝업 - 카테고리 생성/이름 변경/삭제의 유일한 진입점.
+ * 각 동작은 배치 저장 없이 즉시 onCreate/onRename/onRequestDelete로 위쪽(실제 API 호출부)에 위임하고,
+ * [categories]는 그 결과로 갱신된 최신 목록을 그대로 반영해 다시 그린다.
+ */
 @Composable
 fun CategoryEditDialog(
     categories: List<String>,
     onDismiss: () -> Unit,
-    onSave: (List<String>) -> Unit,
-    onDeleteCategory: (category: String) -> Unit = {},
+    onCreate: (name: String) -> Unit,
+    onRename: (oldName: String, newName: String) -> Unit,
+    onRequestDelete: (category: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var categoryList by remember(categories) { mutableStateOf(categories) }
     var showCreateDialog by remember { mutableStateOf(false) }
     var categoryBeingRenamed by remember { mutableStateOf<String?>(null) }
 
@@ -77,7 +81,7 @@ fun CategoryEditDialog(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(15.dp))
                 .background(Color.White)
-                .padding(15.dp)
+                .padding(top = 20.dp, bottom = 15.dp, start = 15.dp, end = 15.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -101,7 +105,7 @@ fun CategoryEditDialog(
             Spacer(Modifier.height(15.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                categoryList.forEach { category ->
+                categories.forEach { category ->
                     key(category) {
                         var showMoreMenu by remember { mutableStateOf(false) }
                         var moreIconWidthPx by remember { mutableIntStateOf(20) }
@@ -146,7 +150,7 @@ fun CategoryEditDialog(
                                             },
                                             onDeleteClick = {
                                                 showMoreMenu = false
-                                                onDeleteCategory(category)
+                                                onRequestDelete(category)
                                             }
                                         )
                                     }
@@ -159,23 +163,12 @@ fun CategoryEditDialog(
         }
         Spacer(Modifier.height(30.dp))
 
-        Row(
+        CategoryDialogButton(
+            text = "닫기",
+            textColor = Color(0xFFACACAC),
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            CategoryDialogButton(
-                text = "취소",
-                textColor = Color(0xFFFF7B7B),
-                modifier = Modifier.weight(1f),
-                onClick = onDismiss
-            )
-            CategoryDialogButton(
-                text = "저장",
-                textColor = Color(0xFFACACAC),
-                modifier = Modifier.weight(1f),
-                onClick = { onSave(categoryList) }
-            )
-        }
+            onClick = onDismiss
+        )
     }
 
     if (showCreateDialog) {
@@ -187,9 +180,7 @@ fun CategoryEditDialog(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp),
                 onDismiss = { showCreateDialog = false },
                 onCreate = { name ->
-                    if (name !in categoryList) {
-                        categoryList = categoryList + name
-                    }
+                    onCreate(name)
                     showCreateDialog = false
                 }
             )
@@ -206,7 +197,7 @@ fun CategoryEditDialog(
                 category = original,
                 onDismiss = { categoryBeingRenamed = null },
                 onRename = { newName ->
-                    categoryList = categoryList.map { if (it == original) newName else it }
+                    onRename(original, newName)
                     categoryBeingRenamed = null
                 }
             )

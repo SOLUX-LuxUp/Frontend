@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.emoji2.emojipicker.EmojiPickerView
-import com.solux.luxup.taptap.feature.home.main.util.CategoryDialogButton
+import com.solux.luxup.taptap.core.util.category.CategoryDialogButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 

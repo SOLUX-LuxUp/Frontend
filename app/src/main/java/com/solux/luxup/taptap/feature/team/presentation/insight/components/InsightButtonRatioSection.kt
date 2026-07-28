@@ -45,7 +45,7 @@ import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
-import com.solux.luxup.taptap.core.util.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.feature.team.model.TeamInsightButtonCount
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart

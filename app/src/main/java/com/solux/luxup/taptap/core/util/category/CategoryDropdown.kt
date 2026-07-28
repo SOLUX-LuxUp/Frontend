@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.core.util
+package com.solux.luxup.taptap.core.util.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,16 +34,20 @@ import com.solux.luxup.taptap.R
 
 private val defaultCategories = listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK", "ALL")
 
+// 필터용 카테고리 드롭다운 - "ALL"을 포함한 카테고리 중 하나를 선택.
+// 관리 가능한 카테고리("ALL" 제외)가 하나도 없으면 "카테고리 수정" 대신 "+ ADD"를 보여준다 -
+// 두 경우 모두 onManageCategoriesClick으로 같은 관리 모달을 띄우는 진입점일 뿐, 생성/수정/삭제는 항상 그 모달 안에서만 이뤄진다.
 @Composable
 fun CategoryDropdown(
     modifier: Modifier = Modifier,
     categories: List<String> = defaultCategories,
     onCategorySelected: (String?) -> Unit = {},
-    onEditCategoriesClick: () -> Unit = {}
+    onManageCategoriesClick: () -> Unit = {}
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
+    val hasManageableCategories = categories.any { it != "ALL" }
 
     Box(modifier = modifier) {
         Row(
@@ -99,11 +103,15 @@ fun CategoryDropdown(
                             .background(Color(0xFFD9D9D9), RoundedCornerShape(50))
                             .clickable {
                                 isExpanded = false
-                                onEditCategoriesClick()
+                                onManageCategoriesClick()
                             }
                             .padding(horizontal = 8.dp, vertical = 1.dp)
                     ) {
-                        Text("카테고리 수정", fontSize = 14.sp, color = Color(0xFFFFFFFF))
+                        Text(
+                            text = if (hasManageableCategories) "카테고리 수정" else "+ ADD",
+                            fontSize = 14.sp,
+                            color = Color(0xFFFFFFFF)
+                        )
                     }
                 }
             }

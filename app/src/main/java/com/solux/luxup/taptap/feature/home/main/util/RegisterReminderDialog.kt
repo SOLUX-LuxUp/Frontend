@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.util.category.CategoryDialogButton
 
 // "알림을 등록할까요?" 팝업 - 버튼 생성 완료 후 알림 등록 여부 확인
 @Composable

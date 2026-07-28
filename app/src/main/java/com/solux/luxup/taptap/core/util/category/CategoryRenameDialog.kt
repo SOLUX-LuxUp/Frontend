@@ -1,8 +1,7 @@
-package com.solux.luxup.taptap.feature.home.main.util
+package com.solux.luxup.taptap.core.util.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,14 +25,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// "카테고리 만들기" 팝업 - 새 카테고리 이름을 입력해서 생성
+// "카테고리 수정" 팝업 - 기존 카테고리 이름을 변경
 @Composable
-fun CategoryCreateDialog(
+fun CategoryRenameDialog(
+    category: String,
     onDismiss: () -> Unit,
-    onCreate: (name: String) -> Unit,
+    onRename: (newName: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var name by remember { mutableStateOf("") }
+    var name by remember(category) { mutableStateOf(category) }
 
     Column(
         modifier = modifier
@@ -43,7 +43,7 @@ fun CategoryCreateDialog(
             .padding(30.dp)
     ) {
         Text(
-            text = "카테고리 만들기",
+            text = "카테고리 수정",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             color = Color(0xFF6D6D6D),
@@ -57,21 +57,18 @@ fun CategoryCreateDialog(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
-                .padding(15.dp)
+                .padding(20.dp)
         ) {
             Text("카테고리 이름", fontSize = 14.sp, color = Color(0xFF6D6D6D))
             Spacer(Modifier.height(12.dp))
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(50.dp))
                     .background(Color(0xFFE2E2E2))
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                if (name.isEmpty()) {
-                    Text("새로운 카테고리", fontSize = 14.sp, color = Color(0xFF6D6D6D))
-                }
                 BasicTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -100,7 +97,7 @@ fun CategoryCreateDialog(
                 onClick = {
                     val trimmed = name.trim()
                     if (trimmed.isNotEmpty()) {
-                        onCreate(trimmed.uppercase())
+                        onRename(trimmed.uppercase())
                     }
                 }
             )

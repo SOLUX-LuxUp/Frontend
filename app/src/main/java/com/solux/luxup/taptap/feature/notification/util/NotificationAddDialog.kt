@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.solux.luxup.taptap.core.util.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
