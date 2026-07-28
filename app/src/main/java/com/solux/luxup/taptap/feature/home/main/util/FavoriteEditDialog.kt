@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.util.category.CategoryDialogButton
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
 
 // "즐겨찾기 수정" 팝업 - 즐겨찾기 목록에서 항목 제거

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.solux.luxup.taptap.feature.auth.account.data.UserRepository
 import com.solux.luxup.taptap.feature.home.main.data.ButtonRepository
+import com.solux.luxup.taptap.feature.home.main.model.Category
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
 import com.solux.luxup.taptap.feature.home.main.model.HabitButton
 import com.solux.luxup.taptap.feature.home.main.model.HomeUser
@@ -58,6 +59,9 @@ class MainHomeViewModel @AssistedInject constructor(
     var favoriteButtons by mutableStateOf<List<FavoriteButton>>(emptyList())
         private set
 
+    var categories by mutableStateOf<List<Category>>(emptyList())
+        private set
+
     var recentRecord by mutableStateOf<RecentRecord?>(null)
         private set
 
@@ -70,6 +74,7 @@ class MainHomeViewModel @AssistedInject constructor(
         loadProfile()
         loadSuggestions()
         loadButtons()
+        loadCategories()
         loadRecentRecord()
     }
 
@@ -101,6 +106,45 @@ class MainHomeViewModel @AssistedInject constructor(
                     habitButtons = result.habitButtons
                     favoriteButtons = result.favorites
                 }
+        }
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            buttonRepository.getCategories()
+                .onSuccess { categories = it }
+        }
+    }
+
+    /** 카테고리 생성/수정/삭제는 "카테고리 수정" 모달에서만 호출된다 — 성공하면 목록을 다시 불러와 최신 상태로 맞춘다. */
+    fun createCategory(name: String) {
+        viewModelScope.launch {
+            buttonRepository.createCategory(name)
+                .onSuccess { loadCategories() }
+                .onFailure { errorMessage = it.message ?: "카테고리를 추가하지 못했어요." }
+        }
+    }
+
+    fun renameCategory(categoryId: Long, newName: String) {
+        viewModelScope.launch {
+            buttonRepository.renameCategory(categoryId, newName)
+                .onSuccess {
+                    // 습관 버튼 카드에 표시되는 카테고리 이름도 최신화해야 해서 버튼 목록도 함께 새로고침한다.
+                    loadCategories()
+                    loadButtons()
+                }
+                .onFailure { errorMessage = it.message ?: "카테고리를 수정하지 못했어요." }
+        }
+    }
+
+    fun deleteCategory(categoryId: Long, deleteButtonsToo: Boolean) {
+        viewModelScope.launch {
+            buttonRepository.deleteCategory(categoryId, deleteButtonsToo)
+                .onSuccess {
+                    loadCategories()
+                    loadButtons()
+                }
+                .onFailure { errorMessage = it.message ?: "카테고리를 삭제하지 못했어요." }
         }
     }
 

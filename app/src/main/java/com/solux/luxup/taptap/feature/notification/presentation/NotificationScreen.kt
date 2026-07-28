@@ -42,10 +42,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
-import com.solux.luxup.taptap.core.util.CategoryDropdown
 import com.solux.luxup.taptap.core.util.SearchBar
-import com.solux.luxup.taptap.feature.home.main.util.CategoryDeleteConfirmDialog
-import com.solux.luxup.taptap.feature.home.main.util.CategoryEditDialog
+import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
+import com.solux.luxup.taptap.core.util.category.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
 import com.solux.luxup.taptap.feature.notification.data.mockAddableNotifications
 import com.solux.luxup.taptap.feature.notification.data.mockNotifications
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
@@ -166,7 +166,7 @@ fun NotificationScreen(
                 CategoryDropdown(
                     categories = manageableCategories + "ALL",
                     onCategorySelected = { selectedCategory = it },
-                    onEditCategoriesClick = { showCategoryEditDialog = true }
+                    onManageCategoriesClick = { showCategoryEditDialog = true }
                 )
                 Spacer(Modifier.width(16.dp))
                 SearchBar(
@@ -247,11 +247,15 @@ fun NotificationScreen(
                     .padding(horizontal = 40.dp),
                 categories = manageableCategories,
                 onDismiss = { showCategoryEditDialog = false },
-                onSave = { updated ->
-                    manageableCategories = updated
-                    showCategoryEditDialog = false
+                onCreate = { name ->
+                    if (name !in manageableCategories) {
+                        manageableCategories = manageableCategories + name
+                    }
                 },
-                onDeleteCategory = { category -> categoryPendingDelete = category }
+                onRename = { oldName, newName ->
+                    manageableCategories = manageableCategories.map { if (it == oldName) newName else it }
+                },
+                onRequestDelete = { category -> categoryPendingDelete = category }
             )
         }
     }

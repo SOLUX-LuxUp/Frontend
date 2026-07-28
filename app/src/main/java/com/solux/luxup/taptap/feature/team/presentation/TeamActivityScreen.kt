@@ -33,7 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
-import com.solux.luxup.taptap.core.util.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.feature.team.data.mockSuggestionsTogether
 import com.solux.luxup.taptap.feature.team.data.mockTeamButtons

@@ -58,8 +58,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.solux.luxup.taptap.feature.home.main.util.CategoryCreateDialog
-import com.solux.luxup.taptap.feature.home.main.util.CategorySelectDropdown
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
+import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
+import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
+import com.solux.luxup.taptap.core.util.category.CategorySelectDropdown
+import com.solux.luxup.taptap.feature.home.main.model.Category
 import com.solux.luxup.taptap.feature.home.main.util.MonthCalendarPicker
 import com.solux.luxup.taptap.feature.home.main.util.RegisterReminderDialog
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
@@ -71,7 +74,12 @@ import java.util.Locale
 
 @Composable
 fun CreateButtonScreen(
-    defaultCategories: List<String> = listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK"),
+    categories: List<Category> = emptyList(),
+    onCreateCategory: (name: String) -> Unit = {},
+    onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
+    onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
+    errorMessage: String? = null,
+    onErrorConsumed: () -> Unit = {},
     selectedIconRes: Int? = null,
     selectedIconTint: Color? = null,
     onNavigateBack: () -> Unit = {},
@@ -80,9 +88,9 @@ fun CreateButtonScreen(
     onNavigateToIconSelect: () -> Unit = {}
 ) {
     var name by remember { mutableStateOf("") }
-    var categories by remember { mutableStateOf(defaultCategories) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
-    var showCategoryCreateDialog by remember { mutableStateOf(false) }
+    var showCategoryEditDialog by remember { mutableStateOf(false) }
+    var categoryPendingDelete by remember { mutableStateOf<String?>(null) }
 
     var hasDeadline by remember { mutableStateOf(false) }
     var deadlineMillis by remember { mutableStateOf<Long?>(null) }
@@ -199,10 +207,10 @@ fun CreateButtonScreen(
         Text("카테고리", fontSize = 14.sp, color = Color(0xFF6D6D6D))
         Spacer(Modifier.height(8.dp))
         CategorySelectDropdown(
-            categories = categories,
+            categories = categories.map { it.name },
             selectedCategory = selectedCategory,
             onCategorySelected = { selectedCategory = it },
-            onAddCategoryClick = { showCategoryCreateDialog = true }
+            onManageCategoriesClick = { showCategoryEditDialog = true }
         )
 
         Spacer(Modifier.height(30.dp))
@@ -273,22 +281,43 @@ fun CreateButtonScreen(
         Spacer(Modifier.height(40.dp))
     }
 
-    if (showCategoryCreateDialog) {
+    if (showCategoryEditDialog) {
         Dialog(
-            onDismissRequest = { showCategoryCreateDialog = false },
+            onDismissRequest = { showCategoryEditDialog = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            CategoryCreateDialog(
+            CategoryEditDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp),
-                onDismiss = { showCategoryCreateDialog = false },
-                onCreate = { newCategory ->
-                    if (newCategory !in categories) {
-                        categories = categories + newCategory
+                categories = categories.map { it.name },
+                onDismiss = { showCategoryEditDialog = false },
+                onCreate = onCreateCategory,
+                onRename = { oldName, newName ->
+                    categories.find { it.name == oldName }?.let { onRenameCategory(it.id, newName) }
+                },
+                onRequestDelete = { category -> categoryPendingDelete = category }
+            )
+        }
+    }
+
+    categoryPendingDelete?.let { category ->
+        Dialog(
+            onDismissRequest = { categoryPendingDelete = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            CategoryDeleteConfirmDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                category = category,
+                onDismiss = { categoryPendingDelete = null },
+                onConfirmDelete = { deleteButtonsToo ->
+                    categories.find { it.name == category }?.let { onDeleteCategory(it.id, deleteButtonsToo) }
+                    if (selectedCategory == category) {
+                        selectedCategory = null
                     }
-                    selectedCategory = newCategory
-                    showCategoryCreateDialog = false
+                    categoryPendingDelete = null
                 }
             )
         }
@@ -333,6 +362,10 @@ fun CreateButtonScreen(
                 }
             )
         }
+    }
+
+    errorMessage?.let { message ->
+        NoticeDialog(message = message, onDismiss = onErrorConsumed)
     }
 }
 

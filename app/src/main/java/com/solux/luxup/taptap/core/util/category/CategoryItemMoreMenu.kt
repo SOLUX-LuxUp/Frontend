@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.home.main.util
+package com.solux.luxup.taptap.core.util.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

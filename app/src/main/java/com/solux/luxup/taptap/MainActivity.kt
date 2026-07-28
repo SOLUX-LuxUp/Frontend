@@ -30,6 +30,7 @@ import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupRoute
 import com.solux.luxup.taptap.feature.auth.signup.presentation.signupGraph
 import com.solux.luxup.taptap.feature.home.buttondetail.presentation.ButtonDetailScreen
 import com.solux.luxup.taptap.feature.home.main.util.presentation.CreateButtonScreen
+import com.solux.luxup.taptap.feature.home.main.util.presentation.CreateButtonViewModel
 import com.solux.luxup.taptap.feature.home.main.util.presentation.IconSelectScreen
 import com.solux.luxup.taptap.feature.home.main.util.presentation.MainHomeScreen
 import com.solux.luxup.taptap.feature.home.main.util.presentation.MainHomeViewModel
@@ -168,6 +169,12 @@ class MainActivity : ComponentActivity() {
                             habitButtons = mainHomeViewModel.habitButtons,
                             firstButtonSuggestions = mainHomeViewModel.suggestions,
                             groupFirstButtonSuggestionsByCategory = false,
+                            categories = mainHomeViewModel.categories,
+                            onCreateCategory = mainHomeViewModel::createCategory,
+                            onRenameCategory = mainHomeViewModel::renameCategory,
+                            onDeleteCategory = mainHomeViewModel::deleteCategory,
+                            errorMessage = mainHomeViewModel.errorMessage,
+                            onErrorConsumed = mainHomeViewModel::consumeError,
                             onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
@@ -197,6 +204,12 @@ class MainActivity : ComponentActivity() {
                             favoriteButtons = mainHomeViewModel.favoriteButtons,
                             habitButtons = mainHomeViewModel.habitButtons,
                             firstButtonSuggestions = mainHomeViewModel.suggestions,
+                            categories = mainHomeViewModel.categories,
+                            onCreateCategory = mainHomeViewModel::createCategory,
+                            onRenameCategory = mainHomeViewModel::renameCategory,
+                            onDeleteCategory = mainHomeViewModel::deleteCategory,
+                            errorMessage = mainHomeViewModel.errorMessage,
+                            onErrorConsumed = mainHomeViewModel::consumeError,
                             onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
@@ -395,7 +408,14 @@ class MainActivity : ComponentActivity() {
                         val selectedIconTintArgb by backStackEntry.savedStateHandle
                             .getStateFlow<Int?>("selectedIconTint", null)
                             .collectAsState()
+                        val createButtonViewModel: CreateButtonViewModel = hiltViewModel()
                         CreateButtonScreen(
+                            categories = createButtonViewModel.categories,
+                            onCreateCategory = createButtonViewModel::createCategory,
+                            onRenameCategory = createButtonViewModel::renameCategory,
+                            onDeleteCategory = createButtonViewModel::deleteCategory,
+                            errorMessage = createButtonViewModel.errorMessage,
+                            onErrorConsumed = createButtonViewModel::consumeError,
                             selectedIconRes = selectedIconRes,
                             selectedIconTint = selectedIconTintArgb?.let { Color(it) },
                             onNavigateBack = {

@@ -48,23 +48,25 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
-import com.solux.luxup.taptap.core.util.CategoryDropdown
 import com.solux.luxup.taptap.core.util.SearchBar
+import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
+import com.solux.luxup.taptap.core.util.category.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
 import com.solux.luxup.taptap.feature.home.main.data.TEMPLATE_QUICK_BUTTON_TITLE
 import com.solux.luxup.taptap.feature.home.main.data.mockFavoriteButtons
 import com.solux.luxup.taptap.feature.home.main.data.mockHabitButtons
 import com.solux.luxup.taptap.feature.home.main.data.mockHomeUser
 import com.solux.luxup.taptap.feature.home.main.data.mockRecentRecord
 import com.solux.luxup.taptap.feature.home.main.data.recommendedButtons
+import com.solux.luxup.taptap.feature.home.main.model.Category
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
 import com.solux.luxup.taptap.feature.home.main.model.HabitButton
 import com.solux.luxup.taptap.feature.home.main.model.HomeUser
 import com.solux.luxup.taptap.feature.home.main.model.RecentRecord
 import com.solux.luxup.taptap.feature.home.main.model.RecommendedButton
 import com.solux.luxup.taptap.feature.home.main.util.AddButtonMenuPopup
-import com.solux.luxup.taptap.feature.home.main.util.CategoryDeleteConfirmDialog
-import com.solux.luxup.taptap.feature.home.main.util.CategoryEditDialog
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteAddBox
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteButtonBox
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteEditDialog
@@ -89,6 +91,12 @@ fun MainHomeScreen(
     firstButtonSuggestions: List<TemplateButtonSuggestion> = emptyList(),
     /** true면 firstButtonSuggestions를 카테고리 탭으로 나눠 보여준다 (템플릿을 골랐을 때). 건너뛴 경우 false. */
     groupFirstButtonSuggestionsByCategory: Boolean = true,
+    categories: List<Category> = emptyList(),
+    onCreateCategory: (name: String) -> Unit = {},
+    onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
+    onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
+    errorMessage: String? = null,
+    onErrorConsumed: () -> Unit = {},
     onNavigateToCreateButton: () -> Unit = {},
     onNavigateToButtonDetail: (button: HabitButton) -> Unit = {},
     onFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
@@ -99,8 +107,6 @@ fun MainHomeScreen(
     // 상단 + 버튼 드롭다운에서 "빠르게 만들기"를 선택했을 때만 뜨는 추천 버튼 팝업
     var showQuickCreatePopup by remember { mutableStateOf(false) }
 
-    // 카테고리 드롭다운/수정 팝업에서 사용하는 카테고리 목록 ("ALL"은 전체 노출용 옵션이라 별도로 붙인다)
-    var manageableCategories by remember { mutableStateOf(listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK")) }
     var buttonsState by remember(habitButtons) { mutableStateOf(habitButtons) }
 
     // "즐겨찾기" 글자를 눌렀을 때 뜨는 즐겨찾기 수정 팝업 상태
@@ -209,9 +215,9 @@ fun MainHomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CategoryDropdown(
-                    categories = manageableCategories + "ALL",
+                    categories = categories.map { it.name } + "ALL",
                     onCategorySelected = { selectedCategory = it },
-                    onEditCategoriesClick = { showCategoryEditDialog = true }
+                    onManageCategoriesClick = { showCategoryEditDialog = true }
                 )
                 Spacer(Modifier.width(16.dp))
                 SearchBar(
@@ -266,13 +272,13 @@ fun MainHomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp),
-                categories = manageableCategories,
+                categories = categories.map { it.name },
                 onDismiss = { showCategoryEditDialog = false },
-                onSave = { updated ->
-                    manageableCategories = updated
-                    showCategoryEditDialog = false
+                onCreate = onCreateCategory,
+                onRename = { oldName, newName ->
+                    categories.find { it.name == oldName }?.let { onRenameCategory(it.id, newName) }
                 },
-                onDeleteCategory = { category -> categoryPendingDelete = category }
+                onRequestDelete = { category -> categoryPendingDelete = category }
             )
         }
     }
@@ -289,10 +295,7 @@ fun MainHomeScreen(
                 category = category,
                 onDismiss = { categoryPendingDelete = null },
                 onConfirmDelete = { deleteButtonsToo ->
-                    manageableCategories = manageableCategories - category
-                    if (deleteButtonsToo) {
-                        buttonsState = buttonsState.filter { it.category != category }
-                    }
+                    categories.find { it.name == category }?.let { onDeleteCategory(it.id, deleteButtonsToo) }
                     if (selectedCategory == category) {
                         selectedCategory = null
                     }
@@ -338,6 +341,10 @@ fun MainHomeScreen(
                 }
             )
         }
+    }
+
+    errorMessage?.let { message ->
+        NoticeDialog(message = message, onDismiss = onErrorConsumed)
     }
 }
 

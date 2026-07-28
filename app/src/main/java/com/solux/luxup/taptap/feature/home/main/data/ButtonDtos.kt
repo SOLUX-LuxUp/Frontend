@@ -40,6 +40,44 @@ data class CategoryButtonItemDto(
     val lastRecordedAt: String? = null,
 )
 
+// ---- button-category-controller ----
+
+/** GET /api/buttons/categories — displayOrder 오름차순으로 정렬되어 내려온다 */
+@Serializable
+data class CategoryListItemDto(
+    val categoryId: Long,
+    val categoryName: String,
+    val displayOrder: Int? = null,
+)
+
+/** POST /api/buttons/categories */
+@Serializable
+data class CreateCategoryRequestDto(
+    val categoryName: String,
+)
+
+@Serializable
+data class CategoryResponseDto(
+    val categoryId: Long,
+    val categoryName: String,
+    val displayOrder: Int? = null,
+    val createdAt: String? = null,
+)
+
+/** PATCH /api/buttons/categories/{category_id} */
+@Serializable
+data class UpdateCategoryNameRequestDto(
+    val categoryName: String,
+)
+
+@Serializable
+data class CategoryUpdateResponseDto(
+    val categoryId: Long,
+    val categoryName: String,
+    val displayOrder: Int? = null,
+    val updatedAt: String? = null,
+)
+
 // ---- 기록 ----
 
 /** GET /api/records/recent */

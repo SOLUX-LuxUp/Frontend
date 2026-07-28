@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.home.main.util
+package com.solux.luxup.taptap.core.util.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,13 +37,15 @@ import androidx.compose.ui.window.PopupProperties
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.feature.home.main.util.presentation.dropShadow
 
-// "버튼 만들기" 화면의 카테고리 선택 드롭다운 - 선택 박스 + 카테고리 목록 + "ADD +"로 새 카테고리 생성 진입
+// "버튼 만들기" 화면의 카테고리 선택 드롭다운 - 선택 박스 + 카테고리 목록.
+// 카테고리가 하나도 없으면 "+ ADD", 있으면 "카테고리 수정"을 보여주지만 둘 다 같은 관리 모달(onManageCategoriesClick)로 들어간다 -
+// 카테고리 생성/수정/삭제는 항상 그 모달 안에서만 가능하다.
 @Composable
 fun CategorySelectDropdown(
     categories: List<String>,
     selectedCategory: String?,
     onCategorySelected: (String) -> Unit,
-    onAddCategoryClick: () -> Unit,
+    onManageCategoriesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -125,11 +127,15 @@ fun CategorySelectDropdown(
                             .background(Color(0xFFD9D9D9))
                             .clickable {
                                 isExpanded = false
-                                onAddCategoryClick()
+                                onManageCategoriesClick()
                             }
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Text("ADD +", fontSize = 18.sp, color = Color.White)
+                        Text(
+                            text = if (categories.isEmpty()) "+ ADD" else "카테고리 수정",
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
                     }
                 }
             }
