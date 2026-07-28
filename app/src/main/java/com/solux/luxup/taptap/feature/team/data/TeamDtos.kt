@@ -393,3 +393,35 @@ data class LatestRecordResponseDto(
     val iconColor: String? = null,
     val latestRecord: TeamButtonTimelineItemDto? = null,
 )
+
+// ---- team-button-permission-controller ----
+
+@Serializable
+data class TapPermissionRequestResponseDto(
+    val teamButtonId: Long,
+    val userId: Long,
+    val permissionStatus: String? = null,
+    val requestedAt: String? = null,
+)
+
+@Serializable
+data class TapPermissionDecisionRequestDto(
+    val action: String,
+)
+
+@Serializable
+data class TapPermissionDecisionResponseDto(
+    val teamButtonId: Long,
+    val userId: Long,
+    val permissionStatus: String? = null,
+    val grantedBy: Long? = null,
+    val updatedAt: String? = null,
+)
+
+@Serializable
+data class TapPermissionRequestListItemDto(
+    val userId: Long,
+    val displayName: String? = null,
+    val profileImageUrl: String? = null,
+    val requestedAt: String? = null,
+)

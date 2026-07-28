@@ -146,4 +146,26 @@ interface TeamApi {
 
     @GET("api/teams/{team_id}/buttons/categories")
     suspend fun getButtonCategories(@Path("team_id") teamId: Long): Response<BaseResponse<List<TeamButtonCategoryResponseDto>>>
+
+    // ---- team-button-permission-controller ----
+
+    @POST("api/teams/{team_id}/buttons/{team_button_id}/permission/request")
+    suspend fun requestPermission(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+    ): Response<BaseResponse<TapPermissionRequestResponseDto>>
+
+    @PATCH("api/teams/{team_id}/buttons/{team_button_id}/permission/{user_id}")
+    suspend fun decidePermission(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+        @Path("user_id") userId: Long,
+        @Body request: TapPermissionDecisionRequestDto,
+    ): Response<BaseResponse<TapPermissionDecisionResponseDto>>
+
+    @GET("api/teams/{team_id}/buttons/{team_button_id}/permission/requests")
+    suspend fun listPendingRequests(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+    ): Response<BaseResponse<List<TapPermissionRequestListItemDto>>>
 }
