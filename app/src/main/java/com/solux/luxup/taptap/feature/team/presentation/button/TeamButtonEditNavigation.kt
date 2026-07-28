@@ -65,11 +65,16 @@ fun NavGraphBuilder.teamButtonEditGraph(
                 onNameChange = viewModel::updateName,
                 onDescriptionChange = viewModel::updateDescription,
                 onCategorySelect = viewModel::updateCategory,
+                onCreateCategory = viewModel::createCategory,
+                onRenameCategory = viewModel::renameCategory,
+                onDeleteCategory = viewModel::deleteCategory,
                 onTapPermissionChange = viewModel::updateTapPermission,
                 onBack = { navController.popBackStack() },
                 onConfirm = viewModel::submit,
                 onIconClick = { navController.navigate(TeamButtonEditRoute.ICON) },
                 onMemberSelectClick = { navController.navigate(TeamButtonEditRoute.MEMBERS) },
+                errorMessage = viewModel.errorMessage,
+                onErrorConsumed = viewModel::consumeError,
             )
         }
 
