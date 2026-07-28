@@ -21,6 +21,7 @@ import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
 import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 import com.solux.luxup.taptap.feature.team.model.TeamMember
 import com.solux.luxup.taptap.feature.team.model.TeamMemberRole
+import com.solux.luxup.taptap.feature.team.model.TeamButtonPermissionRequest
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamTemplate
 import com.solux.luxup.taptap.feature.team.model.TeamTemplateStatus
@@ -155,6 +156,17 @@ class TeamRepository @Inject constructor(
 
     suspend fun getButtonCategories(teamId: Long): Result<List<TeamButtonCategory>> =
         apiCallHandler.execute { teamApi.getButtonCategories(teamId) }.mapCatching { list -> list.map { it.toModel() } }
+
+    // ---- team-button-permission-controller ----
+
+    suspend fun requestTapPermission(teamId: Long, teamButtonId: Long): Result<TapPermissionRequestResponseDto> =
+        apiCallHandler.execute { teamApi.requestPermission(teamId, teamButtonId) }
+
+    suspend fun decideTapPermission(teamId: Long, teamButtonId: Long, userId: Long, action: String): Result<TapPermissionDecisionResponseDto> =
+        apiCallHandler.execute { teamApi.decidePermission(teamId, teamButtonId, userId, TapPermissionDecisionRequestDto(action)) }
+
+    suspend fun listPendingTapPermissionRequests(teamId: Long, teamButtonId: Long): Result<List<TeamButtonPermissionRequest>> =
+        apiCallHandler.execute { teamApi.listPendingRequests(teamId, teamButtonId) }.mapCatching { list -> list.map { it.toModel() } }
 }
 
 private const val TapPermissionAll = "all"
@@ -344,4 +356,11 @@ private fun TeamButtonForm.toUpdateRequest() = UpdateTeamButtonRequestDto(
     tapPermission = tapPermission.value,
     categoryId = category?.categoryId,
     allowedUserIds = allowedUserIds.ifEmpty { null },
+)
+
+private fun TapPermissionRequestListItemDto.toModel() = TeamButtonPermissionRequest(
+    userId = userId,
+    displayName = displayName.orEmpty(),
+    profileImageUrl = profileImageUrl,
+    requestedAt = requestedAt.orEmpty(),
 )

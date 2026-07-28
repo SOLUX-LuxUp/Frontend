@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.solux.luxup.taptap.feature.team.data.TeamRepository
+import com.solux.luxup.taptap.feature.team.model.PermissionStatus
 import com.solux.luxup.taptap.feature.team.model.TeamButtonDetail
 import com.solux.luxup.taptap.feature.team.model.TeamButtonPermissionRequest
 import com.solux.luxup.taptap.feature.team.model.TeamMember
@@ -13,7 +14,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -21,9 +21,6 @@ import kotlinx.coroutines.launch
  *
  * 상세 조회는 allowedUserIds(숫자 배열)만 주므로, 팀원 목록과 매칭해
  * 이름·프로필이 있는 allowedMembers를 만들어 화면에 넘긴다.
- *
- * 탭 권한 요청/승인/거부(requestPermission/approveRequest/denyRequest)는
- * team-button-permission-controller 소관이라 다음 브랜치에서 연동한다.
  */
 @HiltViewModel(assistedFactory = TeamButtonInfoViewModel.Factory::class)
 class TeamButtonInfoViewModel @AssistedInject constructor(
@@ -48,7 +45,7 @@ class TeamButtonInfoViewModel @AssistedInject constructor(
     var allowedMembers by mutableStateOf<List<TeamMember>>(emptyList())
         private set
 
-    /** TODO: team-button-permission-controller 연동 시 채운다 */
+    /** GET .../permission/requests — 관리자일 때만 채운다 */
     var permissionRequests by mutableStateOf<List<TeamButtonPermissionRequest>>(emptyList())
         private set
 
@@ -74,6 +71,12 @@ class TeamButtonInfoViewModel @AssistedInject constructor(
                     detail = loaded
                     val members = membersResult.getOrDefault(emptyList())
                     allowedMembers = members.filter { it.userId in loaded.allowedUserIds }
+
+                    permissionRequests = if (loaded.isManager(currentUserId)) {
+                        teamRepository.listPendingTapPermissionRequests(teamId, teamButtonId).getOrDefault(emptyList())
+                    } else {
+                        emptyList()
+                    }
                 }
                 .onFailure { errorMessage = it.message ?: "버튼 정보를 불러오지 못했어요." }
 
@@ -81,32 +84,31 @@ class TeamButtonInfoViewModel @AssistedInject constructor(
         }
     }
 
-    /** 비관리자 — 탭 권한 요청 */
+    /**
+     * 비관리자 — 탭 권한 요청.
+     * 성공 → 재조회하면 permissionStatus가 pending으로 바뀌어 버튼이 잠긴다.
+     * 409 이미 요청 중 / 400 커스텀 버튼 아님 → errorMessage로 안내
+     */
     fun requestPermission() {
         viewModelScope.launch {
-            // TODO: POST /api/teams/{teamId}/buttons/{teamButtonId}/permission/request (팀 공유버튼 탭 권한 브랜치)
-            //  201 성공 → 재조회하면 permissionStatus가 pending으로 바뀌어 버튼이 잠긴다
-            //  409 이미 요청 중 / 400 커스텀 버튼 아님 → errorMessage로 안내
-            runCatching { delay(200) }
+            teamRepository.requestTapPermission(teamId, teamButtonId)
                 .onSuccess { load() }
-                .onFailure { errorMessage = "권한 요청에 실패했어요.\n잠시 후 다시 시도해 주세요." }
+                .onFailure { errorMessage = it.message ?: "권한 요청에 실패했어요.\n잠시 후 다시 시도해 주세요." }
         }
     }
 
     /** 관리자 — 권한 요청 승인 */
-    fun approveRequest(userId: Long) = updatePermission(userId, action = "granted")
+    fun approveRequest(userId: Long) = updatePermission(userId, action = PermissionStatus.GRANTED)
 
     /** 관리자 — 권한 요청 거부 */
-    fun denyRequest(userId: Long) = updatePermission(userId, action = "denied")
+    fun denyRequest(userId: Long) = updatePermission(userId, action = PermissionStatus.DENIED)
 
+    /** 성공 → 재조회하면 허용 멤버와 요청 목록이 함께 갱신된다 */
     private fun updatePermission(userId: Long, action: String) {
         viewModelScope.launch {
-            // TODO: PATCH /api/teams/{teamId}/buttons/{teamButtonId}/permission/{userId} (팀 공유버튼 탭 권한 브랜치)
-            //  body: { "action": "granted" | "denied" }
-            //  성공 → 재조회하면 허용 멤버와 요청 목록이 함께 갱신된다
-            runCatching { delay(200) }
+            teamRepository.decideTapPermission(teamId, teamButtonId, userId, action)
                 .onSuccess { load() }
-                .onFailure { errorMessage = "처리에 실패했어요.\n잠시 후 다시 시도해 주세요." }
+                .onFailure { errorMessage = it.message ?: "처리에 실패했어요.\n잠시 후 다시 시도해 주세요." }
         }
     }
 
