@@ -4,9 +4,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -46,6 +50,17 @@ fun NavGraphBuilder.teamButtonInfoScreen(
         val viewModel = hiltViewModel<TeamButtonInfoViewModel, TeamButtonInfoViewModel.Factory>(
             creationCallback = { factory -> factory.create(teamId, teamButtonId, currentUserId) },
         )
+
+        // 버튼 수정 화면에 다녀와도 이 화면(NavBackStackEntry)의 ViewModel 인스턴스는
+        // 재사용되어 init{} 이 다시 안 불리므로, 화면이 다시 보일 때(RESUME)마다 새로고침한다.
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) viewModel.refresh()
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
 
         val detail = viewModel.detail
         if (detail == null) {
