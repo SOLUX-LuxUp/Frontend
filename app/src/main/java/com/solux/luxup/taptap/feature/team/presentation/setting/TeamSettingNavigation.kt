@@ -97,7 +97,12 @@ fun NavGraphBuilder.teamSettingGraph(
             val vm = entry.settingViewModel(navController, currentUserId)
             val settings = vm.settings ?: return@composable
 
-            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
+            TeamSettingTabScaffold(
+                teamId = teamId,
+                onNavItemSelected = onNavItemSelected,
+                errorMessage = vm.errorMessage,
+                onErrorConsumed = vm::consumeError,
+            ) {
                 TeamSettingScreen(
                     settings = settings,
                     currentUserId = vm.currentUserId,
@@ -122,7 +127,12 @@ fun NavGraphBuilder.teamSettingGraph(
             val settings = vm.settings ?: return@composable
             var showAlreadyDeletingNotice by remember { mutableStateOf(false) }
 
-            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
+            TeamSettingTabScaffold(
+                teamId = teamId,
+                onNavItemSelected = onNavItemSelected,
+                errorMessage = vm.errorMessage,
+                onErrorConsumed = vm::consumeError,
+            ) {
                 TeamManageScreen(
                     settings = settings,
                     onBack = { navController.popBackStack() },
@@ -152,7 +162,12 @@ fun NavGraphBuilder.teamSettingGraph(
             val teamId = entry.teamId()
             val vm = entry.settingViewModel(navController, currentUserId)
 
-            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
+            TeamSettingTabScaffold(
+                teamId = teamId,
+                onNavItemSelected = onNavItemSelected,
+                errorMessage = vm.errorMessage,
+                onErrorConsumed = vm::consumeError,
+            ) {
                 TeamMemberManageScreen(
                     members = vm.members,
                     currentUserId = vm.currentUserId,
@@ -168,7 +183,12 @@ fun NavGraphBuilder.teamSettingGraph(
             val vm = entry.settingViewModel(navController, currentUserId)
             val settings = vm.settings ?: return@composable
 
-            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected) {
+            TeamSettingTabScaffold(
+                teamId = teamId,
+                onNavItemSelected = onNavItemSelected,
+                errorMessage = vm.errorMessage,
+                onErrorConsumed = vm::consumeError,
+            ) {
                 TeamPermissionScreen(
                     settings = settings,
                     onBack = { navController.popBackStack() },
@@ -182,7 +202,12 @@ fun NavGraphBuilder.teamSettingGraph(
             val teamId = entry.teamId()
             val vm = entry.settingViewModel(navController, currentUserId)
 
-            TeamSettingTabScaffold(teamId = teamId, onNavItemSelected = onNavItemSelected) {
+            TeamSettingTabScaffold(
+                teamId = teamId,
+                onNavItemSelected = onNavItemSelected,
+                errorMessage = vm.errorMessage,
+                onErrorConsumed = vm::consumeError,
+            ) {
                 TeamOwnerDelegateScreen(
                     members = vm.members,
                     currentUserId = vm.currentUserId,
@@ -213,6 +238,13 @@ fun NavGraphBuilder.teamSettingGraph(
                     onExitTeam()
                 },
             )
+
+            vm.errorMessage?.let { message ->
+                com.solux.luxup.taptap.core.ui.components.NoticeDialog(
+                    message = message,
+                    onDismiss = vm::consumeError,
+                )
+            }
         }
     }
 }
@@ -227,6 +259,8 @@ fun NavGraphBuilder.teamSettingGraph(
 private fun TeamSettingTabScaffold(
     teamId: Long,
     onNavItemSelected: (BottomNavItem) -> Unit,
+    errorMessage: String? = null,
+    onErrorConsumed: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -237,6 +271,13 @@ private fun TeamSettingTabScaffold(
         BottomNavBar(
             selected = BottomNavItem.TEAM,
             onItemSelected = onNavItemSelected,
+        )
+    }
+
+    if (errorMessage != null) {
+        com.solux.luxup.taptap.core.ui.components.NoticeDialog(
+            message = errorMessage,
+            onDismiss = onErrorConsumed,
         )
     }
 }

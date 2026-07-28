@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,12 +63,25 @@ fun TeamListScreen(
     onJoinTeam: (String) -> Unit = {},
     onFavoriteClick: (Long) -> Unit = {},
     joinErrorMessage: String? = null,
+    isJoining: Boolean = false,
+    /** 참여 성공 시 한 번만 바뀌는 신호(가입한 teamId). null이 아니게 되면 모달을 닫는다 */
+    joinedTeamId: Long? = null,
+    onJoinedConsumed: () -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showOptionModal by remember { mutableStateOf(false) }
     var showJoinModal by remember { mutableStateOf(false) }
     var joinCode by remember { mutableStateOf("") }
+
+    // 참여 성공 신호를 받았을 때만 모달을 닫는다 — 실패 시엔 열린 채로 에러를 보여준다
+    LaunchedEffect(joinedTeamId) {
+        if (joinedTeamId != null) {
+            showJoinModal = false
+            joinCode = ""
+            onJoinedConsumed()
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -125,12 +139,9 @@ fun TeamListScreen(
                 showJoinModal = false
                 joinCode = ""
             },
-            onSubmit = {
-                onJoinTeam(joinCode)     // 바깥에 알림 (API 연결)
-                showJoinModal = false    // 여기서 닫기
-                joinCode = ""
-            },
+            onSubmit = { onJoinTeam(joinCode) },   // 성공하면 joinedTeamId 신호로 모달이 닫힌다
             errorMessage = joinErrorMessage,
+            isLoading = isJoining,
         )
     }
 }

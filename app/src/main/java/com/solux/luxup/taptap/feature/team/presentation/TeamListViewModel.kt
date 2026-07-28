@@ -36,6 +36,17 @@ class TeamListViewModel @Inject constructor(
     var joinErrorMessage by mutableStateOf<String?>(null)
         private set
 
+    /** 참여 요청 진행 중 — 모달의 입장 버튼 비활성화용 */
+    var isJoining by mutableStateOf(false)
+        private set
+
+    /**
+     * 참여 성공 시 한 번만 알리는 신호(가입한 teamId). 모달을 닫을지는 이 값을
+     * 관찰하는 화면이 판단한다 — 실패 시엔 바뀌지 않으므로 모달이 열린 채 유지된다.
+     */
+    var joinedTeamId by mutableStateOf<Long?>(null)
+        private set
+
     init {
         loadTeams()
     }
@@ -51,16 +62,26 @@ class TeamListViewModel @Inject constructor(
     }
 
     fun joinTeam(inviteCode: String) {
+        if (isJoining) return
+        isJoining = true
         viewModelScope.launch {
             teamRepository.joinTeam(inviteCode)
-                .onSuccess {
+                .onSuccess { result ->
                     joinErrorMessage = null
+                    isJoining = false
+                    joinedTeamId = result.teamId
                     loadTeams()
                 }
                 .onFailure {
+                    isJoining = false
                     joinErrorMessage = it.message ?: "팀에 참여하지 못했어요."
                 }
         }
+    }
+
+    /** 모달이 닫힌 뒤 신호를 소비한다 */
+    fun consumeJoinedSignal() {
+        joinedTeamId = null
     }
 
     fun toggleFavorite(teamId: Long) {
