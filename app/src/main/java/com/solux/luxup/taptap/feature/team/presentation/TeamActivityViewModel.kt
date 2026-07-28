@@ -6,14 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.solux.luxup.taptap.feature.team.data.TeamRepository
-import com.solux.luxup.taptap.feature.team.data.mockTeamButtons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
 import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -66,9 +64,9 @@ class TeamActivityViewModel @AssistedInject constructor(
     private fun load() {
         viewModelScope.launch {
             isLoading = true
-            // TODO: GET /api/teams/{teamId}/buttons (팀 공유버튼 API 브랜치에서 교체)
-            delay(200)
-            buttons = mockTeamButtons
+            teamRepository.listButtons(teamId)
+                .onSuccess { buttons = it }
+                .onFailure { errorMessage = it.message ?: "버튼 목록을 불러오지 못했어요." }
 
             // 건너뛴 팀이면 빈 배열이 온다. 추천 목록은 활동 탭 핵심 기능이 아니라
             // 조회 실패 시 에러 모달 없이 빈 목록으로 조용히 넘어간다.
@@ -88,8 +86,7 @@ class TeamActivityViewModel @AssistedInject constructor(
      */
     fun createFromSuggestion(suggestion: TeamButtonSuggestion) {
         viewModelScope.launch {
-            // TODO: POST /api/teams/{teamId}/buttons 로 생성 후 재조회
-            runCatching { delay(200) }
+            teamRepository.createButton(teamId, suggestion)
                 .onSuccess {
                     toastMessage = "'${suggestion.buttonName}' 버튼을 추가했어요"
                     load()
@@ -111,11 +108,7 @@ class TeamActivityViewModel @AssistedInject constructor(
         viewModelScope.launch {
             isRecording = true
 
-            // TODO: POST /api/teams/{teamId}/buttons/{button.teamButtonId}/records
-            //  body 없이 호출 (memo·emoji는 optional)
-            //  201 성공 → 목록 재조회로 "몇 분 전 기록"과 최근 기록 배너 갱신
-            //  403 탭 권한 없음 → errorMessage
-            runCatching { delay(200) }
+            teamRepository.createRecord(teamId, button.teamButtonId)
                 .onSuccess {
                     toastMessage = "기록했어요"
                     load()
@@ -130,9 +123,7 @@ class TeamActivityViewModel @AssistedInject constructor(
 
     fun deleteButton(button: TeamButton) {
         viewModelScope.launch {
-            // TODO: DELETE /api/teams/{teamId}/buttons/{button.teamButtonId}
-            //  403이면 삭제 권한 없음 안내
-            runCatching { delay(200) }
+            teamRepository.deleteButton(teamId, button.teamButtonId)
                 .onSuccess {
                     toastMessage = "버튼을 삭제했어요"
                     load()

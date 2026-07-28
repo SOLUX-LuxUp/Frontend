@@ -3,7 +3,7 @@ package com.solux.luxup.taptap.feature.team.presentation.button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -11,8 +11,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.solux.luxup.taptap.feature.team.data.MockTeamButtonCreate
-import com.solux.luxup.taptap.feature.team.data.MockTeamMembers
 
 object TeamButtonEditRoute {
     const val ARG_TEAM_ID = "teamId"
@@ -62,8 +60,7 @@ fun NavGraphBuilder.teamButtonEditGraph(
                 title = "팀 버튼 수정",
                 teamId = teamId,
                 form = viewModel.form,
-                // TODO: 팀 버튼 카테고리 조회 API 연동 시 교체
-                categories = MockTeamButtonCreate.categories,
+                categories = viewModel.categories,
                 confirmEnabled = viewModel.canSubmit,
                 onNameChange = viewModel::updateName,
                 onDescriptionChange = viewModel::updateDescription,
@@ -94,8 +91,7 @@ fun NavGraphBuilder.teamButtonEditGraph(
             val viewModel = entry.sharedEditViewModel(navController, currentUserId)
 
             MemberPermissionScreen(
-                // TODO: GET /api/teams/{team_id}/members 연동 시 교체
-                members = MockTeamMembers,
+                members = viewModel.members,
                 selectedUserIds = viewModel.form.allowedUserIds,
                 currentUserId = currentUserId,
                 onBack = { navController.popBackStack() },
@@ -118,8 +114,7 @@ private fun NavBackStackEntry.sharedEditViewModel(
     }
     val teamId = parentEntry.arguments?.getLong(TeamButtonEditRoute.ARG_TEAM_ID) ?: 0L
     val teamButtonId = parentEntry.arguments?.getLong(TeamButtonEditRoute.ARG_TEAM_BUTTON_ID) ?: 0L
-    return viewModel(
+    return hiltViewModel<TeamButtonEditViewModel, TeamButtonEditViewModel.Factory>(
         viewModelStoreOwner = parentEntry,
-        factory = TeamButtonEditViewModel.factory(teamId, teamButtonId, currentUserId),
-    )
+    ) { factory -> factory.create(teamId, teamButtonId, currentUserId) }
 }

@@ -3,7 +3,7 @@ package com.solux.luxup.taptap.feature.team.presentation.button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -11,8 +11,6 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.solux.luxup.taptap.feature.team.data.MockTeamButtonCreate
-import com.solux.luxup.taptap.feature.team.data.MockTeamMembers
 
 object TeamButtonCreateRoute {
     const val ARG_TEAM_ID = "teamId"
@@ -56,8 +54,7 @@ fun NavGraphBuilder.teamButtonCreateGraph(
 
             TeamButtonCreateScreen(
                 form = viewModel.form,
-                // TODO: 팀 버튼 카테고리 조회 API 나오면 교체
-                categories = MockTeamButtonCreate.categories,
+                categories = viewModel.categories,
                 confirmEnabled = viewModel.canSubmit,
                 onNameChange = viewModel::updateName,
                 onDescriptionChange = viewModel::updateDescription,
@@ -88,8 +85,7 @@ fun NavGraphBuilder.teamButtonCreateGraph(
             val viewModel = entry.sharedViewModel(navController, currentUserId)
 
             MemberPermissionScreen(
-                // TODO: GET /api/teams/{team_id}/members 연동 시 교체
-                members = MockTeamMembers,
+                members = viewModel.members,
                 selectedUserIds = viewModel.form.allowedUserIds,
                 currentUserId = currentUserId,
                 onBack = { navController.popBackStack() },
@@ -112,8 +108,7 @@ private fun NavBackStackEntry.sharedViewModel(
         navController.getBackStackEntry(TeamButtonCreateRoute.GRAPH)
     }
     val teamId = parentEntry.arguments?.getLong(TeamButtonCreateRoute.ARG_TEAM_ID) ?: 0L
-    return viewModel(
+    return hiltViewModel<TeamButtonCreateViewModel, TeamButtonCreateViewModel.Factory>(
         viewModelStoreOwner = parentEntry,
-        factory = TeamButtonCreateViewModel.factory(teamId, currentUserId),
-    )
+    ) { factory -> factory.create(teamId, currentUserId) }
 }

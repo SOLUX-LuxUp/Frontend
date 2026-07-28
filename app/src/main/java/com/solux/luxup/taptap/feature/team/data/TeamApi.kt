@@ -1,6 +1,7 @@
 package com.solux.luxup.taptap.feature.team.data
 
 import com.solux.luxup.taptap.core.network.BaseResponse
+import kotlinx.serialization.json.JsonElement
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -8,6 +9,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface TeamApi {
 
@@ -69,4 +71,79 @@ interface TeamApi {
 
     @GET("api/teams/{team_id}/template/suggestions")
     suspend fun getTemplateSuggestions(@Path("team_id") teamId: Long): Response<BaseResponse<List<TemplateSuggestionDto>>>
+
+    // ---- team-button-controller ----
+
+    @GET("api/teams/{team_id}/buttons")
+    suspend fun listButtons(@Path("team_id") teamId: Long): Response<BaseResponse<List<TeamButtonListItemDto>>>
+
+    @POST("api/teams/{team_id}/buttons")
+    suspend fun createButton(
+        @Path("team_id") teamId: Long,
+        @Body request: CreateTeamButtonRequestDto,
+    ): Response<BaseResponse<TeamButtonResponseDto>>
+
+    @GET("api/teams/{team_id}/buttons/{team_button_id}")
+    suspend fun getButtonDetail(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+    ): Response<BaseResponse<TeamButtonDetailResponseDto>>
+
+    @DELETE("api/teams/{team_id}/buttons/{team_button_id}")
+    suspend fun deleteButton(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+    ): Response<BaseResponse<DeleteTeamButtonResponseDto>>
+
+    @PATCH("api/teams/{team_id}/buttons/{team_button_id}")
+    suspend fun updateButton(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+        @Body request: UpdateTeamButtonRequestDto,
+    ): Response<BaseResponse<UpdateTeamButtonResponseDto>>
+
+    @PATCH("api/teams/{team_id}/buttons/{team_button_id}/notification")
+    suspend fun toggleButtonNotification(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+    ): Response<BaseResponse<ButtonNotificationToggleResponseDto>>
+
+    @GET("api/teams/{team_id}/buttons/{team_button_id}/records")
+    suspend fun getTimeline(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+        @Query("cursor") cursor: Long? = null,
+        @Query("limit") limit: Int? = null,
+    ): Response<BaseResponse<TeamButtonTimelineResponseDto>>
+
+    @POST("api/teams/{team_id}/buttons/{team_button_id}/records")
+    suspend fun createRecord(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+        @Body request: CreateTeamButtonRecordRequestDto,
+    ): Response<BaseResponse<CreateTeamButtonRecordResponseDto>>
+
+    @GET("api/teams/{team_id}/buttons/{team_button_id}/records/latest")
+    suspend fun getLatestRecord(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+    ): Response<BaseResponse<LatestRecordResponseDto>>
+
+    @PATCH("api/teams/{team_id}/buttons/{team_button_id}/records/{record_id}/detail")
+    suspend fun updateRecordDetail(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+        @Path("record_id") recordId: Long,
+        @Body request: UpdateTeamButtonRecordDetailRequestDto,
+    ): Response<BaseResponse<UpdateTeamButtonRecordDetailResponseDto>>
+
+    @DELETE("api/teams/{team_id}/buttons/{team_button_id}/records/{record_id}")
+    suspend fun deleteRecord(
+        @Path("team_id") teamId: Long,
+        @Path("team_button_id") teamButtonId: Long,
+        @Path("record_id") recordId: Long,
+    ): Response<BaseResponse<JsonElement>>
+
+    @GET("api/teams/{team_id}/buttons/categories")
+    suspend fun getButtonCategories(@Path("team_id") teamId: Long): Response<BaseResponse<List<TeamButtonCategoryResponseDto>>>
 }

@@ -6,7 +6,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -44,8 +44,8 @@ fun NavGraphBuilder.teamButtonTimelineScreen(
         val teamId = entry.arguments?.getLong(TeamButtonTimelineRoute.ARG_TEAM_ID) ?: 0L
         val teamButtonId = entry.arguments?.getLong(TeamButtonTimelineRoute.ARG_TEAM_BUTTON_ID) ?: 0L
 
-        val viewModel: TeamButtonTimelineViewModel = viewModel(
-            factory = TeamButtonTimelineViewModel.factory(teamId, teamButtonId, currentUserId),
+        val viewModel = hiltViewModel<TeamButtonTimelineViewModel, TeamButtonTimelineViewModel.Factory>(
+            creationCallback = { factory -> factory.create(teamId, teamButtonId, currentUserId) },
         )
 
         val latest = viewModel.latest

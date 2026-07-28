@@ -218,3 +218,178 @@ data class TemplateSuggestionDto(
     val categoryId: Long? = null,
     val categoryName: String? = null,
 )
+
+// ---- team-button-controller ----
+
+@Serializable
+data class LatestRecordSummaryDto(
+    val recordedAt: String? = null,
+    val recordedBy: List<MemberProfileDto> = emptyList(),
+    val recordedByCount: Int = 0,
+)
+
+@Serializable
+data class TeamButtonListItemDto(
+    val teamButtonId: Long,
+    val buttonName: String,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val categoryId: Long? = null,
+    val categoryName: String? = null,
+    val tapPermission: String? = null,
+    val hasTapPermission: Boolean = false,
+    val latestRecord: LatestRecordSummaryDto? = null,
+)
+
+@Serializable
+data class CreateTeamButtonRequestDto(
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val description: String? = null,
+    val tapPermission: String? = null,
+    val categoryId: Long? = null,
+    val allowedUserIds: List<Long>? = null,
+)
+
+@Serializable
+data class TeamButtonResponseDto(
+    val teamButtonId: Long,
+    val teamId: Long,
+    val buttonName: String,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val description: String? = null,
+    val tapPermission: String? = null,
+    val categoryId: Long? = null,
+    val allowedUserIds: List<Long> = emptyList(),
+    val createdBy: Long? = null,
+    val createdAt: String? = null,
+)
+
+@Serializable
+data class MyPermissionDto(
+    val hasTapPermission: Boolean = false,
+    val permissionStatus: String? = null,
+    val isNotificationEnabled: Boolean = false,
+)
+
+@Serializable
+data class TeamButtonDetailResponseDto(
+    val teamButtonId: Long,
+    val teamId: Long,
+    val buttonName: String,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val description: String? = null,
+    val tapPermission: String? = null,
+    val isActive: Boolean = true,
+    val createdBy: MemberProfileDto,
+    val myPermission: MyPermissionDto,
+    val canEdit: Boolean = false,
+    val canDelete: Boolean = false,
+    val isTeamOwner: Boolean = false,
+    val categoryId: Long? = null,
+    val categoryName: String? = null,
+    val allowedUserIds: List<Long> = emptyList(),
+    val latestRecord: LatestRecordSummaryDto? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null,
+)
+
+@Serializable
+data class DeleteTeamButtonResponseDto(
+    val teamButtonId: Long,
+    val deletedAt: String? = null,
+)
+
+@Serializable
+data class UpdateTeamButtonRequestDto(
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val description: String? = null,
+    val tapPermission: String? = null,
+    val categoryId: Long? = null,
+    val allowedUserIds: List<Long>? = null,
+)
+
+@Serializable
+data class UpdateTeamButtonResponseDto(
+    val teamButtonId: Long,
+    val buttonName: String? = null,
+    val categoryId: Long? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val description: String? = null,
+    val tapPermission: String? = null,
+    val allowedUserIds: List<Long> = emptyList(),
+    val updatedAt: String? = null,
+)
+
+@Serializable
+data class TeamButtonTimelineItemDto(
+    val recordId: Long,
+    val recordedAt: String,
+    val memo: String? = null,
+    val emoji: String? = null,
+    val recordedBy: MemberProfileDto,
+)
+
+@Serializable
+data class TeamButtonTimelineResponseDto(
+    val records: List<TeamButtonTimelineItemDto> = emptyList(),
+    val hasMore: Boolean = false,
+    val nextCursor: Long? = null,
+)
+
+@Serializable
+data class CreateTeamButtonRecordRequestDto(
+    val memo: String? = null,
+    val emoji: String? = null,
+)
+
+@Serializable
+data class CreateTeamButtonRecordResponseDto(
+    val recordId: Long,
+    val teamButtonId: Long,
+    val userId: Long,
+    val recordedAt: String,
+    val memo: String? = null,
+    val emoji: String? = null,
+)
+
+/**
+ * 키 생략=유지, null=삭제, 값 있으면 수정 — 이 셋을 구분해야 해서 memo/emoji 모두
+ * 기본값 없이 선언한다. "유지"하려는 필드는 호출부가 현재 값을 그대로 담아 보낸다.
+ */
+@Serializable
+data class UpdateTeamButtonRecordDetailRequestDto(
+    val memo: String?,
+    val emoji: String?,
+)
+
+@Serializable
+data class UpdateTeamButtonRecordDetailResponseDto(
+    val recordId: Long,
+    val teamButtonId: Long,
+    val memo: String? = null,
+    val emoji: String? = null,
+    val recordedAt: String? = null,
+)
+
+@Serializable
+data class ButtonNotificationToggleResponseDto(
+    val teamButtonId: Long,
+    val userId: Long,
+    val isEnabled: Boolean,
+)
+
+@Serializable
+data class LatestRecordResponseDto(
+    val teamButtonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val latestRecord: TeamButtonTimelineItemDto? = null,
+)

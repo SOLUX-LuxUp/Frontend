@@ -5,14 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.solux.luxup.taptap.core.ui.theme.IconColor
-import com.solux.luxup.taptap.feature.team.data.MockTeamButtonDetail
+import com.solux.luxup.taptap.feature.team.data.TeamRepository
 import com.solux.luxup.taptap.feature.team.model.TapPermission
 import com.solux.luxup.taptap.feature.team.model.TeamButtonCategory
 import com.solux.luxup.taptap.feature.team.model.TeamButtonForm
-import kotlinx.coroutines.delay
+import com.solux.luxup.taptap.feature.team.model.TeamMember
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -20,13 +22,32 @@ import kotlinx.coroutines.launch
  *
  * 생성과 화면은 공유하지만, 상세 조회로 초기값을 채우고 PATCH로 제출하는 점이 다르다.
  */
-class TeamButtonEditViewModel(
-    private val teamId: Long,
-    private val teamButtonId: Long,
-    val currentUserId: Long,
+@HiltViewModel(assistedFactory = TeamButtonEditViewModel.Factory::class)
+class TeamButtonEditViewModel @AssistedInject constructor(
+    @Assisted("teamId") private val teamId: Long,
+    @Assisted("teamButtonId") private val teamButtonId: Long,
+    @Assisted("currentUserId") val currentUserId: Long,
+    private val teamRepository: TeamRepository,
 ) : ViewModel() {
 
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("teamId") teamId: Long,
+            @Assisted("teamButtonId") teamButtonId: Long,
+            @Assisted("currentUserId") currentUserId: Long,
+        ): TeamButtonEditViewModel
+    }
+
     var form by mutableStateOf(TeamButtonForm())
+        private set
+
+    /** GET /api/teams/{team_id}/buttons/categories */
+    var categories by mutableStateOf<List<TeamButtonCategory>>(emptyList())
+        private set
+
+    /** GET /api/teams/{team_id}/members — 탭 권한 대상 멤버 선택용 */
+    var members by mutableStateOf<List<TeamMember>>(emptyList())
         private set
 
     /** 초기 상세 조회 중 */
@@ -48,14 +69,22 @@ class TeamButtonEditViewModel(
 
     init {
         load()
+        viewModelScope.launch {
+            teamRepository.getButtonCategories(teamId)
+                .onSuccess { categories = it }
+        }
+        viewModelScope.launch {
+            teamRepository.listMembers(teamId)
+                .onSuccess { members = it }
+        }
     }
 
     private fun load() {
         viewModelScope.launch {
             isLoading = true
-            // TODO: GET /api/teams/{teamId}/buttons/{teamButtonId} 연동
-            delay(200)
-            form = MockTeamButtonDetail.detail.toForm()
+            teamRepository.getButtonDetail(teamId, teamButtonId)
+                .onSuccess { form = it.toForm() }
+                .onFailure { errorMessage = it.message ?: "버튼 정보를 불러오지 못했어요." }
             isLoading = false
         }
     }
@@ -96,6 +125,7 @@ class TeamButtonEditViewModel(
 
     // ---- 제출 ----
 
+    /** PATCH /api/teams/{teamId}/buttons/{teamButtonId} — 403이면 "수정 권한이 없어요" 안내 */
     fun submit() {
         if (!canSubmit) return
 
@@ -103,11 +133,9 @@ class TeamButtonEditViewModel(
             isSubmitting = true
             errorMessage = null
 
-            // TODO: PATCH /api/teams/{teamId}/buttons/{teamButtonId} 연동
-            //  변경된 필드만 보내도 되고 전체를 보내도 된다 (전부 optional)
-            //  403이면 "수정 권한이 없어요" 안내
-            delay(300)
-            isUpdated = true
+            teamRepository.updateButton(teamId, teamButtonId, form)
+                .onSuccess { isUpdated = true }
+                .onFailure { errorMessage = it.message ?: "버튼을 수정하지 못했어요." }
 
             isSubmitting = false
         }
@@ -115,11 +143,5 @@ class TeamButtonEditViewModel(
 
     fun consumeError() {
         errorMessage = null
-    }
-
-    companion object {
-        fun factory(teamId: Long, teamButtonId: Long, currentUserId: Long) = viewModelFactory {
-            initializer { TeamButtonEditViewModel(teamId, teamButtonId, currentUserId) }
-        }
     }
 }
