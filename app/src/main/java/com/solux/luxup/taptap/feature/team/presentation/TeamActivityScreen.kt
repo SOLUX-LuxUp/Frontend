@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,11 +24,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.util.CategoryDropdown
 import com.solux.luxup.taptap.core.util.SearchBar
@@ -62,6 +66,17 @@ fun TeamActivityRoute(
         creationCallback = { factory -> factory.create(teamId, currentUserId) },
     )
     val context = LocalContext.current
+
+    // 버튼 생성/수정 화면에 다녀와도 이 화면(NavBackStackEntry)의 ViewModel 인스턴스는
+    // 재사용되어 init{} 이 다시 안 불리므로, 화면이 다시 보일 때(RESUME)마다 새로고침한다.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.refresh()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     // 기록 성공 등 짧은 안내는 토스트로
     LaunchedEffect(viewModel.toastMessage) {
@@ -146,6 +161,11 @@ fun TeamActivityScreen(
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
         }
 
+        // 아직 팀 전체에서 기록(탭)이 한 번도 없으면, 버튼을 만들었어도 추천 섹션을 계속 보여준다.
+        // 건너뛴 팀은 suggestions가 항상 비어있으므로 자연히 안 뜬다.
+        val hasAnyRecord = buttons.any { it.latestRecord != null }
+        val showRecommendationSection = suggestions.isNotEmpty() && !hasAnyRecord
+
         when {
             buttons.isEmpty() -> {
                 TeamFirstButtonSection(
@@ -165,13 +185,14 @@ fun TeamActivityScreen(
                     },
                     onButtonLongClick = onNavigateToTimeline,
                     onButtonMenuClick = { menuTarget = it },
-                    header = if (isQuickCreateMode) {
+                    header = if (isQuickCreateMode || showRecommendationSection) {
                         {
                             TeamFirstButtonSection(
                                 suggestions = suggestions,
                                 onSuggestionClick = onSuggestionClick,
                                 isFirstButton = false,
-                                onClose = onCloseQuickCreate,
+                                // 빠르게 생성 모드일 때만 닫기(X) 가능 — 자연 노출 중엔 첫 기록 전까지 유지된다
+                                onClose = if (isQuickCreateMode) onCloseQuickCreate else null,
                             )
                         }
                     } else null,
