@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.solux.luxup.taptap.R
-import com.solux.luxup.taptap.feature.home.main.presentation.dropShadow
+import com.solux.luxup.taptap.feature.home.main.util.presentation.dropShadow
 
 // "버튼 만들기" 화면의 카테고리 선택 드롭다운 - 선택 박스 + 카테고리 목록 + "ADD +"로 새 카테고리 생성 진입
 @Composable

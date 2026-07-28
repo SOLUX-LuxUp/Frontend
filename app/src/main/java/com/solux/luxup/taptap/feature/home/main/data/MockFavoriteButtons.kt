@@ -6,18 +6,21 @@ import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
 
 val mockFavoriteButtons = listOf(
     FavoriteButton(
+        buttonId = 101L,
         iconRes = R.drawable.bt_water_drop,
         iconTint = Color(0xFF7CCBFF),
         title = "물 마시기",
         lastRecordedAt = "2026-07-10T09:00:00Z"
     ),
     FavoriteButton(
+        buttonId = 102L,
         iconRes = R.drawable.bt_bookmark,
         iconTint = Color(0xFFFFD53F),
         title = "일기 쓰기",
         lastRecordedAt = "2026-07-01T09:00:00Z"
     ),
     FavoriteButton(
+        buttonId = 103L,
         iconRes = R.drawable.bt_dumbbell,
         iconTint = Color(0xFF0073FF),
         title = "운동 하기",

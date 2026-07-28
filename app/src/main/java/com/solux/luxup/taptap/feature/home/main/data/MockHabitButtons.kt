@@ -6,6 +6,7 @@ import com.solux.luxup.taptap.feature.home.main.model.HabitButton
 
 val mockHabitButtons = listOf(
     HabitButton(
+        buttonId = 1L,
         title = "약먹기",
         category = "HEALTH",
         iconRes = R.drawable.bt_first_aid,
@@ -14,6 +15,7 @@ val mockHabitButtons = listOf(
         lastRecordedAt = "2026-07-11T09:37:00Z"
     ),
     HabitButton(
+        buttonId = 2L,
         title = "약먹기",
         category = "HEALTH",
         iconRes = R.drawable.bt_first_aid,
@@ -22,6 +24,7 @@ val mockHabitButtons = listOf(
         lastRecordedAt = "2026-07-11T09:37:00Z"
     ),
     HabitButton(
+        buttonId = 3L,
         title = "약먹기",
         category = "HEALTH",
         iconRes = R.drawable.bt_first_aid,
@@ -30,6 +33,7 @@ val mockHabitButtons = listOf(
         lastRecordedAt = "2026-07-11T09:37:00Z"
     ),
     HabitButton(
+        buttonId = 4L,
         title = "약먹기",
         category = "HEALTH",
         iconRes = R.drawable.bt_first_aid,

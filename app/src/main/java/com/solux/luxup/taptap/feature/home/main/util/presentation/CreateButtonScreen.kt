@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.home.main.presentation
+package com.solux.luxup.taptap.feature.home.main.util.presentation
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
