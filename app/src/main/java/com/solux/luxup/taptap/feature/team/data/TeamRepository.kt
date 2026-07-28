@@ -1,11 +1,21 @@
 package com.solux.luxup.taptap.feature.team.data
 
 import com.solux.luxup.taptap.core.network.ApiCallHandler
+import com.solux.luxup.taptap.core.ui.theme.IconColor
+import com.solux.luxup.taptap.feature.team.model.ButtonRecord
 import com.solux.luxup.taptap.feature.team.model.LatestRecord
 import com.solux.luxup.taptap.feature.team.model.MemberLatestRecord
 import com.solux.luxup.taptap.feature.team.model.MemberProfile
+import com.solux.luxup.taptap.feature.team.model.MyButtonPermission
 import com.solux.luxup.taptap.feature.team.model.Team
+import com.solux.luxup.taptap.feature.team.model.TeamButton
+import com.solux.luxup.taptap.feature.team.model.TeamButtonCategory
+import com.solux.luxup.taptap.feature.team.model.TeamButtonDetail
+import com.solux.luxup.taptap.feature.team.model.TeamButtonForm
+import com.solux.luxup.taptap.feature.team.model.TeamButtonLatest
 import com.solux.luxup.taptap.feature.team.model.TeamButtonPermission
+import com.solux.luxup.taptap.feature.team.model.TeamButtonTimeline
+import com.solux.luxup.taptap.feature.team.model.TeamButtonTimelineRecord
 import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
 import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
 import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
@@ -83,7 +93,71 @@ class TeamRepository @Inject constructor(
 
     suspend fun getTemplateSuggestions(teamId: Long): Result<List<TeamButtonSuggestion>> =
         apiCallHandler.execute { teamApi.getTemplateSuggestions(teamId) }.mapCatching { list -> list.map { it.toModel() } }
+
+    // ---- team-button-controller ----
+
+    suspend fun listButtons(teamId: Long): Result<List<TeamButton>> =
+        apiCallHandler.execute { teamApi.listButtons(teamId) }.mapCatching { list -> list.map { it.toModel() } }
+
+    suspend fun createButton(teamId: Long, form: TeamButtonForm): Result<TeamButtonResponseDto> =
+        apiCallHandler.execute { teamApi.createButton(teamId, form.toCreateRequest()) }
+
+    suspend fun createButton(teamId: Long, suggestion: TeamButtonSuggestion): Result<TeamButtonResponseDto> =
+        apiCallHandler.execute {
+            teamApi.createButton(
+                teamId,
+                CreateTeamButtonRequestDto(
+                    buttonName = suggestion.buttonName,
+                    iconName = suggestion.iconName,
+                    iconColor = suggestion.iconColor,
+                    tapPermission = TapPermissionAll,
+                    categoryId = suggestion.categoryId,
+                ),
+            )
+        }
+
+    suspend fun getButtonDetail(teamId: Long, teamButtonId: Long): Result<TeamButtonDetail> =
+        apiCallHandler.execute { teamApi.getButtonDetail(teamId, teamButtonId) }.mapCatching { it.toModel() }
+
+    suspend fun updateButton(teamId: Long, teamButtonId: Long, form: TeamButtonForm): Result<UpdateTeamButtonResponseDto> =
+        apiCallHandler.execute { teamApi.updateButton(teamId, teamButtonId, form.toUpdateRequest()) }
+
+    suspend fun deleteButton(teamId: Long, teamButtonId: Long): Result<DeleteTeamButtonResponseDto> =
+        apiCallHandler.execute { teamApi.deleteButton(teamId, teamButtonId) }
+
+    suspend fun toggleButtonNotification(teamId: Long, teamButtonId: Long): Result<Boolean> =
+        apiCallHandler.execute { teamApi.toggleButtonNotification(teamId, teamButtonId) }.mapCatching { it.isEnabled }
+
+    suspend fun createRecord(teamId: Long, teamButtonId: Long): Result<CreateTeamButtonRecordResponseDto> =
+        apiCallHandler.execute {
+            teamApi.createRecord(teamId, teamButtonId, CreateTeamButtonRecordRequestDto())
+        }
+
+    suspend fun getLatestRecord(teamId: Long, teamButtonId: Long): Result<TeamButtonLatest> =
+        apiCallHandler.execute { teamApi.getLatestRecord(teamId, teamButtonId) }.mapCatching { it.toModel() }
+
+    suspend fun getTimeline(teamId: Long, teamButtonId: Long, cursor: Long?, limit: Int = 30): Result<TeamButtonTimeline> =
+        apiCallHandler.execute { teamApi.getTimeline(teamId, teamButtonId, cursor, limit) }.mapCatching { it.toModel() }
+
+    suspend fun updateRecordDetail(
+        teamId: Long,
+        teamButtonId: Long,
+        recordId: Long,
+        memo: String?,
+        emoji: String?,
+    ): Result<UpdateTeamButtonRecordDetailResponseDto> =
+        apiCallHandler.execute {
+            teamApi.updateRecordDetail(teamId, teamButtonId, recordId, UpdateTeamButtonRecordDetailRequestDto(memo, emoji))
+        }
+
+    suspend fun deleteRecord(teamId: Long, teamButtonId: Long, recordId: Long): Result<Unit> =
+        apiCallHandler.execute { teamApi.deleteRecord(teamId, teamButtonId, recordId) }.mapCatching {}
+
+    suspend fun getButtonCategories(teamId: Long): Result<List<TeamButtonCategory>> =
+        apiCallHandler.execute { teamApi.getButtonCategories(teamId) }.mapCatching { list -> list.map { it.toModel() } }
 }
+
+private const val TapPermissionAll = "all"
 
 private fun MemberProfileDto.toModel() = MemberProfile(
     userId = userId,
@@ -176,4 +250,98 @@ private fun TemplateSuggestionDto.toModel() = TeamButtonSuggestion(
     iconColor = iconColor,
     categoryId = categoryId,
     categoryName = categoryName,
+)
+
+private fun LatestRecordSummaryDto.toModel() = ButtonRecord(
+    recordedAt = recordedAt.orEmpty(),
+    recordedBy = recordedBy.map { it.toModel() },
+    recordedByCount = recordedByCount,
+)
+
+private fun TeamButtonListItemDto.toModel() = TeamButton(
+    teamButtonId = teamButtonId,
+    buttonName = buttonName,
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    tapPermission = tapPermission.orEmpty(),
+    categoryId = categoryId,
+    categoryName = categoryName,
+    hasTapPermission = hasTapPermission,
+    latestRecord = latestRecord?.toModel(),
+)
+
+private fun MyPermissionDto.toModel() = MyButtonPermission(
+    hasTapPermission = hasTapPermission,
+    permissionStatus = permissionStatus,
+)
+
+private fun TeamButtonDetailResponseDto.toModel() = TeamButtonDetail(
+    teamButtonId = teamButtonId,
+    teamId = teamId,
+    buttonName = buttonName,
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    description = description,
+    tapPermission = tapPermission.orEmpty(),
+    isActive = isActive,
+    createdBy = createdBy.toModel(),
+    myPermission = myPermission.toModel(),
+    canEdit = canEdit,
+    canDelete = canDelete,
+    isTeamOwner = isTeamOwner,
+    categoryId = categoryId,
+    categoryName = categoryName,
+    allowedUserIds = allowedUserIds,
+    latestRecord = latestRecord?.toModel(),
+    createdAt = createdAt.orEmpty(),
+    updatedAt = updatedAt.orEmpty(),
+)
+
+private fun TeamButtonTimelineItemDto.toModel() = TeamButtonTimelineRecord(
+    recordId = recordId,
+    recordedAt = recordedAt,
+    memo = memo,
+    emoji = emoji,
+    recordedBy = recordedBy.toModel(),
+)
+
+private fun TeamButtonTimelineResponseDto.toModel() = TeamButtonTimeline(
+    records = records.map { it.toModel() },
+    hasMore = hasMore,
+    nextCursor = nextCursor,
+)
+
+private fun LatestRecordResponseDto.toModel() = TeamButtonLatest(
+    teamButtonId = teamButtonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    latestRecord = latestRecord?.toModel(),
+)
+
+private fun TeamButtonCategoryResponseDto.toModel() = TeamButtonCategory(
+    categoryId = categoryId,
+    categoryName = categoryName.orEmpty(),
+    categoryColor = IconColor.from(categoryColor),
+    displayOrder = displayOrder ?: 0,
+)
+
+private fun TeamButtonForm.toCreateRequest() = CreateTeamButtonRequestDto(
+    buttonName = name.ifBlank { null },
+    iconName = iconName.ifBlank { null },
+    iconColor = iconColor.key,
+    description = description.ifBlank { null },
+    tapPermission = tapPermission.value,
+    categoryId = category?.categoryId,
+    allowedUserIds = allowedUserIds.ifEmpty { null },
+)
+
+private fun TeamButtonForm.toUpdateRequest() = UpdateTeamButtonRequestDto(
+    buttonName = name.ifBlank { null },
+    iconName = iconName.ifBlank { null },
+    iconColor = iconColor.key,
+    description = description.ifBlank { null },
+    tapPermission = tapPermission.value,
+    categoryId = category?.categoryId,
+    allowedUserIds = allowedUserIds.ifEmpty { null },
 )

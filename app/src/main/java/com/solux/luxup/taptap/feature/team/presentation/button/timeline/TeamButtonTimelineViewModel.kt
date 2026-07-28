@@ -5,13 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.solux.luxup.taptap.feature.team.data.MockTeamButtonTimeline
+import com.solux.luxup.taptap.feature.team.data.TeamRepository
 import com.solux.luxup.taptap.feature.team.model.TeamButtonLatest
 import com.solux.luxup.taptap.feature.team.model.TeamButtonTimelineRecord
-import kotlinx.coroutines.delay
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+
+private const val PAGE_SIZE = 30
 
 /**
  * 팀 공유 버튼 타임라인 (8.1.5 / 8.1.7).
@@ -20,11 +23,22 @@ import kotlinx.coroutines.launch
  *  - GET .../records/latest    : 버튼 헤더와 최근 기록 배너
  *  - GET .../records/timeline  : 커서 기반 30건씩
  */
-class TeamButtonTimelineViewModel(
-    private val teamId: Long,
-    private val teamButtonId: Long,
-    val currentUserId: Long,
+@HiltViewModel(assistedFactory = TeamButtonTimelineViewModel.Factory::class)
+class TeamButtonTimelineViewModel @AssistedInject constructor(
+    @Assisted("teamId") private val teamId: Long,
+    @Assisted("teamButtonId") private val teamButtonId: Long,
+    @Assisted("currentUserId") val currentUserId: Long,
+    private val teamRepository: TeamRepository,
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("teamId") teamId: Long,
+            @Assisted("teamButtonId") teamButtonId: Long,
+            @Assisted("currentUserId") currentUserId: Long,
+        ): TeamButtonTimelineViewModel
+    }
 
     var latest by mutableStateOf<TeamButtonLatest?>(null)
         private set
@@ -55,14 +69,17 @@ class TeamButtonTimelineViewModel(
         viewModelScope.launch {
             isLoading = true
 
-            // TODO: GET /api/teams/{teamId}/buttons/{teamButtonId}/records/latest
-            // TODO: GET /api/teams/{teamId}/buttons/{teamButtonId}/records/timeline?limit=30
-            delay(200)
+            teamRepository.getLatestRecord(teamId, teamButtonId)
+                .onSuccess { latest = it }
+                .onFailure { errorMessage = it.message ?: "버튼 정보를 불러오지 못했어요." }
 
-            latest = MockTeamButtonTimeline.latest
-            records = MockTeamButtonTimeline.records
-            hasMore = MockTeamButtonTimeline.timeline.hasMore
-            nextCursor = MockTeamButtonTimeline.timeline.nextCursor
+            teamRepository.getTimeline(teamId, teamButtonId, cursor = null, limit = PAGE_SIZE)
+                .onSuccess { timeline ->
+                    records = timeline.records
+                    hasMore = timeline.hasMore
+                    nextCursor = timeline.nextCursor
+                }
+                .onFailure { errorMessage = it.message ?: "기록을 불러오지 못했어요." }
 
             isLoading = false
         }
@@ -76,11 +93,13 @@ class TeamButtonTimelineViewModel(
         viewModelScope.launch {
             isLoadingMore = true
 
-            // TODO: GET .../records/timeline?cursor=$cursor&limit=30
-            //  응답의 records를 기존 목록 뒤에 이어 붙이고 hasMore/nextCursor 갱신
-            delay(200)
-            hasMore = false
-            nextCursor = null
+            teamRepository.getTimeline(teamId, teamButtonId, cursor = cursor, limit = PAGE_SIZE)
+                .onSuccess { timeline ->
+                    records = records + timeline.records
+                    hasMore = timeline.hasMore
+                    nextCursor = timeline.nextCursor
+                }
+                .onFailure { errorMessage = it.message ?: "기록을 불러오지 못했어요." }
 
             isLoadingMore = false
         }
@@ -100,8 +119,7 @@ class TeamButtonTimelineViewModel(
      */
     fun deleteRecord(record: TeamButtonTimelineRecord) {
         viewModelScope.launch {
-            // TODO: 실제 호출로 교체
-            runCatching { delay(200) }
+            teamRepository.deleteRecord(teamId, teamButtonId, record.recordId)
                 .onSuccess { load() }
                 .onFailure { errorMessage = "기록을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요." }
         }
@@ -121,8 +139,7 @@ class TeamButtonTimelineViewModel(
      */
     fun saveMemo(record: TeamButtonTimelineRecord, memo: String?, emoji: String?) {
         viewModelScope.launch {
-            // TODO: 실제 호출로 교체
-            runCatching { delay(200) }
+            teamRepository.updateRecordDetail(teamId, teamButtonId, record.recordId, memo, emoji)
                 .onSuccess { load() }
                 .onFailure { errorMessage = "메모를 저장하지 못했어요.\n잠시 후 다시 시도해 주세요." }
         }
@@ -130,11 +147,5 @@ class TeamButtonTimelineViewModel(
 
     fun consumeError() {
         errorMessage = null
-    }
-
-    companion object {
-        fun factory(teamId: Long, teamButtonId: Long, currentUserId: Long) = viewModelFactory {
-            initializer { TeamButtonTimelineViewModel(teamId, teamButtonId, currentUserId) }
-        }
     }
 }

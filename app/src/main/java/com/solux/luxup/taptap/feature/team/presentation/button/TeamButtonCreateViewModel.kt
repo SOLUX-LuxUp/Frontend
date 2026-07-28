@@ -5,13 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.solux.luxup.taptap.core.ui.theme.IconColor
+import com.solux.luxup.taptap.feature.team.data.TeamRepository
 import com.solux.luxup.taptap.feature.team.model.TapPermission
 import com.solux.luxup.taptap.feature.team.model.TeamButtonCategory
 import com.solux.luxup.taptap.feature.team.model.TeamButtonForm
-import kotlinx.coroutines.delay
+import com.solux.luxup.taptap.feature.team.model.TeamMember
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -19,12 +22,30 @@ import kotlinx.coroutines.launch
  *
  * 세 화면이 하나의 form을 공유해야 하므로, nested nav graph 범위에 스코프해서 쓴다.
  */
-class TeamButtonCreateViewModel(
-    private val teamId: Long,
-    val currentUserId: Long,
+@HiltViewModel(assistedFactory = TeamButtonCreateViewModel.Factory::class)
+class TeamButtonCreateViewModel @AssistedInject constructor(
+    @Assisted("teamId") private val teamId: Long,
+    @Assisted("currentUserId") val currentUserId: Long,
+    private val teamRepository: TeamRepository,
 ) : ViewModel() {
 
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("teamId") teamId: Long,
+            @Assisted("currentUserId") currentUserId: Long,
+        ): TeamButtonCreateViewModel
+    }
+
     var form by mutableStateOf(TeamButtonForm())
+        private set
+
+    /** GET /api/teams/{team_id}/buttons/categories */
+    var categories by mutableStateOf<List<TeamButtonCategory>>(emptyList())
+        private set
+
+    /** GET /api/teams/{team_id}/members — 탭 권한 대상 멤버 선택용 */
+    var members by mutableStateOf<List<TeamMember>>(emptyList())
         private set
 
     /** 중복 제출 방지 */
@@ -41,6 +62,17 @@ class TeamButtonCreateViewModel(
 
     val canSubmit: Boolean
         get() = form.canSubmit && !isSubmitting
+
+    init {
+        viewModelScope.launch {
+            teamRepository.getButtonCategories(teamId)
+                .onSuccess { categories = it }
+        }
+        viewModelScope.launch {
+            teamRepository.listMembers(teamId)
+                .onSuccess { members = it }
+        }
+    }
 
     // ---- 입력 갱신 ----
 
@@ -86,13 +118,9 @@ class TeamButtonCreateViewModel(
             isSubmitting = true
             errorMessage = null
 
-            // TODO: POST /api/teams/{teamId}/buttons 연동
-            //  val request = form.toCreateRequest()
-            //  runCatching { repository.createTeamButton(teamId, request) }
-            //      .onSuccess { isCreated = true }
-            //      .onFailure { errorMessage = ... }
-            delay(300)
-            isCreated = true
+            teamRepository.createButton(teamId, form)
+                .onSuccess { isCreated = true }
+                .onFailure { errorMessage = it.message ?: "버튼을 생성하지 못했어요." }
 
             isSubmitting = false
         }
@@ -100,11 +128,5 @@ class TeamButtonCreateViewModel(
 
     fun consumeError() {
         errorMessage = null
-    }
-
-    companion object {
-        fun factory(teamId: Long, currentUserId: Long) = viewModelFactory {
-            initializer { TeamButtonCreateViewModel(teamId, currentUserId) }
-        }
     }
 }
