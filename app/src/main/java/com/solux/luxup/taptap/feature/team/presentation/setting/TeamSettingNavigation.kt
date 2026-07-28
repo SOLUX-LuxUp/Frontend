@@ -264,10 +264,10 @@ private fun TeamSettingTabScaffold(
     content: @Composable () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         Box(modifier = Modifier.weight(1f)) {
             content()
         }
+        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         BottomNavBar(
             selected = BottomNavItem.TEAM,
             onItemSelected = onNavItemSelected,

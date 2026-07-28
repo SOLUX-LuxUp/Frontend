@@ -100,7 +100,6 @@ fun TeamButtonInfoScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
-        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         InfoTopBar(
             isManager = isManager,
             onBack = onBack,
@@ -206,6 +205,7 @@ fun TeamButtonInfoScreen(
             Spacer(Modifier.height(40.dp))
         }
 
+        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         bottomBar()
     }
 
