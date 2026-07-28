@@ -35,10 +35,18 @@ class TeamDetailViewModel @AssistedInject constructor(
     var hasSelectedTemplate by mutableStateOf(false)
         private set
 
+    /** GET /api/teams/{team_id}/settings 의 teamName. 조회 전까지는 null(호출부에서 기본값 사용) */
+    var teamName by mutableStateOf<String?>(null)
+        private set
+
     init {
         viewModelScope.launch {
             teamRepository.getTemplateStatus(teamId)
                 .onSuccess { hasSelectedTemplate = it.hasSelectedTemplate }
+        }
+        viewModelScope.launch {
+            teamRepository.getSettings(teamId)
+                .onSuccess { teamName = it.teamName }
         }
     }
 }

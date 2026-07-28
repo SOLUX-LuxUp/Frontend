@@ -414,6 +414,9 @@ class MainActivity : ComponentActivity() {
                                 teamListViewModel.toggleFavorite(teamId)
                             },
                             joinErrorMessage = teamListViewModel.joinErrorMessage,
+                            isJoining = teamListViewModel.isJoining,
+                            joinedTeamId = teamListViewModel.joinedTeamId,
+                            onJoinedConsumed = { teamListViewModel.consumeJoinedSignal() },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             },
@@ -436,6 +439,7 @@ class MainActivity : ComponentActivity() {
                             >(creationCallback = { factory -> factory.create(teamId) })
                         TeamDetailScreen(
                             teamId = teamId,
+                            teamName = teamDetailViewModel.teamName ?: "LUX-UP",
                             currentUserId = currentUserId,
                             hasSelectedTemplate = teamDetailViewModel.hasSelectedTemplate,
                             onExit = { navController.popBackStack() },
