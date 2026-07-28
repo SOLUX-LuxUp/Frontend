@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.solux.luxup.taptap.feature.home.main.presentation.dropShadow
+import com.solux.luxup.taptap.feature.home.main.util.presentation.dropShadow
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale

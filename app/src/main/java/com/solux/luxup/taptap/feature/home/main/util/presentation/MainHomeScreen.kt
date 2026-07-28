@@ -1,28 +1,23 @@
-package com.solux.luxup.taptap.feature.home.main.presentation
+package com.solux.luxup.taptap.feature.home.main.util.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -33,16 +28,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -51,7 +42,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -61,7 +51,6 @@ import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.core.util.CategoryDropdown
 import com.solux.luxup.taptap.core.util.SearchBar
-import com.solux.luxup.taptap.feature.home.main.data.TEMPLATE_FIRST_BUTTON_TITLE
 import com.solux.luxup.taptap.feature.home.main.data.TEMPLATE_QUICK_BUTTON_TITLE
 import com.solux.luxup.taptap.feature.home.main.data.mockFavoriteButtons
 import com.solux.luxup.taptap.feature.home.main.data.mockHabitButtons
@@ -80,9 +69,12 @@ import com.solux.luxup.taptap.feature.home.main.util.FavoriteAddBox
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteButtonBox
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteEditDialog
 import com.solux.luxup.taptap.feature.home.main.util.HabitButtonGrid
+import com.solux.luxup.taptap.feature.home.main.util.HomeFirstButtonSection
 import com.solux.luxup.taptap.feature.home.main.util.RecentRecordBox
 import com.solux.luxup.taptap.feature.home.main.util.RecordDeleteConfirmDialog
 import com.solux.luxup.taptap.feature.home.main.util.TemplateSuggestionPopupCard
+import com.solux.luxup.taptap.feature.home.template.data.mockTemplateSuggestionsMemory
+import com.solux.luxup.taptap.feature.home.template.model.TemplateButtonSuggestion
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
@@ -94,8 +86,12 @@ fun MainHomeScreen(
     favoriteButtons: List<FavoriteButton> = mockFavoriteButtons,
     habitButtons: List<HabitButton> = mockHabitButtons,
     suggestions: List<RecommendedButton> = recommendedButtons,
+    firstButtonSuggestions: List<TemplateButtonSuggestion> = emptyList(),
+    /** true면 firstButtonSuggestions를 카테고리 탭으로 나눠 보여준다 (템플릿을 골랐을 때). 건너뛴 경우 false. */
+    groupFirstButtonSuggestionsByCategory: Boolean = true,
     onNavigateToCreateButton: () -> Unit = {},
     onNavigateToButtonDetail: (button: HabitButton) -> Unit = {},
+    onFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {}
 ) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.HOME) }
@@ -228,7 +224,11 @@ fun MainHomeScreen(
             Spacer(Modifier.height(30.dp))
 
             if (buttonsState.isEmpty()) {
-                TemplateSuggestionExpandedCard(title = TEMPLATE_FIRST_BUTTON_TITLE)
+                HomeFirstButtonSection(
+                    suggestions = firstButtonSuggestions,
+                    onSuggestionClick = onFirstButtonSuggestionClick,
+                    groupByCategory = groupFirstButtonSuggestionsByCategory,
+                )
             } else {
                 HabitButtonGrid(
                     buttons = filteredHabitButtons,
@@ -431,55 +431,28 @@ private fun GradientIcon(
     )
 }
 
-@Composable
-private fun TemplateSuggestionExpandedCard(title: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .figmaDropShadow(cornerRadius = 13.dp),
-        shape = RoundedCornerShape(13.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFEFE)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6D6D6D))
-        }
-    }
-}
-
-private fun Modifier.figmaDropShadow(
-    cornerRadius: Dp,
-    color: Color = Color.Black,
-    alpha: Float = 0.15f,
-    blurRadius: Dp = 7.dp
-): Modifier = this.drawBehind {
-    val shadowColor = color.copy(alpha = alpha).toArgb()
-    val transparent = color.copy(alpha = 0f).toArgb()
-    drawIntoCanvas { canvas ->
-        val paint = Paint()
-        val frameworkPaint = paint.asFrameworkPaint()
-        frameworkPaint.color = transparent
-        frameworkPaint.setShadowLayer(blurRadius.toPx(), 0f, 0f, shadowColor)
-        canvas.drawRoundRect(
-            left = 0f,
-            top = 0f,
-            right = size.width,
-            bottom = size.height,
-            radiusX = cornerRadius.toPx(),
-            radiusY = cornerRadius.toPx(),
-            paint = paint
-        )
-    }
-}
-
 @Preview(showSystemUi = true)
 @Composable
 private fun MainHomeScreenPreview() {
     MainHomeScreen()
+}
+
+/** 온보딩에서 템플릿을 고른 직후 — 버튼 없음 + 카테고리별 추천 노출 */
+@Preview(showSystemUi = true)
+@Composable
+private fun MainHomeScreenFirstButtonTemplatePreview() {
+    MainHomeScreen(
+        habitButtons = emptyList(),
+        firstButtonSuggestions = mockTemplateSuggestionsMemory,
+    )
+}
+
+/** 온보딩에서 건너뛴 직후 — 버튼 없음 + 추천 없음 */
+@Preview(showSystemUi = true)
+@Composable
+private fun MainHomeScreenFirstButtonSkipPreview() {
+    MainHomeScreen(
+        habitButtons = emptyList(),
+        firstButtonSuggestions = emptyList(),
+    )
 }

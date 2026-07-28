@@ -3,6 +3,7 @@ package com.solux.luxup.taptap.feature.home.main.model
 import androidx.compose.ui.graphics.Color
 
 data class HabitButton(
+    val buttonId: Long,
     val title: String,
     val category: String,
     val iconRes: Int,

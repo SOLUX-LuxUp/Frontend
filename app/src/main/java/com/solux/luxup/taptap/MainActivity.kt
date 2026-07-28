@@ -29,10 +29,11 @@ import com.solux.luxup.taptap.feature.auth.login.presentation.LoginRoute
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupRoute
 import com.solux.luxup.taptap.feature.auth.signup.presentation.signupGraph
 import com.solux.luxup.taptap.feature.home.buttondetail.presentation.ButtonDetailScreen
-import com.solux.luxup.taptap.feature.home.main.presentation.CreateButtonScreen
-import com.solux.luxup.taptap.feature.home.main.presentation.IconSelectScreen
-import com.solux.luxup.taptap.feature.home.main.presentation.MainHomeScreen
-import com.solux.luxup.taptap.feature.home.template.presentation.OnboardingTemplateScreen
+import com.solux.luxup.taptap.feature.home.main.util.presentation.CreateButtonScreen
+import com.solux.luxup.taptap.feature.home.main.util.presentation.IconSelectScreen
+import com.solux.luxup.taptap.feature.home.main.util.presentation.MainHomeScreen
+import com.solux.luxup.taptap.feature.home.main.util.presentation.MainHomeViewModel
+import com.solux.luxup.taptap.feature.home.template.presentation.OnboardingTemplateRoute
 import com.solux.luxup.taptap.feature.insight.daily.data.MockInsightDaily
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightDailyScreen
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightRatioAllScreen
@@ -50,6 +51,7 @@ import com.solux.luxup.taptap.feature.insight.weekly.util.shiftWeek
 import com.solux.luxup.taptap.feature.notification.presentation.NotificationScreen
 import com.solux.luxup.taptap.ui.theme.TapTapTheme
 import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashScreen
+import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashViewModel
 import com.solux.luxup.taptap.feature.splash.presentation.SplashScreen
 import com.solux.luxup.taptap.feature.team.presentation.TeamDetailScreen
 import com.solux.luxup.taptap.feature.team.presentation.button.TeamButtonCreateRoute
@@ -128,16 +130,25 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("postLoginSplash") {
+                        val postLoginSplashViewModel: PostLoginSplashViewModel = hiltViewModel()
                         PostLoginSplashScreen(
+                            isReady = postLoginSplashViewModel.hasButtons != null,
                             onNavigateToHome = {
-                                navController.navigate("home") {
+                                // 만든 버튼이 하나도 없으면(신규 유저·전부 삭제한 유저 등) 온보딩 화면을 보여준다.
+                                val destination = if (postLoginSplashViewModel.hasButtons == true) "mainHome" else "home"
+                                navController.navigate(destination) {
                                     popUpTo("postLoginSplash") { inclusive = true }
                                 }
                             }
                         )
                     }
                     composable("home") {
-                        OnboardingTemplateScreen(
+                        OnboardingTemplateRoute(
+                            onTemplateSelected = { templateId ->
+                                navController.navigate("mainHomeWithTemplate/$templateId") {
+                                    popUpTo("home") { inclusive = true }
+                                }
+                            },
                             onSkip = {
                                 navController.navigate("mainHome") {
                                     popUpTo("home") { inclusive = true }
@@ -146,7 +157,47 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("mainHome") {
+                        val mainHomeViewModel = hiltViewModel<
+                            MainHomeViewModel,
+                            MainHomeViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(null) })
                         MainHomeScreen(
+                            user = mainHomeViewModel.homeUser,
+                            recentRecord = mainHomeViewModel.recentRecord,
+                            favoriteButtons = mainHomeViewModel.favoriteButtons,
+                            habitButtons = mainHomeViewModel.habitButtons,
+                            firstButtonSuggestions = mainHomeViewModel.suggestions,
+                            groupFirstButtonSuggestionsByCategory = false,
+                            onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
+                            onNavigateToCreateButton = {
+                                navController.navigate("createButton")
+                            },
+                            onNavigateToButtonDetail = {
+                                // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
+                                navController.navigate("buttonDetail")
+                            },
+                            onNavItemSelected = { item ->
+                                navController.navigateToTab(item)
+                            }
+                        )
+                    }
+                    // 온보딩에서 템플릿을 고른 직후에만 진입 — 카테고리별 추천 버튼을 보여준다
+                    composable(
+                        "mainHomeWithTemplate/{templateId}",
+                        arguments = listOf(navArgument("templateId") { type = NavType.LongType })
+                    ) { backStackEntry ->
+                        val templateId = backStackEntry.arguments?.getLong("templateId") ?: 0L
+                        val mainHomeViewModel = hiltViewModel<
+                            MainHomeViewModel,
+                            MainHomeViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(templateId) })
+                        MainHomeScreen(
+                            user = mainHomeViewModel.homeUser,
+                            recentRecord = mainHomeViewModel.recentRecord,
+                            favoriteButtons = mainHomeViewModel.favoriteButtons,
+                            habitButtons = mainHomeViewModel.habitButtons,
+                            firstButtonSuggestions = mainHomeViewModel.suggestions,
+                            onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
                             },

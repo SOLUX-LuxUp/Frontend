@@ -24,16 +24,44 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.solux.luxup.taptap.feature.home.template.data.onboardingTemplates
-import com.solux.luxup.taptap.feature.home.template.model.ChecklistTemplate
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
+import com.solux.luxup.taptap.feature.home.template.data.mockOnboardingTemplates
+import com.solux.luxup.taptap.feature.home.template.model.OnboardingTemplate
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 import com.solux.luxup.taptap.ui.theme.BrandWhiteBlue
 
+/**
+ * 온보딩 템플릿 선택 화면 진입점. ViewModel을 붙인다.
+ *
+ * 카드 선택 → API 호출 없이 templateId를 다음 화면(메인 홈)으로 전달.
+ * 건너뛰기 → POST /api/templates/skip
+ */
+@Composable
+fun OnboardingTemplateRoute(
+    onTemplateSelected: (Long) -> Unit,
+    onSkip: () -> Unit,
+) {
+    val viewModel: OnboardingTemplateViewModel = hiltViewModel()
+
+    OnboardingTemplateScreen(
+        templates = viewModel.templates,
+        onTemplateClick = { template -> onTemplateSelected(template.templateId) },
+        onSkipClick = { viewModel.skipTemplate(onSkip) },
+        errorMessage = viewModel.errorMessage,
+        onErrorConsumed = viewModel::consumeError,
+    )
+}
+
 @Composable
 fun OnboardingTemplateScreen(
-    onSkip: () -> Unit = {}
+    templates: List<OnboardingTemplate>,
+    onTemplateClick: (OnboardingTemplate) -> Unit = {},
+    onSkipClick: () -> Unit = {},
+    errorMessage: String? = null,
+    onErrorConsumed: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -58,8 +86,11 @@ fun OnboardingTemplateScreen(
         Spacer(modifier = Modifier.height(60.dp))
 
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            onboardingTemplates.forEach { template ->
-                OnboardingOptionCard(template = template)
+            templates.forEach { template ->
+                OnboardingOptionCard(
+                    template = template,
+                    onClick = { onTemplateClick(template) },
+                )
             }
         }
 
@@ -76,25 +107,46 @@ fun OnboardingTemplateScreen(
                 fontSize = 18.sp,
                 color = Color(0xFFB1B1B1),
                 textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable { onSkip() }
+                modifier = Modifier.clickable { onSkipClick() }
             )
         }
     }
+
+    errorMessage?.let { message ->
+        NoticeDialog(
+            message = message,
+            onDismiss = onErrorConsumed,
+        )
+    }
 }
+
+/**
+ * 카드 하단의 태그 목록("집 / 생활 / 안전 / 건강")은 서버 응답(GET /api/templates)에 없는 값이라
+ * templateType 기준으로 화면에서 직접 채운다.
+ */
+private val templateCategoryTags: Map<String, List<String>> = mapOf(
+    "memory" to listOf("집", "생활", "안전", "건강"),
+    "self_care" to listOf("몸 관리", "마음 관리", "생활 리듬"),
+    "productivity" to listOf("정돈", "학습", "탐색", "성장"),
+)
 
 @Composable
 private fun OnboardingOptionCard(
-    template: ChecklistTemplate
+    template: OnboardingTemplate,
+    onClick: () -> Unit,
 ) {
+    val categoryTags = templateCategoryTags[template.templateType].orEmpty()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
             .background(BrandWhiteBlue)
+            .clickable(onClick = onClick)
             .padding(20.dp)
     ) {
         Text(
-            text = template.optionTitle,
+            text = template.templateName.substringBefore('(').trim(),
             fontSize = 21.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1A1A1A)
@@ -106,18 +158,20 @@ private fun OnboardingOptionCard(
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF6D6D6D)
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = template.categories.joinToString(" / ") { it.title },
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF6D6D6D)
-        )
+        if (categoryTags.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = categoryTags.joinToString(" / "),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF6D6D6D)
+            )
+        }
     }
 }
 
 @Preview(showSystemUi = true)
 @Composable
 private fun OnboardingTemplateScreenPreview() {
-    OnboardingTemplateScreen()
+    OnboardingTemplateScreen(templates = mockOnboardingTemplates)
 }

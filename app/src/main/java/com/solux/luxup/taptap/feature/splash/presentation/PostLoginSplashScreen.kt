@@ -16,6 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -31,8 +34,12 @@ import kotlinx.coroutines.delay
 
 private const val AUTO_NAVIGATE_DELAY_MS = 1500L
 
+/**
+ * @param isReady true가 되기 전에는 최소 노출 시간(AUTO_NAVIGATE_DELAY_MS)이 지나도 다음 화면으로 넘어가지 않는다.
+ * (버튼 보유 여부 확인 등 다음 화면 결정에 필요한 데이터를 기다리는 용도)
+ */
 @Composable
-fun PostLoginSplashScreen(onNavigateToHome: () -> Unit = {}) {
+fun PostLoginSplashScreen(isReady: Boolean = true, onNavigateToHome: () -> Unit = {}) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -44,9 +51,15 @@ fun PostLoginSplashScreen(onNavigateToHome: () -> Unit = {}) {
         label = "pulse"
     )
 
+    var minDelayElapsed by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         delay(AUTO_NAVIGATE_DELAY_MS)
-        onNavigateToHome()
+        minDelayElapsed = true
+    }
+    LaunchedEffect(minDelayElapsed, isReady) {
+        if (minDelayElapsed && isReady) {
+            onNavigateToHome()
+        }
     }
 
     Box(

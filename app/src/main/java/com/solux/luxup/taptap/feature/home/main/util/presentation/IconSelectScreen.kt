@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.home.main.presentation
+package com.solux.luxup.taptap.feature.home.main.util.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
