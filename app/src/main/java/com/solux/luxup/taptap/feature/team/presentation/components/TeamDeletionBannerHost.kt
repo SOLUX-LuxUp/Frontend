@@ -8,9 +8,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.activity.compose.LocalActivity
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.solux.luxup.taptap.feature.team.data.mockTeamSettings
+import androidx.lifecycle.viewModelScope
+import com.solux.luxup.taptap.feature.team.data.TeamRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class TeamDeletionInfo(
     val teamId: Long,
@@ -24,7 +28,10 @@ data class TeamDeletionInfo(
  *
  * dismissed(X로 숨김) 는 팀 재입장(teamDetail 새 진입) 전까지 팀 스페이스 전체에서 유지된다.
  */
-class TeamDeletionViewModel : ViewModel() {
+@HiltViewModel
+class TeamDeletionViewModel @Inject constructor(
+    private val teamRepository: TeamRepository,
+) : ViewModel() {
     private val cache = mutableMapOf<Long, TeamDeletionInfo>()
     private var lastEntrySessionId: String? = null
 
@@ -44,18 +51,22 @@ class TeamDeletionViewModel : ViewModel() {
     }
 
     fun ensureLoaded(teamId: Long) {
-        if (cache.containsKey(teamId)) {
-            current = cache[teamId]
+        cache[teamId]?.let {
+            current = it
             return
         }
-        // TODO: GET /api/teams/{teamId}/settings 연동 후 isDeleting/scheduledDeletionAt만 추출.
-        val info = TeamDeletionInfo(
-            teamId = teamId,
-            isDeleting = mockTeamSettings.isDeleting,
-            scheduledDeletionAt = mockTeamSettings.scheduledDeletionAt,
-        )
-        cache[teamId] = info
-        current = info
+        viewModelScope.launch {
+            teamRepository.getSettings(teamId)
+                .onSuccess { settings ->
+                    val info = TeamDeletionInfo(
+                        teamId = teamId,
+                        isDeleting = settings.isDeleting,
+                        scheduledDeletionAt = settings.scheduledDeletionAt,
+                    )
+                    cache[teamId] = info
+                    current = info
+                }
+        }
     }
 
     fun dismiss() {
@@ -66,7 +77,7 @@ class TeamDeletionViewModel : ViewModel() {
 @Composable
 private fun activityScopedTeamDeletionViewModel(): TeamDeletionViewModel {
     val activity = LocalActivity.current as ComponentActivity
-    return viewModel(viewModelStoreOwner = activity)
+    return hiltViewModel(viewModelStoreOwner = activity)
 }
 /**
  * 팀 스페이스 내 화면 최상단에 한 줄만 넣으면 되는 배너 호스트.

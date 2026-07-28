@@ -84,8 +84,6 @@ fun TeamButtonTimelineScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
-        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
-
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -160,6 +158,7 @@ fun TeamButtonTimelineScreen(
             Spacer(Modifier.height(30.dp))
         }
 
+        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         bottomBar()
     }
 

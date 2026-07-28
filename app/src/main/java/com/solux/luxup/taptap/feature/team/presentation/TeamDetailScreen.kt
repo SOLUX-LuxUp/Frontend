@@ -72,12 +72,14 @@ fun TeamDetailScreen(
         Scaffold(
         modifier = modifier,
         bottomBar = {
-            BottomNavBar(selected = BottomNavItem.TEAM, onItemSelected = onNavItemSelected)
+            Column {
+                TeamDeletionBannerHost(teamId = teamId)
+                BottomNavBar(selected = BottomNavItem.TEAM, onItemSelected = onNavItemSelected)
+            }
         },
         containerColor = Color.White
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            TeamDeletionBannerHost(teamId = teamId)
             TeamDetailTopBar(
                 teamName = teamName,
                 action = when (selectedTab) {
