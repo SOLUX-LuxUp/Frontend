@@ -67,6 +67,8 @@ fun TeamListScreen(
     /** 참여 성공 시 한 번만 바뀌는 신호(가입한 teamId). null이 아니게 되면 모달을 닫는다 */
     joinedTeamId: Long? = null,
     onJoinedConsumed: () -> Unit = {},
+    /** 모달을 (다시) 열 때 호출 — 이전 참여 시도의 에러 문구를 지운다 */
+    onJoinModalOpened: () -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -125,6 +127,7 @@ fun TeamListScreen(
                 OptionItem("팀 코드로 추가하기") {
                     showOptionModal = false
                     showJoinModal = true
+                    onJoinModalOpened()
                 },
             ),
             onDismiss = { showOptionModal = false },

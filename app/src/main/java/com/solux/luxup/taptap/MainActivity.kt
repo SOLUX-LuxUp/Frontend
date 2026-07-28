@@ -417,6 +417,7 @@ class MainActivity : ComponentActivity() {
                             isJoining = teamListViewModel.isJoining,
                             joinedTeamId = teamListViewModel.joinedTeamId,
                             onJoinedConsumed = { teamListViewModel.consumeJoinedSignal() },
+                            onJoinModalOpened = { teamListViewModel.consumeJoinError() },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             },
