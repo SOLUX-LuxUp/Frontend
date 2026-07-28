@@ -168,4 +168,26 @@ interface TeamApi {
         @Path("team_id") teamId: Long,
         @Path("team_button_id") teamButtonId: Long,
     ): Response<BaseResponse<List<TapPermissionRequestListItemDto>>>
+
+    // ---- team-button-controller: 카테고리 생성/수정/삭제 ----
+
+    @POST("api/teams/{team_id}/buttons/categories")
+    suspend fun createButtonCategory(
+        @Path("team_id") teamId: Long,
+        @Body request: CreateTeamButtonCategoryRequestDto,
+    ): Response<BaseResponse<CreateTeamButtonCategoryResponseDto>>
+
+    @PATCH("api/teams/{team_id}/buttons/categories/{category_id}")
+    suspend fun updateButtonCategory(
+        @Path("team_id") teamId: Long,
+        @Path("category_id") categoryId: Long,
+        @Body request: UpdateTeamButtonCategoryRequestDto,
+    ): Response<BaseResponse<UpdateTeamButtonCategoryResponseDto>>
+
+    @DELETE("api/teams/{team_id}/buttons/categories/{category_id}")
+    suspend fun deleteButtonCategory(
+        @Path("team_id") teamId: Long,
+        @Path("category_id") categoryId: Long,
+        @Query("delete_buttons") deleteButtons: Boolean,
+    ): Response<BaseResponse<JsonElement>>
 }

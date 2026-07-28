@@ -33,8 +33,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
+import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
+import com.solux.luxup.taptap.core.util.category.CategorySelectDropdown
 import com.solux.luxup.taptap.feature.team.data.MockTeamButtonCreate
 import com.solux.luxup.taptap.feature.team.data.MockTeamButtonDetail
 import com.solux.luxup.taptap.feature.team.model.TapPermission
@@ -64,6 +70,9 @@ fun TeamButtonCreateScreen(
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onCategorySelect: (TeamButtonCategory?) -> Unit,
+    onCreateCategory: (String) -> Unit = {},
+    onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
+    onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
     onTapPermissionChange: (TapPermission) -> Unit,
     onBack: () -> Unit,
     onConfirm: () -> Unit,
@@ -73,8 +82,13 @@ fun TeamButtonCreateScreen(
     /** 생성 "팀 버튼 만들기" / 수정 "팀 버튼 수정" */
     title: String = "팀 버튼 만들기",
     teamId: Long? = null,
+    errorMessage: String? = null,
+    onErrorConsumed: () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
 ) {
+    var showCategoryEditDialog by remember { mutableStateOf(false) }
+    var categoryPendingDelete by remember { mutableStateOf<TeamButtonCategory?>(null) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -127,19 +141,14 @@ fun TeamButtonCreateScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                FormLabel("카테고리")
-                FormDropdown(
-                    selected = form.category,
-                    options = listOf<TeamButtonCategory?>(null) + categories,
-                    labelOf = { it?.categoryName ?: TeamButtonCategory.NONE_LABEL },
-                    onSelect = onCategorySelect,
-                )
-            }
+            FormLabel("카테고리")
+            Spacer(Modifier.height(8.dp))
+            CategorySelectDropdown(
+                categories = categories.map { it.categoryName },
+                selectedCategory = form.category?.categoryName,
+                onCategorySelected = { name -> onCategorySelect(categories.find { it.categoryName == name }) },
+                onManageCategoriesClick = { showCategoryEditDialog = true },
+            )
 
             Spacer(Modifier.height(20.dp))
 
@@ -207,6 +216,45 @@ fun TeamButtonCreateScreen(
         }
 
         bottomBar()
+    }
+
+    if (showCategoryEditDialog) {
+        Dialog(
+            onDismissRequest = { showCategoryEditDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            CategoryEditDialog(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp),
+                categories = categories.map { it.categoryName },
+                onDismiss = { showCategoryEditDialog = false },
+                onCreate = onCreateCategory,
+                onRename = { oldName, newName ->
+                    categories.find { it.categoryName == oldName }?.let { onRenameCategory(it.categoryId, newName) }
+                },
+                onRequestDelete = { name -> categoryPendingDelete = categories.find { it.categoryName == name } },
+            )
+        }
+    }
+
+    categoryPendingDelete?.let { category ->
+        Dialog(
+            onDismissRequest = { categoryPendingDelete = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            CategoryDeleteConfirmDialog(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp),
+                category = category.categoryName,
+                onDismiss = { categoryPendingDelete = null },
+                onConfirmDelete = { deleteButtonsToo ->
+                    onDeleteCategory(category.categoryId, deleteButtonsToo)
+                    categoryPendingDelete = null
+                },
+            )
+        }
+    }
+
+    errorMessage?.let { message ->
+        NoticeDialog(message = message, onDismiss = onErrorConsumed)
     }
 }
 

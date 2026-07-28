@@ -64,13 +64,48 @@ class TeamButtonCreateViewModel @AssistedInject constructor(
         get() = form.canSubmit && !isSubmitting
 
     init {
+        loadCategories()
+        viewModelScope.launch {
+            teamRepository.listMembers(teamId)
+                .onSuccess { members = it }
+        }
+    }
+
+    private fun loadCategories() {
         viewModelScope.launch {
             teamRepository.getButtonCategories(teamId)
                 .onSuccess { categories = it }
         }
+    }
+
+    // ---- 카테고리 관리 ----
+
+    fun createCategory(name: String) {
         viewModelScope.launch {
-            teamRepository.listMembers(teamId)
-                .onSuccess { members = it }
+            teamRepository.createButtonCategory(teamId, name)
+                .onSuccess { loadCategories() }
+                .onFailure { errorMessage = it.message ?: "카테고리를 만들지 못했어요." }
+        }
+    }
+
+    fun renameCategory(categoryId: Long, name: String) {
+        viewModelScope.launch {
+            teamRepository.renameButtonCategory(teamId, categoryId, name)
+                .onSuccess { loadCategories() }
+                .onFailure { errorMessage = it.message ?: "카테고리 이름을 변경하지 못했어요." }
+        }
+    }
+
+    fun deleteCategory(categoryId: Long, deleteButtonsToo: Boolean) {
+        viewModelScope.launch {
+            teamRepository.deleteButtonCategory(teamId, categoryId, deleteButtonsToo)
+                .onSuccess {
+                    if (form.category?.categoryId == categoryId) {
+                        form = form.copy(category = null)
+                    }
+                    loadCategories()
+                }
+                .onFailure { errorMessage = it.message ?: "카테고리를 삭제하지 못했어요." }
         }
     }
 

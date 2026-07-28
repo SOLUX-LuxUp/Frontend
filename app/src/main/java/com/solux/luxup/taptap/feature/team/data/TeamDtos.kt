@@ -425,3 +425,35 @@ data class TapPermissionRequestListItemDto(
     val profileImageUrl: String? = null,
     val requestedAt: String? = null,
 )
+
+// ---- team-button-controller: 카테고리 생성/수정/삭제 ----
+
+@Serializable
+data class CreateTeamButtonCategoryRequestDto(
+    val categoryName: String,
+    val categoryColor: String? = null,
+)
+
+@Serializable
+data class CreateTeamButtonCategoryResponseDto(
+    val categoryId: Long,
+    val categoryName: String,
+    val categoryColor: String? = null,
+    val displayOrder: Int? = null,
+    val createdAt: String? = null,
+)
+
+@Serializable
+data class UpdateTeamButtonCategoryRequestDto(
+    val categoryName: String? = null,
+    val categoryColor: String? = null,
+)
+
+@Serializable
+data class UpdateTeamButtonCategoryResponseDto(
+    val categoryId: Long,
+    val categoryName: String,
+    val categoryColor: String? = null,
+    val displayOrder: Int? = null,
+    val updatedAt: String? = null,
+)

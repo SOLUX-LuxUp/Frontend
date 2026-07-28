@@ -29,15 +29,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
+import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
 import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.feature.team.data.mockSuggestionsTogether
 import com.solux.luxup.taptap.feature.team.data.mockTeamButtons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
+import com.solux.luxup.taptap.feature.team.model.TeamButtonCategory
 import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 import com.solux.luxup.taptap.feature.team.presentation.components.RecentRecordBanner
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamButtonDeleteConfirmDialog
@@ -90,6 +95,10 @@ fun TeamActivityRoute(
         buttons = viewModel.buttons,
         suggestions = viewModel.suggestions,                    // 추가
         onSuggestionClick = viewModel::createFromSuggestion,
+        categories = viewModel.categories,
+        onCreateCategory = viewModel::createCategory,
+        onRenameCategory = viewModel::renameCategory,
+        onDeleteCategory = viewModel::deleteCategory,
         isQuickCreateMode = isQuickCreateMode,
         onCloseQuickCreate = onCloseQuickCreate,
         onRecordTap = viewModel::recordTap,
@@ -120,6 +129,10 @@ fun TeamActivityScreen(
     buttons: List<TeamButton>,
     suggestions: List<TeamButtonSuggestion> = emptyList(),
     onSuggestionClick: (TeamButtonSuggestion) -> Unit = {},
+    categories: List<TeamButtonCategory> = emptyList(),
+    onCreateCategory: (String) -> Unit = {},
+    onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
+    onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
     isQuickCreateMode: Boolean = false,
     onCloseQuickCreate: () -> Unit = {},
     onRecordTap: (TeamButton) -> Unit = {},
@@ -135,6 +148,9 @@ fun TeamActivityScreen(
     var deleteTarget by remember { mutableStateOf<TeamButton?>(null) }
     var localNotice by remember { mutableStateOf<String?>(null) }
     val notice = localNotice ?: errorMessage
+
+    var showCategoryEditDialog by remember { mutableStateOf(false) }
+    var categoryPendingDelete by remember { mutableStateOf<TeamButtonCategory?>(null) }
 
     Column(modifier = modifier) {
         // 최근 기록 배너 — 서버가 latestRecord.recordedAt 최신순으로 정렬해서 주므로
@@ -157,7 +173,11 @@ fun TeamActivityScreen(
                 .padding(horizontal = 40.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CategoryDropdown(onCategorySelected = { /* TODO: 버튼 필터링 */ })
+            CategoryDropdown(
+                categories = categories.map { it.categoryName } + "ALL",
+                onCategorySelected = { /* TODO: 버튼 필터링 */ },
+                onManageCategoriesClick = { showCategoryEditDialog = true },
+            )
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
         }
 
@@ -234,6 +254,41 @@ fun TeamActivityScreen(
                 onErrorConsumed()
             },
         )
+    }
+
+    if (showCategoryEditDialog) {
+        Dialog(
+            onDismissRequest = { showCategoryEditDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            CategoryEditDialog(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp),
+                categories = categories.map { it.categoryName },
+                onDismiss = { showCategoryEditDialog = false },
+                onCreate = onCreateCategory,
+                onRename = { oldName, newName ->
+                    categories.find { it.categoryName == oldName }?.let { onRenameCategory(it.categoryId, newName) }
+                },
+                onRequestDelete = { name -> categoryPendingDelete = categories.find { it.categoryName == name } },
+            )
+        }
+    }
+
+    categoryPendingDelete?.let { category ->
+        Dialog(
+            onDismissRequest = { categoryPendingDelete = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            CategoryDeleteConfirmDialog(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp),
+                category = category.categoryName,
+                onDismiss = { categoryPendingDelete = null },
+                onConfirmDelete = { deleteButtonsToo ->
+                    onDeleteCategory(category.categoryId, deleteButtonsToo)
+                    categoryPendingDelete = null
+                },
+            )
+        }
     }
 }
 

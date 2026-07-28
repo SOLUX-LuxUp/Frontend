@@ -1,6 +1,7 @@
 package com.solux.luxup.taptap.feature.team.data
 
 import com.solux.luxup.taptap.core.network.ApiCallHandler
+import com.solux.luxup.taptap.core.network.ApiException
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.feature.team.model.ButtonRecord
 import com.solux.luxup.taptap.feature.team.model.LatestRecord
@@ -167,6 +168,28 @@ class TeamRepository @Inject constructor(
 
     suspend fun listPendingTapPermissionRequests(teamId: Long, teamButtonId: Long): Result<List<TeamButtonPermissionRequest>> =
         apiCallHandler.execute { teamApi.listPendingRequests(teamId, teamButtonId) }.mapCatching { list -> list.map { it.toModel() } }
+
+    suspend fun createButtonCategory(teamId: Long, name: String): Result<TeamButtonCategory> =
+        apiCallHandler.execute { teamApi.createButtonCategory(teamId, CreateTeamButtonCategoryRequestDto(categoryName = name)) }
+            .mapCatching { it.toModel() }
+
+    suspend fun renameButtonCategory(teamId: Long, categoryId: Long, name: String): Result<TeamButtonCategory> =
+        apiCallHandler.execute {
+            teamApi.updateButtonCategory(teamId, categoryId, UpdateTeamButtonCategoryRequestDto(categoryName = name))
+        }.mapCatching { it.toModel() }
+
+    /**
+     * DELETE .../categories/{category_id}
+     * 응답 data가 빈 오브젝트로 내려와 data != null을 요구하는 공통 apiCallHandler를 쓰면
+     * 성공해도 실패로 처리될 수 있어, success 플래그만 직접 확인한다.
+     */
+    suspend fun deleteButtonCategory(teamId: Long, categoryId: Long, deleteButtons: Boolean): Result<Unit> = runCatching {
+        val response = teamApi.deleteButtonCategory(teamId, categoryId, deleteButtons)
+        val body = response.body()
+        if (!response.isSuccessful || body?.success != true) {
+            throw ApiException(body?.message ?: "카테고리를 삭제하지 못했어요.")
+        }
+    }
 }
 
 private const val TapPermissionAll = "all"
@@ -363,4 +386,18 @@ private fun TapPermissionRequestListItemDto.toModel() = TeamButtonPermissionRequ
     displayName = displayName.orEmpty(),
     profileImageUrl = profileImageUrl,
     requestedAt = requestedAt.orEmpty(),
+)
+
+private fun CreateTeamButtonCategoryResponseDto.toModel() = TeamButtonCategory(
+    categoryId = categoryId,
+    categoryName = categoryName,
+    categoryColor = IconColor.from(categoryColor),
+    displayOrder = displayOrder ?: 0,
+)
+
+private fun UpdateTeamButtonCategoryResponseDto.toModel() = TeamButtonCategory(
+    categoryId = categoryId,
+    categoryName = categoryName,
+    categoryColor = IconColor.from(categoryColor),
+    displayOrder = displayOrder ?: 0,
 )
