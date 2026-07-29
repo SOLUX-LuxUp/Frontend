@@ -28,14 +28,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
+import com.solux.luxup.taptap.feature.insight.daily.util.shiftDate
+import com.solux.luxup.taptap.feature.insight.daily.util.toKoreanDateText
+import com.solux.luxup.taptap.feature.insight.monthly.util.monthNavLabel
+import com.solux.luxup.taptap.feature.insight.weekly.util.toKoreanMonthText
+import com.solux.luxup.taptap.feature.insight.weekly.util.toWeekOfMonthText
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightDaily
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
+import com.solux.luxup.taptap.feature.team.model.TeamInsightDaily
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMonthly
+import com.solux.luxup.taptap.feature.team.model.TeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.presentation.insight.daily.TeamInsightDailyScreen
 import com.solux.luxup.taptap.feature.team.presentation.insight.monthly.TeamInsightMonthlyScreen
 import com.solux.luxup.taptap.feature.team.presentation.insight.timeline.TeamInsightTimelineAllScreen
 import com.solux.luxup.taptap.feature.team.presentation.insight.weekly.TeamInsightWeeklyScreen
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 enum class InsightPeriod(val label: String) {
     DAILY("Daily"),
@@ -48,10 +60,64 @@ enum class InsightViewMode {
     NORMAL,        // 일반 (섹션들)
     TIMELINE_ALL   // 전체 타임라인
 }
+
+/**
+ * 인사이트 탭 진입점. ViewModel을 붙인다.
+ * teamId에 스코프된 [TeamInsightViewModel]은 "가장 많이 기록한 버튼 더보기" 화면에서도
+ * 같은 인스턴스를 재사용한다 (team_insight_button_all 라우트에서 이 화면의 부모 백스택 엔트리를 참조).
+ */
 @Composable
-fun TeamInsightScreen(
+fun TeamInsightRoute(
+    teamId: Long,
     currentUserId: Long,
     onNavigateToButtonAll: (InsightPeriod) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: TeamInsightViewModel = hiltViewModel<TeamInsightViewModel, TeamInsightViewModel.Factory>(
+        creationCallback = { factory -> factory.create(teamId) },
+    )
+
+    TeamInsightScreen(
+        daily = viewModel.daily,
+        weekly = viewModel.weekly,
+        monthly = viewModel.monthly,
+        targetDate = viewModel.targetDate,
+        weekStart = viewModel.weekStart,
+        year = viewModel.year,
+        month = viewModel.month,
+        currentUserId = currentUserId,
+        onNavigateToButtonAll = onNavigateToButtonAll,
+        onPrevDay = viewModel::goToPreviousDay,
+        onNextDay = viewModel::goToNextDay,
+        onPrevWeek = viewModel::goToPreviousWeek,
+        onNextWeek = viewModel::goToNextWeek,
+        onPrevMonth = viewModel::goToPreviousMonth,
+        onNextMonth = viewModel::goToNextMonth,
+        modifier = modifier,
+    )
+
+    viewModel.errorMessage?.let { message ->
+        NoticeDialog(message = message, onDismiss = viewModel::consumeError)
+    }
+}
+
+@Composable
+fun TeamInsightScreen(
+    daily: TeamInsightDaily?,
+    weekly: TeamInsightWeekly?,
+    monthly: TeamInsightMonthly?,
+    targetDate: String,
+    weekStart: String,
+    year: Int,
+    month: Int,
+    currentUserId: Long,
+    onNavigateToButtonAll: (InsightPeriod) -> Unit,
+    onPrevDay: () -> Unit = {},
+    onNextDay: () -> Unit = {},
+    onPrevWeek: () -> Unit = {},
+    onNextWeek: () -> Unit = {},
+    onPrevMonth: () -> Unit = {},
+    onNextMonth: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var period by remember { mutableStateOf(InsightPeriod.DAILY) }
@@ -75,8 +141,24 @@ fun TeamInsightScreen(
 
         Spacer(Modifier.padding(top = 12.dp))
 
-        // 날짜 네비 (< 날짜 >) — UI만, 실제 이동은 API 연결 시
-        InsightDateNav(period = period)
+        // 날짜 네비 (< 날짜 >)
+        InsightDateNav(
+            period = period,
+            targetDate = targetDate,
+            weekStart = weekStart,
+            year = year,
+            month = month,
+            onPrev = when (period) {
+                InsightPeriod.DAILY -> onPrevDay
+                InsightPeriod.WEEKLY -> onPrevWeek
+                InsightPeriod.MONTHLY -> onPrevMonth
+            },
+            onNext = when (period) {
+                InsightPeriod.DAILY -> onNextDay
+                InsightPeriod.WEEKLY -> onNextWeek
+                InsightPeriod.MONTHLY -> onNextMonth
+            },
+        )
 
         Spacer(Modifier.padding(top = 12.dp))
 
@@ -85,32 +167,38 @@ fun TeamInsightScreen(
             InsightViewMode.NORMAL -> {
                 when (period) {
                     InsightPeriod.DAILY -> {
-                        TeamInsightDailyScreen(
-                            data = MockTeamInsightDaily,
-                            currentUserId = currentUserId,
-                            onTimelineSeeAll = { viewMode = InsightViewMode.TIMELINE_ALL },
-                            onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.DAILY) }
-                        )
+                        daily?.let { data ->
+                            TeamInsightDailyScreen(
+                                data = data,
+                                currentUserId = currentUserId,
+                                onTimelineSeeAll = { viewMode = InsightViewMode.TIMELINE_ALL },
+                                onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.DAILY) }
+                            )
+                        }
                     }
                     InsightPeriod.WEEKLY -> {
-                        TeamInsightWeeklyScreen(
-                            data = MockTeamInsightWeekly,
-                            currentUserId = currentUserId,
-                            onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.WEEKLY) }
-                        )
+                        weekly?.let { data ->
+                            TeamInsightWeeklyScreen(
+                                data = data,
+                                currentUserId = currentUserId,
+                                onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.WEEKLY) }
+                            )
+                        }
                     }
                     InsightPeriod.MONTHLY -> {
-                        TeamInsightMonthlyScreen(
-                            data = MockTeamInsightMonthly,
-                            currentUserId = currentUserId,
-                            onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.MONTHLY) }
-                        )
+                        monthly?.let { data ->
+                            TeamInsightMonthlyScreen(
+                                data = data,
+                                currentUserId = currentUserId,
+                                onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.MONTHLY) }
+                            )
+                        }
                     }
                 }
             }
             InsightViewMode.TIMELINE_ALL -> {
                 TeamInsightTimelineAllScreen(
-                    timeline = MockTeamInsightDaily.timeline,
+                    timeline = daily?.timeline.orEmpty(),
                     onBack = { viewMode = InsightViewMode.NORMAL }
                 )
             }
@@ -165,8 +253,34 @@ private fun InsightPeriodToggle(
     }
 }
 
+private val IsoDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
 @Composable
-private fun InsightDateNav(period: InsightPeriod) {
+private fun InsightDateNav(
+    period: InsightPeriod,
+    targetDate: String,
+    weekStart: String,
+    year: Int,
+    month: Int,
+    onPrev: () -> Unit,
+    onNext: () -> Unit,
+) {
+    val today = remember { LocalDate.now() }
+    val (badge, label) = when (period) {
+        InsightPeriod.DAILY -> {
+            val isToday = targetDate == today.format(IsoDateFormatter)
+            (if (isToday) "Today" else null) to targetDate.toKoreanDateText()
+        }
+        InsightPeriod.WEEKLY -> {
+            val isThisWeek = weekStart == today.minusDays((today.dayOfWeek.value - 1).toLong()).format(IsoDateFormatter)
+            (if (isThisWeek) "This Week" else null) to "${weekStart.toKoreanMonthText()} ${weekStart.toWeekOfMonthText()}"
+        }
+        InsightPeriod.MONTHLY -> {
+            val isThisMonth = year == today.year && month == today.monthValue
+            (if (isThisMonth) "This Month" else null) to monthNavLabel(year, month)
+        }
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
@@ -180,18 +294,20 @@ private fun InsightDateNav(period: InsightPeriod) {
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
-                ) { /* TODO: 이전 날짜 */ }
+                ) { onPrev() }
                 .padding(horizontal = 16.dp)
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (badge != null) {
+                Text(
+                    text = badge,
+                    fontFamily = Pretendard,
+                    fontSize = 10.sp,
+                    color = Color(0xFF2085FF)
+                )
+            }
             Text(
-                text = "Today",
-                fontFamily = Pretendard,
-                fontSize = 10.sp,
-                color = Color(0xFF2085FF)
-            )
-            Text(
-                text = "2026년 5월 3일",         // 목데이터 (API 연결 시 targetDate)
+                text = label,
                 fontFamily = Pretendard,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
@@ -206,7 +322,7 @@ private fun InsightDateNav(period: InsightPeriod) {
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
-                ) { /* TODO: 다음 날짜 */ }
+                ) { onNext() }
                 .padding(horizontal = 16.dp)
         )
     }
@@ -216,6 +332,13 @@ private fun InsightDateNav(period: InsightPeriod) {
 @Composable
 private fun TeamInsightScreenPreview() {
     TeamInsightScreen(
+        daily = MockTeamInsightDaily,
+        weekly = MockTeamInsightWeekly,
+        monthly = MockTeamInsightMonthly,
+        targetDate = MockTeamInsightDaily.targetDate,
+        weekStart = MockTeamInsightWeekly.weekStart,
+        year = MockTeamInsightMonthly.year,
+        month = MockTeamInsightMonthly.month,
         currentUserId = 4L,
         onNavigateToButtonAll = {}
     )

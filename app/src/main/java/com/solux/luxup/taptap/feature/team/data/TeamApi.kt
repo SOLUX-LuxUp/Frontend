@@ -215,4 +215,25 @@ interface TeamApi {
         @Query("cursor") cursor: Long? = null,
         @Query("limit") limit: Int? = null,
     ): Response<BaseResponse<MemberRecordsResponseDto>>
+
+    // ---- team-insight-controller ----
+
+    @GET("api/teams/{team_id}/insights/daily")
+    suspend fun getDailyInsight(
+        @Path("team_id") teamId: Long,
+        @Query("date") date: String? = null,
+    ): Response<BaseResponse<DailyInsightResponseDto>>
+
+    @GET("api/teams/{team_id}/insights/weekly")
+    suspend fun getWeeklyInsight(
+        @Path("team_id") teamId: Long,
+        @Query("week_start") weekStart: String? = null,
+    ): Response<BaseResponse<WeeklyInsightResponseDto>>
+
+    @GET("api/teams/{team_id}/insights/monthly")
+    suspend fun getMonthlyInsight(
+        @Path("team_id") teamId: Long,
+        @Query("year") year: Int? = null,
+        @Query("month") month: Int? = null,
+    ): Response<BaseResponse<MonthlyInsightResponseDto>>
 }
