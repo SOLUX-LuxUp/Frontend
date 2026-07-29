@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,14 @@ fun CategoryDropdown(
     var headerHeightPx by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     val hasManageableCategories = categories.any { it != "ALL" }
+
+    // 선택 중이던 카테고리가 삭제되거나 이름이 바뀌어 목록에서 사라지면 필터를 ALL로 되돌린다.
+    LaunchedEffect(categories) {
+        if (selectedCategory != null && selectedCategory !in categories) {
+            selectedCategory = null
+            onCategorySelected(null)
+        }
+    }
 
     Box(modifier = modifier) {
         Row(
