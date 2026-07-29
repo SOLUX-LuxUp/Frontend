@@ -177,6 +177,67 @@ class MainHomeViewModel @AssistedInject constructor(
         }
     }
 
+    /**
+     * PATCH /api/buttons/{button_id}/favorite — 별 아이콘 상태를 낙관적으로 먼저 반영하고,
+     * 성공하면 GET /api/buttons/favorites로 즐겨찾기 목록을 새로고침해 순서를 맞춘다.
+     * 실패하면 원래 상태로 되돌린다.
+     */
+    fun setFavorite(buttonId: Long, isFavorite: Boolean) {
+        val previousHabitButtons = habitButtons
+        val previousFavoriteButtons = favoriteButtons
+        val target = habitButtons.find { it.buttonId == buttonId }
+
+        habitButtons = habitButtons.map { if (it.buttonId == buttonId) it.copy(isFavorite = isFavorite) else it }
+        favoriteButtons = when {
+            isFavorite && target != null && favoriteButtons.none { it.buttonId == buttonId } ->
+                listOf(
+                    FavoriteButton(
+                        buttonId = target.buttonId,
+                        iconRes = target.iconRes,
+                        iconTint = target.iconTint,
+                        title = target.title,
+                        lastRecordedAt = target.lastRecordedAt,
+                    )
+                ) + favoriteButtons
+            !isFavorite -> favoriteButtons.filterNot { it.buttonId == buttonId }
+            else -> favoriteButtons
+        }
+
+        viewModelScope.launch {
+            buttonRepository.setFavorite(buttonId, isFavorite)
+                .onSuccess { loadFavoriteButtons() }
+                .onFailure {
+                    habitButtons = previousHabitButtons
+                    favoriteButtons = previousFavoriteButtons
+                    errorMessage = it.message ?: "즐겨찾기를 변경하지 못했어요."
+                }
+        }
+    }
+
+    /**
+     * PATCH /api/buttons/favorite-order — 즐겨찾기 수정 팝업에서 드래그로 바뀐 순서를 낙관적으로 먼저 반영하고,
+     * 실패하면 원래 순서로 되돌린다.
+     */
+    fun reorderFavorites(buttonIds: List<Long>) {
+        val previous = favoriteButtons
+        favoriteButtons = buttonIds.mapNotNull { id -> previous.find { it.buttonId == id } }
+
+        viewModelScope.launch {
+            buttonRepository.updateFavoriteOrder(buttonIds)
+                .onFailure {
+                    favoriteButtons = previous
+                    errorMessage = it.message ?: "즐겨찾기 순서를 변경하지 못했어요."
+                }
+        }
+    }
+
+    private fun loadFavoriteButtons() {
+        viewModelScope.launch {
+            buttonRepository.getFavoriteButtons()
+                .onSuccess { favoriteButtons = it }
+        }
+    }
+
     private fun loadRecentRecord() {
         viewModelScope.launch {
             buttonRepository.getRecentRecord()

@@ -31,6 +31,21 @@ class ButtonRepository @Inject constructor(
         apiCallHandler.execute { buttonApi.getButtons() }
             .mapCatching { it.toModel() }
 
+    /** PATCH /api/buttons/{button_id}/favorite */
+    suspend fun setFavorite(buttonId: Long, isFavorite: Boolean): Result<Boolean> =
+        apiCallHandler.execute { buttonApi.setFavorite(buttonId, FavoriteRequestDto(isFavorite)) }
+            .map { it.isFavorite }
+
+    /** GET /api/buttons/favorites — favoriteOrder가 클수록 즐겨찾기를 나중에 추가한 것이라 내림차순으로 앞에 오도록 정렬한다 */
+    suspend fun getFavoriteButtons(): Result<List<FavoriteButton>> =
+        apiCallHandler.execute { buttonApi.getFavoriteButtons() }
+            .map { list -> list.sortedByDescending { it.favoriteOrder ?: 0 }.map { it.toModel() } }
+
+    /** PATCH /api/buttons/favorite-order — buttonIds를 원하는 순서 그대로 보내면 그 순서대로 favoriteOrder에 반영된다 */
+    suspend fun updateFavoriteOrder(buttonIds: List<Long>): Result<Unit> =
+        apiCallHandler.execute { buttonApi.updateFavoriteOrder(FavoriteOrderRequestDto(buttonIds)) }
+            .map { }
+
     /** 수정 화면 초기값 채우기용 — "yyyy-MM-dd" 문자열을 밀리초로 되돌린다 */
     fun parseExpiryMillis(expiredAt: String?): Long? =
         expiredAt?.let { runCatching { buttonExpiryDateFormat.parse(it)?.time }.getOrNull() }
@@ -143,7 +158,7 @@ class ButtonRepository @Inject constructor(
 }
 
 private fun ButtonListResponseDto.toModel() = ButtonListResult(
-    favorites = favorites.map { it.toModel() },
+    favorites = favorites.sortedByDescending { it.favoriteOrder ?: 0 }.map { it.toModel() },
     habitButtons = categories.flatMap { group ->
         group.buttons.map { it.toModel(categoryId = group.categoryId, categoryName = group.categoryName) }
     },

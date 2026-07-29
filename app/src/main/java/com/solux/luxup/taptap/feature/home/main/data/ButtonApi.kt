@@ -35,6 +35,20 @@ interface ButtonApi {
         @Body request: CategoryOrderRequestDto,
     ): Response<BaseResponse<List<CategoryOrderItemDto>>>
 
+    @PATCH("api/buttons/{button_id}/favorite")
+    suspend fun setFavorite(
+        @Path("button_id") buttonId: Long,
+        @Body request: FavoriteRequestDto,
+    ): Response<BaseResponse<FavoriteResponseDto>>
+
+    @GET("api/buttons/favorites")
+    suspend fun getFavoriteButtons(): Response<BaseResponse<List<FavoriteButtonItemDto>>>
+
+    @PATCH("api/buttons/favorite-order")
+    suspend fun updateFavoriteOrder(
+        @Body request: FavoriteOrderRequestDto,
+    ): Response<BaseResponse<List<FavoriteOrderItemDto>>>
+
     // ---- button-category-controller ----
 
     @GET("api/buttons/categories")

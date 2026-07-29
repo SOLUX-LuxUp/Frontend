@@ -119,6 +119,7 @@ private fun Modifier.habitCardDropShadow(shape: Shape): Modifier = this.drawBehi
 @Composable
 fun HabitButtonGrid(
     buttons: List<HabitButton>,
+    onToggleFavorite: (buttonId: Long, isFavorite: Boolean) -> Unit = { _, _ -> },
     onEditRecord: (button: HabitButton) -> Unit = {},
     onDeleteRecord: (button: HabitButton) -> Unit = {},
     onQuickRecord: (button: HabitButton) -> Unit = {},
@@ -131,6 +132,7 @@ fun HabitButtonGrid(
                     HabitButtonCard(
                         button = button,
                         modifier = Modifier.weight(1f),
+                        onToggleFavorite = onToggleFavorite,
                         onEditRecord = { onEditRecord(button) },
                         onDeleteRecord = { onDeleteRecord(button) },
                         onQuickRecord = { onQuickRecord(button) },
@@ -151,12 +153,12 @@ fun HabitButtonGrid(
 fun HabitButtonCard(
     button: HabitButton,
     modifier: Modifier = Modifier,
+    onToggleFavorite: (buttonId: Long, isFavorite: Boolean) -> Unit = { _, _ -> },
     onEditRecord: () -> Unit = {},
     onDeleteRecord: () -> Unit = {},
     onQuickRecord: () -> Unit = {},
     onOpenDetail: () -> Unit = {}
 ) {
-    var isFavorite by remember(button.title) { mutableStateOf(button.isFavorite) }
     var showMoreMenu by remember { mutableStateOf(false) }
     val cardShape = remember {
         HabitCardShape(
@@ -187,10 +189,10 @@ fun HabitButtonCard(
                     Icon(
                         painter = painterResource(R.drawable.ic_star_empty),
                         contentDescription = "즐겨찾기",
-                        tint = if (isFavorite) BlueGradientEnd else Color.Unspecified,
+                        tint = if (button.isFavorite) BlueGradientEnd else Color.Unspecified,
                         modifier = Modifier
                             .size(20.dp)
-                            .clickable { isFavorite = !isFavorite }
+                            .clickable { onToggleFavorite(button.buttonId, !button.isFavorite) }
                     )
                     Spacer(Modifier.width(4.dp))
                     Icon(

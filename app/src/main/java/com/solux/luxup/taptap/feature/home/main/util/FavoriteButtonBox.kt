@@ -58,7 +58,7 @@ fun FavoriteButtonBox(button: FavoriteButton, onClick: () -> Unit) {
                 textAlign = TextAlign.Center
             )
             Text(
-                formatElapsedText(button.lastRecordedAt),
+                if (button.lastRecordedAt.isBlank()) "기록" else formatElapsedText(button.lastRecordedAt),
                 fontSize = 11.sp,
                 color = Color(0xFFB1B1B1)
             )

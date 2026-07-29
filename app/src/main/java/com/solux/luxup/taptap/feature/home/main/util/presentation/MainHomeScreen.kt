@@ -100,6 +100,8 @@ fun MainHomeScreen(
     onErrorConsumed: () -> Unit = {},
     onNavigateToCreateButton: () -> Unit = {},
     onNavigateToEditButton: (button: HabitButton) -> Unit = {},
+    onToggleFavorite: (buttonId: Long, isFavorite: Boolean) -> Unit = { _, _ -> },
+    onReorderFavorites: (buttonIds: List<Long>) -> Unit = {},
     onDeleteButton: (buttonId: Long) -> Unit = {},
     onNavigateToButtonDetail: (button: HabitButton) -> Unit = {},
     onFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
@@ -241,6 +243,7 @@ fun MainHomeScreen(
             } else {
                 HabitButtonGrid(
                     buttons = filteredHabitButtons,
+                    onToggleFavorite = onToggleFavorite,
                     onEditRecord = onNavigateToEditButton,
                     onDeleteRecord = { button -> recordPendingDelete = button },
                     onQuickRecord = { /* TODO: 한 번 탭으로 바로 기록하는 API 연결 */ },
@@ -342,6 +345,15 @@ fun MainHomeScreen(
                 favorites = favoriteButtonsState,
                 onDismiss = { showFavoriteEditDialog = false },
                 onSave = { updated ->
+                    val updatedIds = updated.map { it.buttonId }
+                    val removedIds = favoriteButtonsState.map { it.buttonId } - updatedIds.toSet()
+                    removedIds.forEach { buttonId -> onToggleFavorite(buttonId, false) }
+
+                    val previousRemainingIds = favoriteButtonsState.map { it.buttonId }.filter { it in updatedIds }
+                    if (previousRemainingIds != updatedIds) {
+                        onReorderFavorites(updatedIds)
+                    }
+
                     favoriteButtonsState = updated
                     showFavoriteEditDialog = false
                 }
