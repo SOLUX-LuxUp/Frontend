@@ -20,6 +20,7 @@ data class FavoriteButtonItemDto(
     val categoryId: Long? = null,
     val categoryName: String? = null,
     val isFavorite: Boolean = false,
+    val favoriteOrder: Int? = null,
     val lastRecordedAt: String? = null,
 )
 
@@ -102,6 +103,29 @@ data class CategoryOrderRequestDto(
 data class CategoryOrderItemDto(
     val categoryId: Long,
     val displayOrder: Int,
+)
+
+/** PATCH /api/buttons/{button_id}/favorite */
+@Serializable
+data class FavoriteRequestDto(
+    val isFavorite: Boolean,
+)
+
+@Serializable
+data class FavoriteResponseDto(
+    val isFavorite: Boolean = false,
+)
+
+/** PATCH /api/buttons/favorite-order — buttonIds를 원하는 순서 그대로 담아 보낸다 */
+@Serializable
+data class FavoriteOrderRequestDto(
+    val buttonIds: List<Long>,
+)
+
+@Serializable
+data class FavoriteOrderItemDto(
+    val buttonId: Long,
+    val favoriteOrder: Int,
 )
 
 // ---- button-category-controller ----

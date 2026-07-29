@@ -3,6 +3,7 @@ package com.solux.luxup.taptap.feature.home.main.util
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,13 +32,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.solux.luxup.taptap.core.util.category.CategoryDialogButton
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
+import kotlin.math.roundToInt
 
 // "즐겨찾기 수정" 팝업 - 즐겨찾기 목록에서 항목 제거
 @Composable
@@ -46,6 +55,10 @@ fun FavoriteEditDialog(
     modifier: Modifier = Modifier
 ) {
     var favoriteList by remember(favorites) { mutableStateOf(favorites) }
+    var draggingIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffsetY by remember { mutableStateOf(0f) }
+    var rowHeightPx by remember { mutableIntStateOf(0) }
+    val spacingPx = with(LocalDensity.current) { 20.dp.roundToPx() }
 
     Column(
         modifier = modifier
@@ -75,17 +88,60 @@ fun FavoriteEditDialog(
                 if (index > 0) {
                     Spacer(Modifier.height(20.dp))
                 }
+                key(favorite.buttonId) {
+                val isDragging = draggingIndex == index
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onGloballyPositioned { if (rowHeightPx == 0) rowHeightPx = it.size.height }
+                        .graphicsLayer { translationY = if (isDragging) dragOffsetY else 0f }
+                        .zIndex(if (isDragging) 1f else 0f),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = null,
+                            contentDescription = "순서 변경",
                             tint = Color(0xFFB1B1B1),
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier
+                                .size(20.dp)
+                                .pointerInput(favorite.buttonId) {
+                                    detectDragGestures(
+                                        onDragStart = {
+                                            draggingIndex = index
+                                            dragOffsetY = 0f
+                                        },
+                                        onDragEnd = {
+                                            draggingIndex = null
+                                            dragOffsetY = 0f
+                                        },
+                                        onDragCancel = {
+                                            draggingIndex = null
+                                            dragOffsetY = 0f
+                                        },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            dragOffsetY += dragAmount.y
+
+                                            val from = draggingIndex ?: return@detectDragGestures
+                                            val step = rowHeightPx + spacingPx
+                                            if (step <= 0) return@detectDragGestures
+
+                                            val moveBy = (dragOffsetY / step).roundToInt()
+                                            if (moveBy == 0) return@detectDragGestures
+
+                                            val to = (from + moveBy).coerceIn(0, favoriteList.lastIndex)
+                                            if (to != from) {
+                                                favoriteList = favoriteList.toMutableList().apply {
+                                                    add(to, removeAt(from))
+                                                }
+                                                draggingIndex = to
+                                                dragOffsetY -= moveBy * step
+                                            }
+                                        }
+                                    )
+                                }
                         )
                         Spacer(Modifier.width(12.dp))
                         Box(
@@ -120,6 +176,7 @@ fun FavoriteEditDialog(
                             modifier = Modifier.size(15.dp)
                         )
                     }
+                }
                 }
             }
         }

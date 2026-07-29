@@ -197,6 +197,8 @@ class MainActivity : ComponentActivity() {
                             onNavigateToEditButton = { button ->
                                 navController.navigate("editButton/${button.buttonId}")
                             },
+                            onToggleFavorite = mainHomeViewModel::setFavorite,
+                            onReorderFavorites = mainHomeViewModel::reorderFavorites,
                             onDeleteButton = mainHomeViewModel::deleteButton,
                             onNavigateToButtonDetail = {
                                 // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
@@ -246,6 +248,8 @@ class MainActivity : ComponentActivity() {
                             onNavigateToEditButton = { button ->
                                 navController.navigate("editButton/${button.buttonId}")
                             },
+                            onToggleFavorite = mainHomeViewModel::setFavorite,
+                            onReorderFavorites = mainHomeViewModel::reorderFavorites,
                             onDeleteButton = mainHomeViewModel::deleteButton,
                             onNavigateToButtonDetail = {
                                 // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
