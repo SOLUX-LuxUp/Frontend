@@ -34,7 +34,8 @@ import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 fun MemberSharedButtonList(
     buttons: List<TeamMemberSharedButton>,
     modifier: Modifier = Modifier,
-    collapsedCount: Int = 5
+    collapsedCount: Int = 5,
+    onSave: (List<TeamMemberSharedButton>) -> Unit = {},
 ) {
     var showModal by remember { mutableStateOf(false) }   // 모달 표시 상태
     var expanded by remember { mutableStateOf(false) }
@@ -99,8 +100,8 @@ fun MemberSharedButtonList(
             buttons = buttons,
             onDismiss = { showModal = false },
             onSave = { updated ->
-                // TODO: API 연결 시 8.2.1 PATCH. 지금은 닫기만
                 showModal = false
+                onSave(updated)
             }
         )
     }

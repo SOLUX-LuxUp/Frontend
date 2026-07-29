@@ -43,7 +43,7 @@ import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost
 import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightScreen
-import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailScreen
+import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailRoute
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
@@ -136,16 +136,28 @@ fun TeamDetailScreen(
                     val memberId = selectedMemberId
                     if (memberId == null) {
                         // 멤버 목록
+                        val memberListViewModel = androidx.hilt.navigation.compose.hiltViewModel<
+                            TeamMemberListViewModel,
+                            TeamMemberListViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(teamId) })
                         TeamMemberScreen(
+                            members = memberListViewModel.members,
                             currentUserId = currentUserId,
                             onMemberClick = { member -> selectedMemberId = member.userId }
                         )
+                        memberListViewModel.errorMessage?.let { message ->
+                            com.solux.luxup.taptap.core.ui.components.NoticeDialog(
+                                message = message,
+                                onDismiss = memberListViewModel::consumeError,
+                            )
+                        }
                     } else {
                         // 멤버 상세 (나/남 분기)
-                        TeamMemberDetailScreen(
-                            // TODO: API 연결 시 memberId로 실제 조회. 지금은 목데이터 고정
-                            isMe = (memberId == currentUserId),
-                            onEditName = { /* TODO: 이름 수정 (다음 단계) */ }
+                        TeamMemberDetailRoute(
+                            teamId = teamId,
+                            targetUserId = memberId,
+                            currentUserId = currentUserId,
+                            key = "memberDetail-$memberId",
                         )
                     }
                 }

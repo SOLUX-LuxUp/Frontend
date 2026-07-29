@@ -190,4 +190,29 @@ interface TeamApi {
         @Path("category_id") categoryId: Long,
         @Query("delete_buttons") deleteButtons: Boolean,
     ): Response<BaseResponse<JsonElement>>
+
+    // ---- team-member-profile-controller ----
+
+    @GET("api/teams/{team_id}/members/profile")
+    suspend fun getMyTeamProfile(@Path("team_id") teamId: Long): Response<BaseResponse<TeamProfileResponseDto>>
+
+    @PATCH("api/teams/{team_id}/members/profile")
+    suspend fun updateMyTeamProfile(
+        @Path("team_id") teamId: Long,
+        @Body request: UpdateTeamProfileRequestDto,
+    ): Response<BaseResponse<UpdateTeamProfileResponseDto>>
+
+    @PATCH("api/teams/{team_id}/members/me/sharing")
+    suspend fun updateButtonSharing(
+        @Path("team_id") teamId: Long,
+        @Body request: UpdateButtonSharingRequestDto,
+    ): Response<BaseResponse<UpdateButtonSharingResponseDto>>
+
+    @GET("api/teams/{team_id}/members/{user_id}/records")
+    suspend fun getMemberRecords(
+        @Path("team_id") teamId: Long,
+        @Path("user_id") userId: Long,
+        @Query("cursor") cursor: Long? = null,
+        @Query("limit") limit: Int? = null,
+    ): Response<BaseResponse<MemberRecordsResponseDto>>
 }
