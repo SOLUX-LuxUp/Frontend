@@ -600,10 +600,14 @@ class MainActivity : ComponentActivity() {
 
                     // 팀 상세 — 활동·인사이트·멤버 탭 셸 (하단 네비 TEAM 탭 진입점)
                     composable(
-                        "teamDetail/{teamId}",
-                        arguments = listOf(navArgument("teamId") { type = NavType.LongType })
+                        "teamDetail/{teamId}?fromCreation={fromCreation}",
+                        arguments = listOf(
+                            navArgument("teamId") { type = NavType.LongType },
+                            navArgument("fromCreation") { type = NavType.BoolType; defaultValue = false },
+                        )
                     ) { backStackEntry ->
                         val teamId = backStackEntry.arguments?.getLong("teamId") ?: 0L
+                        val fromCreation = backStackEntry.arguments?.getBoolean("fromCreation") ?: false
                         com.solux.luxup.taptap.feature.team.presentation.components.ResetTeamDeletionDismissalOnEntry(
                             sessionId = backStackEntry.id,
                             teamId = teamId,
@@ -617,6 +621,7 @@ class MainActivity : ComponentActivity() {
                             teamName = teamDetailViewModel.teamName ?: "LUX-UP",
                             currentUserId = currentUserId,
                             hasSelectedTemplate = teamDetailViewModel.hasSelectedTemplate,
+                            initialQuickCreateMode = fromCreation,
                             onExit = { navController.popBackStack() },
                             // + → 직접 만들기
                             onCreateButton = {
@@ -676,7 +681,7 @@ class MainActivity : ComponentActivity() {
                     teamCreateGraph(
                         navController = navController,
                         onFinish = { teamId ->
-                            navController.navigate("teamDetail/$teamId") {
+                            navController.navigate("teamDetail/$teamId?fromCreation=true") {
                                 popUpTo("teamList")
                             }
                         },

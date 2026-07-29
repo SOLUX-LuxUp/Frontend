@@ -40,12 +40,12 @@ import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
 import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
-import com.solux.luxup.taptap.core.util.category.CategorySelectDropdown
 import com.solux.luxup.taptap.feature.team.data.MockTeamButtonCreate
 import com.solux.luxup.taptap.feature.team.data.MockTeamButtonDetail
 import com.solux.luxup.taptap.feature.team.model.TapPermission
 import com.solux.luxup.taptap.feature.team.model.TeamButtonCategory
 import com.solux.luxup.taptap.feature.team.model.TeamButtonForm
+import com.solux.luxup.taptap.feature.team.presentation.button.components.CategoryFormDropdown
 import com.solux.luxup.taptap.feature.team.presentation.button.components.FormDropdown
 import com.solux.luxup.taptap.feature.team.presentation.button.components.FormLabel
 import com.solux.luxup.taptap.feature.team.presentation.button.components.FormMultilineField
@@ -141,14 +141,19 @@ fun TeamButtonCreateScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            FormLabel("카테고리")
-            Spacer(Modifier.height(8.dp))
-            CategorySelectDropdown(
-                categories = categories.map { it.categoryName },
-                selectedCategory = form.category?.categoryName,
-                onCategorySelected = { name -> onCategorySelect(categories.find { it.categoryName == name }) },
-                onManageCategoriesClick = { showCategoryEditDialog = true },
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                FormLabel("카테고리")
+                CategoryFormDropdown(
+                    selectedCategoryName = form.category?.categoryName,
+                    categories = categories.map { it.categoryName },
+                    onCategorySelected = { name -> onCategorySelect(categories.find { it.categoryName == name }) },
+                    onManageCategoriesClick = { showCategoryEditDialog = true },
+                )
+            }
 
             Spacer(Modifier.height(20.dp))
 

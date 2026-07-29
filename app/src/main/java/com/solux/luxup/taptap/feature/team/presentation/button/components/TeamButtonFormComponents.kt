@@ -214,6 +214,96 @@ fun <T> FormDropdown(
     }
 }
 
+/**
+ * 카테고리 전용 드롭다운. 닫혀 있을 때는 [FormDropdown]과 동일한 213x38 박스,
+ * 펼쳤을 때는 정수민님 CategorySelectDropdown과 동일한 팝업(카테고리 관리 진입점 포함)을 쓴다.
+ */
+@Composable
+fun CategoryFormDropdown(
+    selectedCategoryName: String?,
+    categories: List<String>,
+    onCategorySelected: (String?) -> Unit,
+    onManageCategoriesClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    width: androidx.compose.ui.unit.Dp = 213.dp,
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .width(width)
+                .height(38.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, BorderColor, RoundedCornerShape(8.dp))
+                .background(Color.White)
+                .clickable { isExpanded = true }
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = selectedCategoryName ?: com.solux.luxup.taptap.feature.team.model.TeamButtonCategory.NONE_LABEL,
+                fontSize = 15.sp,
+                color = TextColor,
+            )
+            ChevronDownIcon()
+        }
+
+        if (isExpanded) {
+            androidx.compose.ui.window.Popup(
+                alignment = Alignment.TopEnd,
+                offset = androidx.compose.ui.unit.IntOffset(0, 0),
+                onDismissRequest = { isExpanded = false },
+                properties = androidx.compose.ui.window.PopupProperties(dismissOnClickOutside = true),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .width(width)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE5E5E5), RoundedCornerShape(5.dp))
+                        .padding(12.dp),
+                ) {
+                    categories.forEach { category ->
+                        Text(
+                            text = category,
+                            fontSize = 15.sp,
+                            color = TextColor,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onCategorySelected(category)
+                                    isExpanded = false
+                                }
+                                .padding(vertical = 6.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color(0xFFD9D9D9))
+                            .clickable {
+                                isExpanded = false
+                                onManageCategoriesClick()
+                            }
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    ) {
+                        Text(
+                            text = if (categories.isEmpty()) "+ ADD" else "카테고리 수정",
+                            fontSize = 14.sp,
+                            color = Color.White,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true, widthDp = 390)
 @Composable
 private fun TeamButtonFormComponentsPreview() {

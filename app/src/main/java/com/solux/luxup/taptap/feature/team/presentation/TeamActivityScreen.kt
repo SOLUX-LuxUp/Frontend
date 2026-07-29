@@ -181,11 +181,8 @@ fun TeamActivityScreen(
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
         }
 
-        // 아직 팀 전체에서 기록(탭)이 한 번도 없으면, 버튼을 만들었어도 추천 섹션을 계속 보여준다.
-        // 건너뛴 팀은 suggestions가 항상 비어있으므로 자연히 안 뜬다.
-        val hasAnyRecord = buttons.any { it.latestRecord != null }
-        val showRecommendationSection = suggestions.isNotEmpty() && !hasAnyRecord
-
+        // 추천 섹션은 팀 생성 직후 진입(quickCreateMode)에서만 노출된다.
+        // 그 방문 동안엔 버튼을 몇 개 만들든 유지되다가, X로 닫거나 다른 방문에서는 다시 안 뜬다.
         when {
             buttons.isEmpty() -> {
                 TeamFirstButtonSection(
@@ -205,14 +202,13 @@ fun TeamActivityScreen(
                     },
                     onButtonLongClick = onNavigateToTimeline,
                     onButtonMenuClick = { menuTarget = it },
-                    header = if (isQuickCreateMode || showRecommendationSection) {
+                    header = if (isQuickCreateMode) {
                         {
                             TeamFirstButtonSection(
                                 suggestions = suggestions,
                                 onSuggestionClick = onSuggestionClick,
                                 isFirstButton = false,
-                                // 빠르게 생성 모드일 때만 닫기(X) 가능 — 자연 노출 중엔 첫 기록 전까지 유지된다
-                                onClose = if (isQuickCreateMode) onCloseQuickCreate else null,
+                                onClose = onCloseQuickCreate,
                             )
                         }
                     } else null,

@@ -56,6 +56,8 @@ fun TeamDetailScreen(
     currentUserId: Long = 4L,                    // 임시 (로그인 유저 id, API 연결 시 교체)
     /** GET /api/teams/{team_id}/template 의 hasSelectedTemplate. 호출부(MainActivity)에서 채워준다 */
     hasSelectedTemplate: Boolean = true,
+    /** 팀 생성 직후 진입인지 — true면 활동 탭에 추천 섹션을 처음부터 노출한다 */
+    initialQuickCreateMode: Boolean = false,
     onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
     onCreateButton: () -> Unit = {},
     onOpenTeamSettings: () -> Unit = {},
@@ -68,7 +70,7 @@ fun TeamDetailScreen(
     var selectedTab by remember { mutableStateOf(initialTab) }
     var selectedMemberId by remember { mutableStateOf(initialMemberId) }
     var showCreateOption by remember { mutableStateOf(false) }
-    var quickCreateMode by remember { mutableStateOf(false) }
+    var quickCreateMode by remember { mutableStateOf(initialQuickCreateMode) }
         Scaffold(
         modifier = modifier,
         bottomBar = {
