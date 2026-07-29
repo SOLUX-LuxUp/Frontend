@@ -21,7 +21,11 @@ import com.solux.luxup.taptap.feature.team.model.TeamCreateForm
 import com.solux.luxup.taptap.feature.team.model.TeamCreateResult
 import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 import com.solux.luxup.taptap.feature.team.model.TeamMember
+import com.solux.luxup.taptap.feature.team.model.TeamMemberButton
+import com.solux.luxup.taptap.feature.team.model.TeamMemberDetail
+import com.solux.luxup.taptap.feature.team.model.TeamMemberRecord
 import com.solux.luxup.taptap.feature.team.model.TeamMemberRole
+import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 import com.solux.luxup.taptap.feature.team.model.TeamButtonPermissionRequest
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamTemplate
@@ -190,6 +194,26 @@ class TeamRepository @Inject constructor(
             throw ApiException(body?.message ?: "카테고리를 삭제하지 못했어요.")
         }
     }
+
+    // ---- team-member-profile-controller ----
+
+    /** 내 프로필의 공유 대상 버튼 목록 (isShared 포함) */
+    suspend fun getMyTeamProfile(teamId: Long): Result<List<TeamMemberSharedButton>> =
+        apiCallHandler.execute { teamApi.getMyTeamProfile(teamId) }.mapCatching { list -> list.buttons.map { it.toModel() } }
+
+    suspend fun updateMyTeamProfile(teamId: Long, displayName: String): Result<UpdateTeamProfileResponseDto> =
+        apiCallHandler.execute { teamApi.updateMyTeamProfile(teamId, UpdateTeamProfileRequestDto(displayName = displayName)) }
+
+    suspend fun updateButtonSharing(teamId: Long, buttons: List<TeamMemberSharedButton>): Result<List<TeamMemberSharedButton>> =
+        apiCallHandler.execute {
+            teamApi.updateButtonSharing(
+                teamId,
+                UpdateButtonSharingRequestDto(buttons.map { ButtonSharingUpdateItemDto(it.buttonId, it.isShared) }),
+            )
+        }.mapCatching { list -> list.buttons.map { it.toModel() } }
+
+    suspend fun getMemberRecords(teamId: Long, userId: Long, cursor: Long? = null, limit: Int? = null): Result<TeamMemberDetail> =
+        apiCallHandler.execute { teamApi.getMemberRecords(teamId, userId, cursor, limit) }.mapCatching { it.toModel() }
 }
 
 private const val TapPermissionAll = "all"
@@ -400,4 +424,39 @@ private fun UpdateTeamButtonCategoryResponseDto.toModel() = TeamButtonCategory(
     categoryName = categoryName,
     categoryColor = IconColor.from(categoryColor),
     displayOrder = displayOrder ?: 0,
+)
+
+private fun TeamProfileButtonItemDto.toModel() = TeamMemberSharedButton(
+    buttonId = buttonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    categoryId = categoryId,
+    categoryName = categoryName,
+    isShared = isShared,
+)
+
+private fun MemberRecordButtonItemDto.toModel() = TeamMemberButton(
+    buttonId = buttonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+)
+
+private fun MemberRecordTimelineItemDto.toModel() = TeamMemberRecord(
+    recordId = recordId,
+    buttonName = buttonName.orEmpty(),
+    recordedAt = recordedAt.orEmpty(),
+    memo = memo,
+    emoji = emoji,
+)
+
+private fun MemberRecordsResponseDto.toModel() = TeamMemberDetail(
+    userId = userId,
+    displayName = displayName.orEmpty(),
+    profileImageUrl = profileImageUrl,
+    hasMore = hasMore,
+    nextCursor = nextCursor,
+    buttons = buttons.map { it.toModel() },
+    recentTimeline = recentTimeline.map { it.toModel() },
 )

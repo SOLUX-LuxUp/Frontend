@@ -6,7 +6,7 @@ data class TeamMemberDetail(
     val displayName: String,
     val profileImageUrl: String?,
     val hasMore: Boolean,               // 타임라인 페이징용
-    val nextCursor: String?,            // 다음 페이지 커서 (없으면 null)
+    val nextCursor: Long?,              // 다음 페이지 커서 (없으면 null)
     val buttons: List<TeamMemberButton>,    // 공유 중인 버튼 목록
     val recentTimeline: List<TeamMemberRecord>
 )

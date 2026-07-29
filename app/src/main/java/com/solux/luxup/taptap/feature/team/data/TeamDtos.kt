@@ -457,3 +457,86 @@ data class UpdateTeamButtonCategoryResponseDto(
     val displayOrder: Int? = null,
     val updatedAt: String? = null,
 )
+
+// ---- team-member-profile-controller ----
+
+@Serializable
+data class TeamProfileButtonItemDto(
+    val buttonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val categoryId: Long? = null,
+    val categoryName: String? = null,
+    val isShared: Boolean = false,
+)
+
+@Serializable
+data class TeamProfileResponseDto(
+    val teamId: Long,
+    val userId: Long,
+    val displayName: String? = null,
+    val profileImageUrl: String? = null,
+    val buttons: List<TeamProfileButtonItemDto> = emptyList(),
+)
+
+@Serializable
+data class UpdateTeamProfileRequestDto(
+    val displayName: String? = null,
+    val profileImageUrl: String? = null,
+)
+
+@Serializable
+data class UpdateTeamProfileResponseDto(
+    val teamId: Long,
+    val userId: Long,
+    val displayName: String? = null,
+    val profileImageUrl: String? = null,
+    val updatedAt: String? = null,
+)
+
+@Serializable
+data class ButtonSharingUpdateItemDto(
+    val buttonId: Long,
+    val isShared: Boolean,
+)
+
+@Serializable
+data class UpdateButtonSharingRequestDto(
+    val buttons: List<ButtonSharingUpdateItemDto>,
+)
+
+@Serializable
+data class UpdateButtonSharingResponseDto(
+    val teamId: Long,
+    val userId: Long,
+    val buttons: List<TeamProfileButtonItemDto> = emptyList(),
+)
+
+@Serializable
+data class MemberRecordButtonItemDto(
+    val buttonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+)
+
+@Serializable
+data class MemberRecordTimelineItemDto(
+    val recordId: Long,
+    val buttonName: String? = null,
+    val recordedAt: String? = null,
+    val memo: String? = null,
+    val emoji: String? = null,
+)
+
+@Serializable
+data class MemberRecordsResponseDto(
+    val userId: Long,
+    val displayName: String? = null,
+    val profileImageUrl: String? = null,
+    val hasMore: Boolean = false,
+    val nextCursor: Long? = null,
+    val buttons: List<MemberRecordButtonItemDto> = emptyList(),
+    val recentTimeline: List<MemberRecordTimelineItemDto> = emptyList(),
+)

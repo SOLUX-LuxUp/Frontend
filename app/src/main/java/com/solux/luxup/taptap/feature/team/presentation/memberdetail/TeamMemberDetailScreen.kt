@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.feature.team.data.MockSharedButtons
 import com.solux.luxup.taptap.feature.team.data.MockTeamMemberDetail
 import com.solux.luxup.taptap.feature.team.model.TeamMemberDetail
@@ -21,13 +23,47 @@ import com.solux.luxup.taptap.feature.team.presentation.memberdetail.components.
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.components.MemberSharedButtonList
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.components.MemberTimelineList
 
+/**
+ * 멤버 상세 진입점. ViewModel을 붙인다.
+ * @param key hiltViewModel 캐시 키 — targetUserId가 바뀔 때마다 새 인스턴스를 받기 위해 호출부에서 넘긴다
+ */
+@Composable
+fun TeamMemberDetailRoute(
+    teamId: Long,
+    targetUserId: Long,
+    currentUserId: Long,
+    key: String,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: TeamMemberDetailViewModel = hiltViewModel<TeamMemberDetailViewModel, TeamMemberDetailViewModel.Factory>(
+        key = key,
+        creationCallback = { factory -> factory.create(teamId, targetUserId, currentUserId) },
+    )
+
+    val detail = viewModel.detail
+    if (detail != null) {
+        TeamMemberDetailScreen(
+            detail = detail,
+            isMe = viewModel.isMe,
+            sharedButtons = viewModel.sharedButtons,
+            onSaveName = viewModel::saveName,
+            onSaveSharedButtons = viewModel::saveSharedButtons,
+            modifier = modifier,
+        )
+    }
+
+    viewModel.errorMessage?.let { message ->
+        NoticeDialog(message = message, onDismiss = viewModel::consumeError)
+    }
+}
+
 @Composable
 fun TeamMemberDetailScreen(
     detail: TeamMemberDetail = MockTeamMemberDetail,
     isMe: Boolean = false,                                              // targetUserId == currentUserId
     sharedButtons: List<TeamMemberSharedButton> = MockSharedButtons,   // 내 프로필 공유 버튼 (8.2.4)
-    onEditName: () -> Unit = {},
-    onShareSettingsClick: () -> Unit = {},                             // ⚙️ → 공유 설정 모달
+    onSaveName: (String) -> Unit = {},
+    onSaveSharedButtons: (List<TeamMemberSharedButton>) -> Unit = {},   // 공유 설정 모달 저장 (8.2.1)
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -43,7 +79,7 @@ fun TeamMemberDetailScreen(
         MemberProfileHeader(
             detail = detail,
             editable = isMe,
-            onSaveName = { newName -> /* TODO: 8.2.4 PATCH */ }   // onEditName → onSaveName
+            onSaveName = onSaveName
         )
 
         // 최근 기록 섹션
@@ -54,6 +90,7 @@ fun TeamMemberDetailScreen(
             // 내 프로필: 공유 중인 버튼 (⚙️로 설정 모달)
             MemberSharedButtonList(
                 buttons = sharedButtons,
+                onSave = onSaveSharedButtons,
             )
         } else {
             // 남 프로필: 버튼 목록
