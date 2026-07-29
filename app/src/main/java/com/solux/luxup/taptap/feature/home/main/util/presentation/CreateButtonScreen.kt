@@ -59,6 +59,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
 import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
 import com.solux.luxup.taptap.core.util.category.CategorySelectDropdown
@@ -78,31 +80,50 @@ fun CreateButtonScreen(
     onCreateCategory: (name: String) -> Unit = {},
     onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
     onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
+    onReorderCategories: (categoryIds: List<Long>) -> Unit = {},
     errorMessage: String? = null,
     onErrorConsumed: () -> Unit = {},
-    selectedIconRes: Int? = null,
-    selectedIconTint: Color? = null,
+    selectedIconName: String? = null,
+    selectedIconColor: IconColor? = null,
+    initialName: String = "",
+    initialCategoryName: String? = null,
+    initialHasDeadline: Boolean = false,
+    initialDeadlineMillis: Long? = null,
+    initialIsEditMode: Boolean = false,
     onNavigateBack: () -> Unit = {},
-    onSave: (name: String, category: String?, deadlineMillis: Long?) -> Unit = { _, _, _ -> },
+    onSave: (
+        name: String,
+        category: String?,
+        iconName: String?,
+        iconColor: String?,
+        deadlineMillis: Long?,
+        onComplete: () -> Unit,
+    ) -> Unit = { _, _, _, _, _, onComplete -> onComplete() },
     onNavigateToAlarmSettings: () -> Unit = {},
     onNavigateToIconSelect: () -> Unit = {}
 ) {
-    var name by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var name by remember { mutableStateOf(initialName) }
+    var selectedCategory by remember { mutableStateOf(initialCategoryName) }
     var showCategoryEditDialog by remember { mutableStateOf(false) }
     var categoryPendingDelete by remember { mutableStateOf<String?>(null) }
 
-    var hasDeadline by remember { mutableStateOf(false) }
-    var deadlineMillis by remember { mutableStateOf<Long?>(null) }
+    var hasDeadline by remember { mutableStateOf(initialHasDeadline) }
+    var deadlineMillis by remember { mutableStateOf(initialDeadlineMillis) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showRegisterReminderDialog by remember { mutableStateOf(false) }
-    var isEditMode by remember { mutableStateOf(false) }
+    // 기존 버튼을 수정하러 들어온 경우(initialIsEditMode)엔 저장 시 "알림을 등록할까요?" 팝업 없이 바로 저장한다 —
+    // 그 팝업은 새로 만든 버튼에 알림을 처음 걸지 물어보는 온보딩성 흐름이라 수정 진입에는 맞지 않는다.
+    var isEditMode by remember { mutableStateOf(initialIsEditMode) }
+
+    val selectedIconRes = selectedIconName?.let { ButtonIcons.resOf(it) }
+    val selectedIconTint = selectedIconColor?.color
 
     val isSaveEnabled = name.isNotBlank() && selectedCategory != null && hasDeadline && deadlineMillis != null
 
     fun completeSave() {
-        onSave(name.trim(), selectedCategory, if (hasDeadline) deadlineMillis else null)
-        onNavigateBack()
+        onSave(name.trim(), selectedCategory, selectedIconName, selectedIconColor?.key, if (hasDeadline) deadlineMillis else null) {
+            onNavigateBack()
+        }
     }
 
     Column(
@@ -140,7 +161,7 @@ fun CreateButtonScreen(
                         brush = Brush.linearGradient(listOf(BlueGradientStart, BlueGradientEnd))
                     )
                     .clickable(enabled = isSaveEnabled) {
-                        showRegisterReminderDialog = true
+                        if (initialIsEditMode) completeSave() else showRegisterReminderDialog = true
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -295,8 +316,14 @@ fun CreateButtonScreen(
                 onCreate = onCreateCategory,
                 onRename = { oldName, newName ->
                     categories.find { it.name == oldName }?.let { onRenameCategory(it.id, newName) }
+                    if (selectedCategory == oldName) {
+                        selectedCategory = newName
+                    }
                 },
-                onRequestDelete = { category -> categoryPendingDelete = category }
+                onRequestDelete = { category -> categoryPendingDelete = category },
+                onReorder = { newOrder ->
+                    onReorderCategories(newOrder.mapNotNull { name -> categories.find { it.name == name }?.id })
+                }
             )
         }
     }
@@ -357,8 +384,9 @@ fun CreateButtonScreen(
                 },
                 onConfirm = {
                     showRegisterReminderDialog = false
-                    onSave(name.trim(), selectedCategory, if (hasDeadline) deadlineMillis else null)
-                    isEditMode = true
+                    onSave(name.trim(), selectedCategory, selectedIconName, selectedIconColor?.key, if (hasDeadline) deadlineMillis else null) {
+                        isEditMode = true
+                    }
                 }
             )
         }

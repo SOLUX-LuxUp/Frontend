@@ -37,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.theme.ButtonIconItem
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.util.loadButtonIconResIds
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
@@ -46,13 +48,20 @@ import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 @Composable
 fun IconSelectScreen(
     onNavigateBack: () -> Unit = {},
-    onConfirm: (iconRes: Int, tint: Color) -> Unit = { _, _ -> }
+    onConfirm: (iconName: String, iconColor: IconColor) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
-    val iconResIds = remember { loadButtonIconResIds(context) }
-    var selectedIconRes by remember { mutableStateOf(iconResIds.firstOrNull()) }
-    val paletteColors = remember { IconColor.palette.map { it.color } }
-    var selectedColor by remember { mutableStateOf(paletteColors.first()) }
+    // 화면에 쓰는 bt_* 아트에셋과 서버 계약(ButtonIcons)의 iconName이 이름 기준으로 겹치는 것만 노출한다.
+    val iconItems = remember {
+        val contractNames = ButtonIcons.all.associateBy { it.iconName }
+        loadButtonIconResIds(context).mapNotNull { resId ->
+            val entryName = runCatching { context.resources.getResourceEntryName(resId) }.getOrNull()
+                ?.removePrefix("bt_")
+            entryName?.let { contractNames[it] }?.let { ButtonIconItem(it.iconName, resId) }
+        }
+    }
+    var selectedIcon by remember { mutableStateOf(iconItems.firstOrNull()) }
+    var selectedIconColor by remember { mutableStateOf(IconColor.palette.first()) }
 
     Column(
         modifier = Modifier
@@ -88,8 +97,8 @@ fun IconSelectScreen(
                     .size(30.dp)
                     .clip(CircleShape)
                     .background(Brush.linearGradient(listOf(BlueGradientStart, BlueGradientEnd)))
-                    .clickable(enabled = selectedIconRes != null) {
-                        selectedIconRes?.let { onConfirm(it, selectedColor) }
+                    .clickable(enabled = selectedIcon != null) {
+                        selectedIcon?.let { onConfirm(it.iconName, selectedIconColor) }
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -110,30 +119,30 @@ fun IconSelectScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 40.dp)
         ) {
-            iconResIds.chunked(4).forEach { row ->
+            iconItems.chunked(4).forEach { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    row.forEach { iconRes ->
-                        val isSelected = selectedIconRes == iconRes
+                    row.forEach { item ->
+                        val isSelected = selectedIcon == item
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
-                                .background(if (isSelected) selectedColor.copy(alpha = 0.25f) else Color.Transparent)
+                                .background(if (isSelected) selectedIconColor.color.copy(alpha = 0.25f) else Color.Transparent)
                                 .border(
                                     width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) selectedColor else Color(0xFFE2E2E2),
+                                    color = if (isSelected) selectedIconColor.color else Color(0xFFE2E2E2),
                                     shape = CircleShape
                                 )
-                                .clickable { selectedIconRes = iconRes },
+                                .clickable { selectedIcon = item },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                painter = painterResource(iconRes),
+                                painter = painterResource(item.resId),
                                 contentDescription = null,
-                                tint = if (isSelected) selectedColor else Color(0xFF4A4A4A),
+                                tint = if (isSelected) selectedIconColor.color else Color(0xFF4A4A4A),
                                 modifier = Modifier.size(30.dp)
                             )
                         }
@@ -163,13 +172,13 @@ fun IconSelectScreen(
             Text("색상", fontSize = 14.sp, color = Color(0xFF6D6D6D))
             Spacer(Modifier.height(12.dp))
 
-            paletteColors.chunked(6).forEach { row ->
+            IconColor.palette.chunked(6).forEach { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     row.forEach { color ->
-                        val isSelected = selectedColor == color
+                        val isSelected = selectedIconColor == color
                         Box(
                             modifier = Modifier
                                 .size(50.dp)
@@ -179,14 +188,14 @@ fun IconSelectScreen(
                                     color = if (isSelected) Color(0xFFE2E2E2) else Color.Transparent,
                                     shape = CircleShape
                                 )
-                                .clickable { selectedColor = color },
+                                .clickable { selectedIconColor = color },
                             contentAlignment = Alignment.Center
                         ) {
                             Box(
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(CircleShape)
-                                    .background(color)
+                                    .background(color.color)
                             )
                         }
                     }

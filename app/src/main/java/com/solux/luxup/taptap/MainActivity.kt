@@ -4,7 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,8 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -22,6 +25,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavController
 import com.solux.luxup.taptap.core.auth.TokenManager
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountInfoScreen
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountSettingsScreen
 import com.solux.luxup.taptap.feature.auth.account.presentation.ChangePasswordScreen
@@ -157,11 +161,21 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    composable("mainHome") {
+                    composable("mainHome") { backStackEntry ->
                         val mainHomeViewModel = hiltViewModel<
                             MainHomeViewModel,
                             MainHomeViewModel.Factory,
                             >(creationCallback = { factory -> factory.create(null) })
+                        // 버튼 생성 화면을 다녀왔을 때(back navigation) 새로 만든 버튼이 보이도록 새로고침한다.
+                        DisposableEffect(backStackEntry) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) {
+                                    mainHomeViewModel.refreshButtons()
+                                }
+                            }
+                            backStackEntry.lifecycle.addObserver(observer)
+                            onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+                        }
                         MainHomeScreen(
                             user = mainHomeViewModel.homeUser,
                             recentRecord = mainHomeViewModel.recentRecord,
@@ -173,12 +187,17 @@ class MainActivity : ComponentActivity() {
                             onCreateCategory = mainHomeViewModel::createCategory,
                             onRenameCategory = mainHomeViewModel::renameCategory,
                             onDeleteCategory = mainHomeViewModel::deleteCategory,
+                            onReorderCategories = mainHomeViewModel::reorderCategories,
                             errorMessage = mainHomeViewModel.errorMessage,
                             onErrorConsumed = mainHomeViewModel::consumeError,
                             onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
                             },
+                            onNavigateToEditButton = { button ->
+                                navController.navigate("editButton/${button.buttonId}")
+                            },
+                            onDeleteButton = mainHomeViewModel::deleteButton,
                             onNavigateToButtonDetail = {
                                 // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
                                 navController.navigate("buttonDetail")
@@ -198,6 +217,15 @@ class MainActivity : ComponentActivity() {
                             MainHomeViewModel,
                             MainHomeViewModel.Factory,
                             >(creationCallback = { factory -> factory.create(templateId) })
+                        DisposableEffect(backStackEntry) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) {
+                                    mainHomeViewModel.refreshButtons()
+                                }
+                            }
+                            backStackEntry.lifecycle.addObserver(observer)
+                            onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+                        }
                         MainHomeScreen(
                             user = mainHomeViewModel.homeUser,
                             recentRecord = mainHomeViewModel.recentRecord,
@@ -208,12 +236,17 @@ class MainActivity : ComponentActivity() {
                             onCreateCategory = mainHomeViewModel::createCategory,
                             onRenameCategory = mainHomeViewModel::renameCategory,
                             onDeleteCategory = mainHomeViewModel::deleteCategory,
+                            onReorderCategories = mainHomeViewModel::reorderCategories,
                             errorMessage = mainHomeViewModel.errorMessage,
                             onErrorConsumed = mainHomeViewModel::consumeError,
                             onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
                             },
+                            onNavigateToEditButton = { button ->
+                                navController.navigate("editButton/${button.buttonId}")
+                            },
+                            onDeleteButton = mainHomeViewModel::deleteButton,
                             onNavigateToButtonDetail = {
                                 // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
                                 navController.navigate("buttonDetail")
@@ -402,42 +435,112 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("createButton") { backStackEntry ->
-                        val selectedIconRes by backStackEntry.savedStateHandle
-                            .getStateFlow<Int?>("selectedIconRes", null)
+                        val selectedIconName by backStackEntry.savedStateHandle
+                            .getStateFlow<String?>("selectedIconName", null)
                             .collectAsState()
-                        val selectedIconTintArgb by backStackEntry.savedStateHandle
-                            .getStateFlow<Int?>("selectedIconTint", null)
+                        val selectedIconColorKey by backStackEntry.savedStateHandle
+                            .getStateFlow<String?>("selectedIconColorKey", null)
                             .collectAsState()
-                        val createButtonViewModel: CreateButtonViewModel = hiltViewModel()
+                        val createButtonViewModel = hiltViewModel<
+                            CreateButtonViewModel,
+                            CreateButtonViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(null) })
                         CreateButtonScreen(
                             categories = createButtonViewModel.categories,
                             onCreateCategory = createButtonViewModel::createCategory,
                             onRenameCategory = createButtonViewModel::renameCategory,
                             onDeleteCategory = createButtonViewModel::deleteCategory,
+                            onReorderCategories = createButtonViewModel::reorderCategories,
                             errorMessage = createButtonViewModel.errorMessage,
                             onErrorConsumed = createButtonViewModel::consumeError,
-                            selectedIconRes = selectedIconRes,
-                            selectedIconTint = selectedIconTintArgb?.let { Color(it) },
+                            selectedIconName = selectedIconName,
+                            selectedIconColor = selectedIconColorKey?.let { IconColor.from(it) },
                             onNavigateBack = {
                                 navController.popBackStack()
+                            },
+                            onSave = { name, categoryName, iconName, iconColor, deadlineMillis, onComplete ->
+                                createButtonViewModel.save(
+                                    name = name,
+                                    categoryName = categoryName,
+                                    iconName = iconName,
+                                    iconColor = iconColor,
+                                    deadlineMillis = deadlineMillis,
+                                    onSuccess = onComplete,
+                                )
                             },
                             onNavigateToIconSelect = {
                                 navController.navigate("iconSelect")
                             }
                         )
                     }
+                    composable(
+                        "editButton/{buttonId}",
+                        arguments = listOf(navArgument("buttonId") { type = NavType.LongType })
+                    ) { backStackEntry ->
+                        val buttonId = backStackEntry.arguments?.getLong("buttonId") ?: 0L
+                        val selectedIconName by backStackEntry.savedStateHandle
+                            .getStateFlow<String?>("selectedIconName", null)
+                            .collectAsState()
+                        val selectedIconColorKey by backStackEntry.savedStateHandle
+                            .getStateFlow<String?>("selectedIconColorKey", null)
+                            .collectAsState()
+                        val editButtonViewModel = hiltViewModel<
+                            CreateButtonViewModel,
+                            CreateButtonViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(buttonId) })
+
+                        if (editButtonViewModel.isLoadingInitial) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            CreateButtonScreen(
+                                categories = editButtonViewModel.categories,
+                                onCreateCategory = editButtonViewModel::createCategory,
+                                onRenameCategory = editButtonViewModel::renameCategory,
+                                onDeleteCategory = editButtonViewModel::deleteCategory,
+                                onReorderCategories = editButtonViewModel::reorderCategories,
+                                errorMessage = editButtonViewModel.errorMessage,
+                                onErrorConsumed = editButtonViewModel::consumeError,
+                                selectedIconName = selectedIconName ?: editButtonViewModel.initialIconName,
+                                selectedIconColor = selectedIconColorKey?.let { IconColor.from(it) }
+                                    ?: editButtonViewModel.initialIconColor,
+                                initialName = editButtonViewModel.initialName,
+                                initialCategoryName = editButtonViewModel.initialCategoryName,
+                                initialHasDeadline = editButtonViewModel.initialDeadlineMillis != null,
+                                initialDeadlineMillis = editButtonViewModel.initialDeadlineMillis,
+                                initialIsEditMode = true,
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                },
+                                onSave = { name, categoryName, iconName, iconColor, deadlineMillis, onComplete ->
+                                    editButtonViewModel.save(
+                                        name = name,
+                                        categoryName = categoryName,
+                                        iconName = iconName,
+                                        iconColor = iconColor,
+                                        deadlineMillis = deadlineMillis,
+                                        onSuccess = onComplete,
+                                    )
+                                },
+                                onNavigateToIconSelect = {
+                                    navController.navigate("iconSelect")
+                                }
+                            )
+                        }
+                    }
                     composable("iconSelect") {
                         IconSelectScreen(
                             onNavigateBack = {
                                 navController.popBackStack()
                             },
-                            onConfirm = { iconRes, tint ->
+                            onConfirm = { iconName, iconColor ->
                                 navController.previousBackStackEntry
                                     ?.savedStateHandle
-                                    ?.set("selectedIconRes", iconRes)
+                                    ?.set("selectedIconName", iconName)
                                 navController.previousBackStackEntry
                                     ?.savedStateHandle
-                                    ?.set("selectedIconTint", tint.toArgb())
+                                    ?.set("selectedIconColorKey", iconColor.key)
                                 navController.popBackStack()
                             }
                         )

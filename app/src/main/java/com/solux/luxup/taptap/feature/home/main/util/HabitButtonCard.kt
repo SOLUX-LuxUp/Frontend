@@ -216,7 +216,11 @@ fun HabitButtonCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "${formatElapsedText(button.lastRecordedAt)} 기록 · ${formatRecordedAtText(button.lastRecordedAt)}",
+                        if (button.lastRecordedAt.isBlank()) {
+                            "기록"
+                        } else {
+                            "${formatElapsedText(button.lastRecordedAt)} 기록 · ${formatRecordedAtText(button.lastRecordedAt)}"
+                        },
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White

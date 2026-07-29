@@ -18,6 +18,23 @@ interface ButtonApi {
     @GET("api/buttons")
     suspend fun getButtons(): Response<BaseResponse<ButtonListResponseDto>>
 
+    @POST("api/buttons")
+    suspend fun createButton(@Body request: CreateButtonRequestDto): Response<BaseResponse<ButtonResponseDto>>
+
+    @PATCH("api/buttons/{button_id}")
+    suspend fun updateButton(
+        @Path("button_id") buttonId: Long,
+        @Body request: UpdateButtonRequestDto,
+    ): Response<BaseResponse<UpdateButtonResponseDto>>
+
+    @DELETE("api/buttons/{button_id}")
+    suspend fun deleteButton(@Path("button_id") buttonId: Long): Response<BaseResponse<JsonElement>>
+
+    @PATCH("api/buttons/category-order")
+    suspend fun updateCategoryOrder(
+        @Body request: CategoryOrderRequestDto,
+    ): Response<BaseResponse<List<CategoryOrderItemDto>>>
+
     // ---- button-category-controller ----
 
     @GET("api/buttons/categories")
