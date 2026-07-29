@@ -74,9 +74,7 @@ import com.solux.luxup.taptap.feature.team.presentation.create.TeamCreateRoute
 import com.solux.luxup.taptap.feature.team.presentation.create.teamCreateGraph
 import com.solux.luxup.taptap.feature.team.presentation.setting.TeamSettingRoute
 import com.solux.luxup.taptap.feature.team.presentation.setting.teamSettingGraph
-import com.solux.luxup.taptap.feature.team.data.MockTeamInsightDaily
-import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
-import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
+import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightViewModel
 import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllRoute
 import com.solux.luxup.taptap.feature.team.presentation.insight.buttonall.TeamInsightButtonAllScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -665,12 +663,22 @@ class MainActivity : ComponentActivity() {
                         val teamId = backStackEntry.arguments?.getLong(TeamInsightButtonAllRoute.ARG_TEAM_ID) ?: 0L
                         val period = backStackEntry.arguments?.getString(TeamInsightButtonAllRoute.ARG_PERIOD) ?: "DAILY"
 
-                        // period로 어느 Mock 쓸지 결정
-                        val memberActivity = when (period) {
-                            "WEEKLY" -> MockTeamInsightWeekly.memberActivity
-                            "MONTHLY" -> MockTeamInsightMonthly.memberActivity
-                            else -> MockTeamInsightDaily.memberActivity
+                        // 인사이트 탭에서 이미 조회해둔 값을 그대로 쓴다 (같은 teamDetail 백스택 엔트리에 스코프된 ViewModel 공유)
+                        val teamDetailEntry = remember(backStackEntry) {
+                            navController.getBackStackEntry("teamDetail/{teamId}?fromCreation={fromCreation}")
                         }
+                        val insightViewModel = hiltViewModel<
+                            TeamInsightViewModel,
+                            TeamInsightViewModel.Factory,
+                            >(
+                            viewModelStoreOwner = teamDetailEntry,
+                            creationCallback = { factory -> factory.create(teamId) },
+                        )
+                        val memberActivity = when (period) {
+                            "WEEKLY" -> insightViewModel.weekly?.memberActivity
+                            "MONTHLY" -> insightViewModel.monthly?.memberActivity
+                            else -> insightViewModel.daily?.memberActivity
+                        }.orEmpty()
 
                         TeamInsightButtonAllScreen(
                             teamName = "LUX-UP",              // TODO: 실제 팀명 조회로 교체 (지금은 Mock)

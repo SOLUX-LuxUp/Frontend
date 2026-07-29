@@ -51,14 +51,14 @@ data class TeamInsightCategory(
     val tapCount: Int
 )
 
-/** ④ 버튼 축 — 기록 비율 (daily·weekly 공용 타입) */
+/** ④ 버튼 축 — 기록 비율 (daily·weekly 공용 타입). 카테고리 미지정 버튼은 null. */
 data class TeamInsightButtonCount(
     val teamButtonId: Long,
     val buttonName: String,
     val iconName: String,
     val iconColor: String,
-    val categoryId: Long,
-    val categoryName: String,
+    val categoryId: Long?,
+    val categoryName: String?,
     val tapCount: Int
 )
 

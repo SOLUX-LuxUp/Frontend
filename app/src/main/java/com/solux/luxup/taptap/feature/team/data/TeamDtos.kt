@@ -540,3 +540,120 @@ data class MemberRecordsResponseDto(
     val buttons: List<MemberRecordButtonItemDto> = emptyList(),
     val recentTimeline: List<MemberRecordTimelineItemDto> = emptyList(),
 )
+
+// ---- team-insight-controller ----
+
+@Serializable
+data class InsightTopButtonDto(
+    val teamButtonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val tapCount: Long = 0,
+    val tappedMembers: List<MemberProfileDto> = emptyList(),
+)
+
+@Serializable
+data class InsightCategoryTapCountDto(
+    val categoryId: Long,
+    val categoryName: String? = null,
+    val categoryColor: String? = null,
+    val tapCount: Long = 0,
+)
+
+@Serializable
+data class InsightButtonTapCountDto(
+    val teamButtonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val categoryId: Long? = null,
+    val categoryName: String? = null,
+    val tapCount: Long = 0,
+)
+
+@Serializable
+data class InsightMemberTopButtonDto(
+    val teamButtonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val tapCount: Long = 0,
+)
+
+@Serializable
+data class InsightMemberActivityDto(
+    val userId: Long,
+    val displayName: String? = null,
+    val profileImageUrl: String? = null,
+    val tapCount: Long = 0,
+    val topButton: InsightMemberTopButtonDto? = null,
+)
+
+@Serializable
+data class InsightTimelineItemDto(
+    val teamButtonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+    val tappedAt: String? = null,
+    val member: MemberProfileDto,
+)
+
+@Serializable
+data class WeeklyDailyTapCountDto(
+    val date: String,
+    val tapCount: Long = 0,
+    val categories: List<InsightCategoryTapCountDto> = emptyList(),
+)
+
+@Serializable
+data class MonthlyDailyTapCountDto(
+    val date: String,
+    val tapCount: Long = 0,
+)
+
+@Serializable
+data class MonthlyCategoryTapCountDto(
+    val categoryId: Long,
+    val categoryName: String? = null,
+    val categoryColor: String? = null,
+    val tapCount: Long = 0,
+    val ratio: Double = 0.0,
+)
+
+@Serializable
+data class DailyInsightResponseDto(
+    val teamId: Long,
+    val targetDate: String,
+    val totalTapCount: Long = 0,
+    val topButton: InsightTopButtonDto? = null,
+    val timeline: List<InsightTimelineItemDto> = emptyList(),
+    val categories: List<InsightCategoryTapCountDto> = emptyList(),
+    val buttonTapCounts: List<InsightButtonTapCountDto> = emptyList(),
+    val memberActivity: List<InsightMemberActivityDto> = emptyList(),
+)
+
+@Serializable
+data class WeeklyInsightResponseDto(
+    val teamId: Long,
+    val weekStart: String,
+    val weekEnd: String,
+    val totalTapCount: Long = 0,
+    val topButton: InsightTopButtonDto? = null,
+    val dailyTapCounts: List<WeeklyDailyTapCountDto> = emptyList(),
+    val buttonTapCounts: List<InsightButtonTapCountDto> = emptyList(),
+    val memberActivity: List<InsightMemberActivityDto> = emptyList(),
+)
+
+@Serializable
+data class MonthlyInsightResponseDto(
+    val teamId: Long,
+    val year: Int,
+    val month: Int,
+    val totalTapCount: Long = 0,
+    val topButton: InsightTopButtonDto? = null,
+    val dailyTapCounts: List<MonthlyDailyTapCountDto> = emptyList(),
+    val categoryTapCounts: List<MonthlyCategoryTapCountDto> = emptyList(),
+    val memberActivity: List<InsightMemberActivityDto> = emptyList(),
+)

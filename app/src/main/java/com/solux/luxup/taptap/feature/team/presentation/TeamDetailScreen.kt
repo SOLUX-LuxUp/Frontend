@@ -42,7 +42,7 @@ import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost
-import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightScreen
+import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightRoute
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailRoute
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
@@ -126,7 +126,8 @@ fun TeamDetailScreen(
                     isQuickCreateMode = quickCreateMode,
                     onCloseQuickCreate = { quickCreateMode = false },
                 )
-                TeamDetailTab.INSIGHT  -> TeamInsightScreen(
+                TeamDetailTab.INSIGHT  -> TeamInsightRoute(
+                    teamId = teamId,
                     currentUserId = currentUserId,
                     onNavigateToButtonAll = { period ->
                         onNavigateToInsightButtonAll(teamId, period.name)   // 위로 전달

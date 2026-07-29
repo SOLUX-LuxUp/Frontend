@@ -27,6 +27,20 @@ import com.solux.luxup.taptap.feature.team.model.TeamMemberRecord
 import com.solux.luxup.taptap.feature.team.model.TeamMemberRole
 import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 import com.solux.luxup.taptap.feature.team.model.TeamButtonPermissionRequest
+import com.solux.luxup.taptap.feature.team.model.TeamInsightBarCategory
+import com.solux.luxup.taptap.feature.team.model.TeamInsightButtonCount
+import com.solux.luxup.taptap.feature.team.model.TeamInsightCalendarDay
+import com.solux.luxup.taptap.feature.team.model.TeamInsightCategory
+import com.solux.luxup.taptap.feature.team.model.TeamInsightCategoryCount
+import com.solux.luxup.taptap.feature.team.model.TeamInsightDaily
+import com.solux.luxup.taptap.feature.team.model.TeamInsightDailyBar
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMember
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMemberActivity
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMemberTopButton
+import com.solux.luxup.taptap.feature.team.model.TeamInsightMonthly
+import com.solux.luxup.taptap.feature.team.model.TeamInsightTimelineItem
+import com.solux.luxup.taptap.feature.team.model.TeamInsightTopButton
+import com.solux.luxup.taptap.feature.team.model.TeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamTemplate
 import com.solux.luxup.taptap.feature.team.model.TeamTemplateStatus
@@ -214,6 +228,17 @@ class TeamRepository @Inject constructor(
 
     suspend fun getMemberRecords(teamId: Long, userId: Long, cursor: Long? = null, limit: Int? = null): Result<TeamMemberDetail> =
         apiCallHandler.execute { teamApi.getMemberRecords(teamId, userId, cursor, limit) }.mapCatching { it.toModel() }
+
+    // ---- team-insight-controller ----
+
+    suspend fun getDailyInsight(teamId: Long, date: String? = null): Result<TeamInsightDaily> =
+        apiCallHandler.execute { teamApi.getDailyInsight(teamId, date) }.mapCatching { it.toModel() }
+
+    suspend fun getWeeklyInsight(teamId: Long, weekStart: String? = null): Result<TeamInsightWeekly> =
+        apiCallHandler.execute { teamApi.getWeeklyInsight(teamId, weekStart) }.mapCatching { it.toModel() }
+
+    suspend fun getMonthlyInsight(teamId: Long, year: Int? = null, month: Int? = null): Result<TeamInsightMonthly> =
+        apiCallHandler.execute { teamApi.getMonthlyInsight(teamId, year, month) }.mapCatching { it.toModel() }
 }
 
 private const val TapPermissionAll = "all"
@@ -459,4 +484,120 @@ private fun MemberRecordsResponseDto.toModel() = TeamMemberDetail(
     nextCursor = nextCursor,
     buttons = buttons.map { it.toModel() },
     recentTimeline = recentTimeline.map { it.toModel() },
+)
+
+private fun MemberProfileDto.toInsightMember() = TeamInsightMember(
+    userId = userId,
+    displayName = displayName.orEmpty(),
+    profileImageUrl = profileImageUrl,
+)
+
+private fun InsightTopButtonDto.toModel() = TeamInsightTopButton(
+    teamButtonId = teamButtonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    tapCount = tapCount.toInt(),
+    tappedMembers = tappedMembers.map { it.toInsightMember() },
+)
+
+private fun InsightCategoryTapCountDto.toModel() = TeamInsightCategory(
+    categoryId = categoryId,
+    categoryName = categoryName.orEmpty(),
+    categoryColor = categoryColor.orEmpty(),
+    tapCount = tapCount.toInt(),
+)
+
+private fun InsightCategoryTapCountDto.toBarCategory() = TeamInsightBarCategory(
+    categoryId = categoryId,
+    categoryName = categoryName.orEmpty(),
+    categoryColor = categoryColor.orEmpty(),
+    tapCount = tapCount.toInt(),
+)
+
+private fun InsightButtonTapCountDto.toModel() = TeamInsightButtonCount(
+    teamButtonId = teamButtonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    categoryId = categoryId,
+    categoryName = categoryName,
+    tapCount = tapCount.toInt(),
+)
+
+private fun InsightMemberTopButtonDto.toModel() = TeamInsightMemberTopButton(
+    teamButtonId = teamButtonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    tapCount = tapCount.toInt(),
+)
+
+private fun InsightMemberActivityDto.toModel() = TeamInsightMemberActivity(
+    userId = userId,
+    displayName = displayName.orEmpty(),
+    profileImageUrl = profileImageUrl,
+    tapCount = tapCount.toInt(),
+    topButton = topButton?.toModel(),
+)
+
+private fun InsightTimelineItemDto.toModel() = TeamInsightTimelineItem(
+    teamButtonId = teamButtonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName.orEmpty(),
+    iconColor = iconColor.orEmpty(),
+    tappedAt = tappedAt.orEmpty(),
+    member = member.toInsightMember(),
+)
+
+private fun WeeklyDailyTapCountDto.toModel() = TeamInsightDailyBar(
+    date = date,
+    tapCount = tapCount.toInt(),
+    categories = categories.map { it.toBarCategory() },
+)
+
+private fun MonthlyDailyTapCountDto.toModel() = TeamInsightCalendarDay(
+    date = date,
+    tapCount = tapCount.toInt(),
+)
+
+private fun MonthlyCategoryTapCountDto.toModel() = TeamInsightCategoryCount(
+    categoryId = categoryId,
+    categoryName = categoryName.orEmpty(),
+    categoryColor = categoryColor.orEmpty(),
+    tapCount = tapCount.toInt(),
+    ratio = ratio,
+)
+
+private fun DailyInsightResponseDto.toModel() = TeamInsightDaily(
+    teamId = teamId,
+    targetDate = targetDate,
+    totalTapCount = totalTapCount.toInt(),
+    topButton = topButton?.toModel(),
+    timeline = timeline.map { it.toModel() },
+    categories = categories.map { it.toModel() },
+    buttonTapCounts = buttonTapCounts.map { it.toModel() },
+    memberActivity = memberActivity.map { it.toModel() },
+)
+
+private fun WeeklyInsightResponseDto.toModel() = TeamInsightWeekly(
+    teamId = teamId,
+    weekStart = weekStart,
+    weekEnd = weekEnd,
+    totalTapCount = totalTapCount.toInt(),
+    topButton = topButton?.toModel(),
+    dailyTapCounts = dailyTapCounts.map { it.toModel() },
+    buttonTapCounts = buttonTapCounts.map { it.toModel() },
+    memberActivity = memberActivity.map { it.toModel() },
+)
+
+private fun MonthlyInsightResponseDto.toModel() = TeamInsightMonthly(
+    teamId = teamId,
+    year = year,
+    month = month,
+    totalTapCount = totalTapCount.toInt(),
+    topButton = topButton?.toModel(),
+    dailyTapCounts = dailyTapCounts.map { it.toModel() },
+    categoryTapCounts = categoryTapCounts.map { it.toModel() },
+    memberActivity = memberActivity.map { it.toModel() },
 )
