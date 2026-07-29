@@ -140,6 +140,11 @@ fun TeamDetailScreen(
                             TeamMemberListViewModel,
                             TeamMemberListViewModel.Factory,
                             >(creationCallback = { factory -> factory.create(teamId) })
+                        // 멤버 상세(이름 변경 등)를 보고 목록으로 돌아왔을 때도 반영되도록 새로고침.
+                        // 목록 화면은 팀 방문 내내 같은 ViewModel 인스턴스를 쓰므로 init{}만으로는 안 잡힌다.
+                        androidx.compose.runtime.LaunchedEffect(Unit) {
+                            memberListViewModel.refresh()
+                        }
                         TeamMemberScreen(
                             members = memberListViewModel.members,
                             currentUserId = currentUserId,
