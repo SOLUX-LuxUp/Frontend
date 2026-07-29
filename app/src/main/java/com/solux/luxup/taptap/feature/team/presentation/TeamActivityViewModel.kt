@@ -48,6 +48,10 @@ class TeamActivityViewModel @AssistedInject constructor(
     var categories by mutableStateOf<List<TeamButtonCategory>>(emptyList())
         private set
 
+    /** 팀장 여부 — 탭 권한 없음 안내 문구를 팀장/멤버로 갈라 보여주는 데 쓴다 */
+    var isTeamOwner by mutableStateOf(false)
+        private set
+
     var isLoading by mutableStateOf(true)
         private set
 
@@ -78,6 +82,9 @@ class TeamActivityViewModel @AssistedInject constructor(
             teamRepository.getTemplateSuggestions(teamId)
                 .onSuccess { suggestions = it }
                 .onFailure { suggestions = emptyList() }
+
+            teamRepository.getSettings(teamId)
+                .onSuccess { isTeamOwner = it.ownerUserId == currentUserId }
 
             loadCategories()
 

@@ -52,7 +52,9 @@ import com.solux.luxup.taptap.feature.team.presentation.components.TeamFirstButt
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
-private const val NO_TAP_PERMISSION_MESSAGE = "이 버튼을 누를 권한이 없어요.\n버튼 정보에서 권한을 요청해 보세요."
+private const val NO_TAP_PERMISSION_MESSAGE_MEMBER = "이 버튼을 누를 권한이 없어요.\n버튼 정보에서 권한을 요청해 보세요."
+// 팀장은 버튼 수정 권한 정책을 스스로 바꿀 수 있어 "요청"이 아니라 "수정"을 안내한다.
+private const val NO_TAP_PERMISSION_MESSAGE_OWNER = "이 버튼을 누를 권한이 없어요.\n버튼 정보에서 권한을 수정해 보세요."
 
 /**
  * 활동 탭 진입점. ViewModel을 붙이고 토스트를 처리한다.
@@ -93,6 +95,7 @@ fun TeamActivityRoute(
 
     TeamActivityScreen(
         buttons = viewModel.buttons,
+        isTeamOwner = viewModel.isTeamOwner,
         suggestions = viewModel.suggestions,                    // 추가
         onSuggestionClick = viewModel::createFromSuggestion,
         categories = viewModel.categories,
@@ -127,6 +130,7 @@ fun TeamActivityRoute(
 @Composable
 fun TeamActivityScreen(
     buttons: List<TeamButton>,
+    isTeamOwner: Boolean = false,
     suggestions: List<TeamButtonSuggestion> = emptyList(),
     onSuggestionClick: (TeamButtonSuggestion) -> Unit = {},
     categories: List<TeamButtonCategory> = emptyList(),
@@ -198,7 +202,7 @@ fun TeamActivityScreen(
                     buttons = buttons,
                     onButtonClick = { button ->
                         if (button.hasTapPermission) onRecordTap(button)
-                        else localNotice = NO_TAP_PERMISSION_MESSAGE
+                        else localNotice = if (isTeamOwner) NO_TAP_PERMISSION_MESSAGE_OWNER else NO_TAP_PERMISSION_MESSAGE_MEMBER
                     },
                     onButtonLongClick = onNavigateToTimeline,
                     onButtonMenuClick = { menuTarget = it },
