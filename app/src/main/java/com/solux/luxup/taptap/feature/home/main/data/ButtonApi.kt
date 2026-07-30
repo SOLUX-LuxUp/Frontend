@@ -73,4 +73,20 @@ interface ButtonApi {
 
     @GET("api/records/recent")
     suspend fun getRecentRecord(): Response<BaseResponse<RecordRecentResponseDto>>
+
+    @POST("api/buttons/{button_id}/records")
+    suspend fun createRecord(
+        @Path("button_id") buttonId: Long,
+    ): Response<BaseResponse<RecordCreateResponseDto>>
+
+    @DELETE("api/buttons/{button_id}/records/{record_id}/cancel")
+    suspend fun cancelRecord(
+        @Path("button_id") buttonId: Long,
+        @Path("record_id") recordId: Long,
+    ): Response<BaseResponse<JsonElement>>
+
+    @GET("api/buttons/{button_id}/records/latest")
+    suspend fun getLatestRecord(
+        @Path("button_id") buttonId: Long,
+    ): Response<BaseResponse<RecordLatestResponseDto>>
 }

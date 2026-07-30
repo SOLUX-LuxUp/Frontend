@@ -61,6 +61,7 @@ import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.feature.home.main.model.HabitButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
+import java.time.LocalDateTime
 
 private val HabitCardCornerRadius = 15.dp
 private val HabitBadgeSize = 60.dp
@@ -123,7 +124,8 @@ fun HabitButtonGrid(
     onEditRecord: (button: HabitButton) -> Unit = {},
     onDeleteRecord: (button: HabitButton) -> Unit = {},
     onQuickRecord: (button: HabitButton) -> Unit = {},
-    onOpenDetail: (button: HabitButton) -> Unit = {}
+    onOpenDetail: (button: HabitButton) -> Unit = {},
+    now: LocalDateTime = nowInServiceZone(),
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         buttons.chunked(2).forEach { rowButtons ->
@@ -136,7 +138,8 @@ fun HabitButtonGrid(
                         onEditRecord = { onEditRecord(button) },
                         onDeleteRecord = { onDeleteRecord(button) },
                         onQuickRecord = { onQuickRecord(button) },
-                        onOpenDetail = { onOpenDetail(button) }
+                        onOpenDetail = { onOpenDetail(button) },
+                        now = now,
                     )
                 }
                 if (rowButtons.size == 1) {
@@ -157,7 +160,8 @@ fun HabitButtonCard(
     onEditRecord: () -> Unit = {},
     onDeleteRecord: () -> Unit = {},
     onQuickRecord: () -> Unit = {},
-    onOpenDetail: () -> Unit = {}
+    onOpenDetail: () -> Unit = {},
+    now: LocalDateTime = nowInServiceZone(),
 ) {
     var showMoreMenu by remember { mutableStateOf(false) }
     val cardShape = remember {
@@ -221,7 +225,7 @@ fun HabitButtonCard(
                         if (button.lastRecordedAt.isBlank()) {
                             "기록"
                         } else {
-                            "${formatElapsedText(button.lastRecordedAt)} 기록 · ${formatRecordedAtText(button.lastRecordedAt)}"
+                            "${formatElapsedText(button.lastRecordedAt, now)} 기록 · ${formatRecordedAtText(button.lastRecordedAt)}"
                         },
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,

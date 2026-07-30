@@ -122,6 +122,30 @@ class ButtonRepository @Inject constructor(
         }
     }
 
+    /** POST /api/buttons/{button_id}/records — 습관 버튼을 한 번 탭해 바로 기록을 남긴다 */
+    suspend fun createRecord(buttonId: Long): Result<RecordCreateResponseDto> =
+        apiCallHandler.execute { buttonApi.createRecord(buttonId) }
+
+    /**
+     * DELETE /api/buttons/{button_id}/records/{record_id}/cancel — 기록 완료 팝업(3초 이내)에서 "취소"를 눌렀을 때 호출.
+     * 응답 data가 빈 오브젝트로 내려와 data != null을 요구하는 공통 apiCallHandler를 쓰면
+     * 성공해도 실패로 처리될 수 있어, success 플래그만 직접 확인한다.
+     */
+    suspend fun cancelRecord(buttonId: Long, recordId: Long): Result<Unit> = runCatching {
+        val response = buttonApi.cancelRecord(buttonId, recordId)
+        val body = response.body()
+        if (!response.isSuccessful || body?.success != true) {
+            throw ApiException(body?.message ?: "기록을 취소하지 못했어요.")
+        }
+    }
+
+    /**
+     * GET /api/buttons/{button_id}/records/latest — 기록 생성/취소 직후 버튼 목록 전체를 다시 불러오지 않고,
+     * 방금 건드린 버튼 하나의 "마지막 기록 시간"만 가볍게 갱신할 때 쓴다.
+     */
+    suspend fun getLatestRecord(buttonId: Long): Result<String?> =
+        apiCallHandler.execute { buttonApi.getLatestRecord(buttonId) }.map { it.lastRecordedAt }
+
     /** GET /api/buttons/categories — displayOrder 오름차순으로 정렬되어 내려온다 */
     suspend fun getCategories(): Result<List<Category>> =
         apiCallHandler.execute { buttonApi.getCategories() }

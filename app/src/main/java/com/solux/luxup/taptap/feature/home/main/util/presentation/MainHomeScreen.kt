@@ -1,9 +1,15 @@
 package com.solux.luxup.taptap.feature.home.main.util.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -73,7 +80,9 @@ import com.solux.luxup.taptap.feature.home.main.util.FavoriteEditDialog
 import com.solux.luxup.taptap.feature.home.main.util.HabitButtonGrid
 import com.solux.luxup.taptap.feature.home.main.util.HomeFirstButtonSection
 import com.solux.luxup.taptap.feature.home.main.util.RecentRecordBox
+import com.solux.luxup.taptap.feature.home.main.util.RecordCompleteBanner
 import com.solux.luxup.taptap.feature.home.main.util.RecordDeleteConfirmDialog
+import com.solux.luxup.taptap.feature.home.main.util.rememberTickingNow
 import com.solux.luxup.taptap.feature.home.main.util.TemplateSuggestionPopupCard
 import com.solux.luxup.taptap.feature.home.template.data.mockTemplateSuggestionsMemory
 import com.solux.luxup.taptap.feature.home.template.model.TemplateButtonSuggestion
@@ -104,10 +113,16 @@ fun MainHomeScreen(
     onReorderFavorites: (buttonIds: List<Long>) -> Unit = {},
     onDeleteButton: (buttonId: Long) -> Unit = {},
     onNavigateToButtonDetail: (button: HabitButton) -> Unit = {},
+    onQuickRecord: (button: HabitButton) -> Unit = {},
+    showRecordCompleteBanner: Boolean = false,
+    onCancelRecord: () -> Unit = {},
     onFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {}
 ) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.HOME) }
+
+    // "N분 전" 류 경과 시간 표시가 시간이 흘러도 계속 갱신되도록 주기적으로 recomposition을 유발한다
+    val now by rememberTickingNow()
 
     // 상단 + 버튼 드롭다운에서 "빠르게 만들기"를 선택했을 때만 뜨는 추천 버튼 팝업
     var showQuickCreatePopup by remember { mutableStateOf(false) }
@@ -139,119 +154,134 @@ fun MainHomeScreen(
         // TODO: 실제 버튼 생성 플로우 연결 (선택한 템플릿으로 다음 화면 이동)
     }
 
-    Scaffold(
-        containerColor = BaseWhiteColor,
-        bottomBar = {
-            BottomNavBar(
-                selected = selectedNavItem,
-                onItemSelected = { item ->
-                    selectedNavItem = item
-                    onNavItemSelected(item)
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BaseWhiteColor)
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 40.dp)
-        ) {
-            Spacer(Modifier.height(20.dp))
-            HomeTopBar(
-                onCreateManually = onNavigateToCreateButton,
-                onCreateQuickly = { showQuickCreatePopup = true }
-            )
-
-            Spacer(Modifier.height(20.dp))
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(brush = Brush.linearGradient(colors = listOf(BlueGradientStart, BlueGradientEnd)))) {
-                        append(user.nickname)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = BaseWhiteColor,
+            bottomBar = {
+                BottomNavBar(
+                    selected = selectedNavItem,
+                    onItemSelected = { item ->
+                        selectedNavItem = item
+                        onNavItemSelected(item)
                     }
-                    withStyle(SpanStyle(color = Color(0xFF1A1A1A))) {
-                        append("님 반가워요!")
-                    }
-                },
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text("오늘의 습관도 기록해봐요.", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF6D6D6D))
+                )
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BaseWhiteColor)
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 40.dp)
+            ) {
+                Spacer(Modifier.height(20.dp))
+                HomeTopBar(
+                    onCreateManually = onNavigateToCreateButton,
+                    onCreateQuickly = { showQuickCreatePopup = true }
+                )
 
-            Spacer(Modifier.height(30.dp))
-            Text("최근 기록", fontSize = 15.sp, color = Color(0xFF6D6D6D))
-            Spacer(Modifier.height(8.dp))
-            RecentRecordBox(record = recentRecord)
-
-            Spacer(Modifier.height(30.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.height(20.dp))
                 Text(
-                    "즐겨찾기",
-                    fontSize = 15.sp,
-                    color = Color(0xFF6D6D6D),
-                    modifier = Modifier.clickable { showFavoriteEditDialog = true }
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(brush = Brush.linearGradient(colors = listOf(BlueGradientStart, BlueGradientEnd)))) {
+                            append(user.nickname)
+                        }
+                        withStyle(SpanStyle(color = Color(0xFF1A1A1A))) {
+                            append("님 반가워요!")
+                        }
+                    },
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
-                Spacer(Modifier.width(2.dp))
-                Icon(
-                    painter = painterResource(R.drawable.ic_setting),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                favoriteButtonsState.forEach { button ->
-                    FavoriteButtonBox(button = button, onClick = { /* TODO: 즐겨찾기 버튼 클릭 */ })
+                Text("오늘의 습관도 기록해봐요.", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF6D6D6D))
+
+                Spacer(Modifier.height(30.dp))
+                Text("최근 기록", fontSize = 15.sp, color = Color(0xFF6D6D6D))
+                Spacer(Modifier.height(8.dp))
+                RecentRecordBox(record = recentRecord, now = now)
+
+                Spacer(Modifier.height(30.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "즐겨찾기",
+                        fontSize = 15.sp,
+                        color = Color(0xFF6D6D6D),
+                        modifier = Modifier.clickable { showFavoriteEditDialog = true }
+                    )
+                    Spacer(Modifier.width(2.dp))
+                    Icon(
+                        painter = painterResource(R.drawable.ic_setting),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
-                if (favoriteButtonsState.isEmpty()) {
-                    FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    favoriteButtonsState.forEach { button ->
+                        FavoriteButtonBox(button = button, onClick = { /* TODO: 즐겨찾기 버튼 클릭 */ }, now = now)
+                    }
+                    if (favoriteButtonsState.isEmpty()) {
+                        FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
+                    }
                 }
-            }
 
-            Spacer(Modifier.height(30.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CategoryDropdown(
-                    categories = categories.map { it.name } + "ALL",
-                    onCategorySelected = { selectedCategory = it },
-                    onManageCategoriesClick = { showCategoryEditDialog = true }
-                )
-                Spacer(Modifier.width(16.dp))
-                SearchBar(
-                    modifier = Modifier.weight(1f),
-                    fillWidth = true,
-                    horizontalMargin = 0.dp,
-                    placeholder = "버튼 검색"
-                )
-            }
-            Spacer(Modifier.height(30.dp))
+                Spacer(Modifier.height(30.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CategoryDropdown(
+                        categories = categories.map { it.name } + "ALL",
+                        onCategorySelected = { selectedCategory = it },
+                        onManageCategoriesClick = { showCategoryEditDialog = true }
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    SearchBar(
+                        modifier = Modifier.weight(1f),
+                        fillWidth = true,
+                        horizontalMargin = 0.dp,
+                        placeholder = "버튼 검색"
+                    )
+                }
+                Spacer(Modifier.height(30.dp))
 
-            if (buttonsState.isEmpty()) {
-                HomeFirstButtonSection(
-                    suggestions = firstButtonSuggestions,
-                    onSuggestionClick = onFirstButtonSuggestionClick,
-                    groupByCategory = groupFirstButtonSuggestionsByCategory,
-                )
-            } else {
-                HabitButtonGrid(
-                    buttons = filteredHabitButtons,
-                    onToggleFavorite = onToggleFavorite,
-                    onEditRecord = onNavigateToEditButton,
-                    onDeleteRecord = { button -> recordPendingDelete = button },
-                    onQuickRecord = { /* TODO: 한 번 탭으로 바로 기록하는 API 연결 */ },
-                    onOpenDetail = onNavigateToButtonDetail
-                )
-            }
+                if (buttonsState.isEmpty()) {
+                    HomeFirstButtonSection(
+                        suggestions = firstButtonSuggestions,
+                        onSuggestionClick = onFirstButtonSuggestionClick,
+                        groupByCategory = groupFirstButtonSuggestionsByCategory,
+                    )
+                } else {
+                    HabitButtonGrid(
+                        buttons = filteredHabitButtons,
+                        onToggleFavorite = onToggleFavorite,
+                        onEditRecord = onNavigateToEditButton,
+                        onDeleteRecord = { button -> recordPendingDelete = button },
+                        onQuickRecord = onQuickRecord,
+                        onOpenDetail = onNavigateToButtonDetail,
+                        now = now,
+                    )
+                }
 
-            Spacer(Modifier.height(30.dp))
+                Spacer(Modifier.height(30.dp))
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showRecordCompleteBanner,
+            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 12.dp)
+        ) {
+            RecordCompleteBanner(onCancel = onCancelRecord)
         }
     }
 

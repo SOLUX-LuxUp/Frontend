@@ -28,9 +28,10 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.feature.home.main.model.RecentRecord
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
+import java.time.LocalDateTime
 
 @Composable
-fun RecentRecordBox(record: RecentRecord?) {
+fun RecentRecordBox(record: RecentRecord?, now: LocalDateTime = nowInServiceZone()) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,7 +75,7 @@ fun RecentRecordBox(record: RecentRecord?) {
                     Text(record.title, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "${formatElapsedText(record.lastRecordedAt)} · ${formatRecordedAtText(record.lastRecordedAt)}",
+                        "${formatElapsedText(record.lastRecordedAt, now)} · ${formatRecordedAtText(record.lastRecordedAt)}",
                         fontSize = 18.sp,
                         color = Color.White.copy(alpha = 1f)
                     )

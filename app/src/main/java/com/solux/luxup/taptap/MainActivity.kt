@@ -198,6 +198,9 @@ class MainActivity : ComponentActivity() {
                             onToggleFavorite = mainHomeViewModel::setFavorite,
                             onReorderFavorites = mainHomeViewModel::reorderFavorites,
                             onDeleteButton = mainHomeViewModel::deleteButton,
+                            onQuickRecord = mainHomeViewModel::quickRecord,
+                            showRecordCompleteBanner = mainHomeViewModel.showRecordCompleteBanner,
+                            onCancelRecord = mainHomeViewModel::cancelPendingRecord,
                             onNavigateToButtonDetail = {
                                 // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
                                 navController.navigate("buttonDetail")
@@ -249,6 +252,9 @@ class MainActivity : ComponentActivity() {
                             onToggleFavorite = mainHomeViewModel::setFavorite,
                             onReorderFavorites = mainHomeViewModel::reorderFavorites,
                             onDeleteButton = mainHomeViewModel::deleteButton,
+                            onQuickRecord = mainHomeViewModel::quickRecord,
+                            showRecordCompleteBanner = mainHomeViewModel.showRecordCompleteBanner,
+                            onCancelRecord = mainHomeViewModel::cancelPendingRecord,
                             onNavigateToButtonDetail = {
                                 // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
                                 navController.navigate("buttonDetail")
