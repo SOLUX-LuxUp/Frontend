@@ -177,3 +177,19 @@ data class RecordRecentResponseDto(
     val iconColor: String? = null,
     val lastRecordedAt: String? = null,
 )
+
+/** POST /api/buttons/{button_id}/records */
+@Serializable
+data class RecordCreateResponseDto(
+    val recordId: Long,
+    val buttonId: Long,
+    val recordedAt: String? = null,
+)
+
+/** GET /api/buttons/{button_id}/records/latest */
+@Serializable
+data class RecordLatestResponseDto(
+    val buttonId: Long,
+    val lastRecordedAt: String? = null,
+    val elapsedSeconds: Long? = null,
+)

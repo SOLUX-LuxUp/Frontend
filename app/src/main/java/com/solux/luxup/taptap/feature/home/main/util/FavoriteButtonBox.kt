@@ -22,9 +22,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
+import java.time.LocalDateTime
 
 @Composable
-fun FavoriteButtonBox(button: FavoriteButton, onClick: () -> Unit) {
+fun FavoriteButtonBox(button: FavoriteButton, onClick: () -> Unit, now: LocalDateTime = nowInServiceZone()) {
     Box(
         modifier = Modifier
             .size(105.dp)
@@ -58,7 +59,7 @@ fun FavoriteButtonBox(button: FavoriteButton, onClick: () -> Unit) {
                 textAlign = TextAlign.Center
             )
             Text(
-                if (button.lastRecordedAt.isBlank()) "기록" else formatElapsedText(button.lastRecordedAt),
+                if (button.lastRecordedAt.isBlank()) "기록" else formatElapsedText(button.lastRecordedAt, now),
                 fontSize = 11.sp,
                 color = Color(0xFFB1B1B1)
             )

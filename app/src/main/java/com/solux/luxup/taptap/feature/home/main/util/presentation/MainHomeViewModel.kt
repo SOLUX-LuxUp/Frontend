@@ -18,6 +18,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -34,6 +36,9 @@ import kotlinx.coroutines.launch
  * 추천 항목을 탭하면 POST /api/templates/{templateId}/apply로 해당 프리셋 하나만 생성한다
  * (건너뛴 경우도 각 추천이 어느 템플릿 소속인지 알고 있어야 해서 suggestion.templateId를 쓴다).
  */
+/** cancelRecord는 서버 정책상 기록 생성 3초 이내에만 가능하다 */
+private const val RECORD_CANCEL_WINDOW_MILLIS = 3_000L
+
 @HiltViewModel(assistedFactory = MainHomeViewModel.Factory::class)
 class MainHomeViewModel @AssistedInject constructor(
     @Assisted private val templateId: Long?,
@@ -46,6 +51,8 @@ class MainHomeViewModel @AssistedInject constructor(
     interface Factory {
         fun create(templateId: Long?): MainHomeViewModel
     }
+
+    private data class PendingRecord(val buttonId: Long, val recordId: Long)
 
     var homeUser by mutableStateOf(HomeUser(nickname = ""))
         private set
@@ -64,6 +71,13 @@ class MainHomeViewModel @AssistedInject constructor(
 
     var recentRecord by mutableStateOf<RecentRecord?>(null)
         private set
+
+    /** 방금 남긴 기록 — null이 아니면 화면 상단에 "기록 완료!" 취소 배너를 띄운다 */
+    private var pendingRecord by mutableStateOf<PendingRecord?>(null)
+    val showRecordCompleteBanner: Boolean
+        get() = pendingRecord != null
+
+    private var recordCancelWindowJob: Job? = null
 
     var errorMessage by mutableStateOf<String?>(null)
         private set
@@ -242,6 +256,61 @@ class MainHomeViewModel @AssistedInject constructor(
         viewModelScope.launch {
             buttonRepository.getRecentRecord()
                 .onSuccess { recentRecord = it }
+        }
+    }
+
+    /**
+     * 습관 버튼 카드를 한 번 탭했을 때 — POST /api/buttons/{button_id}/records로 바로 기록을 남기고,
+     * 화면 상단에 "기록 완료!" 취소 배너를 3초간 띄운다. 그 안에 취소하지 않으면 배너는 그냥 사라지고
+     * 기록은 그대로 유지된다(별도 확정 호출 없음).
+     */
+    fun quickRecord(button: HabitButton) {
+        viewModelScope.launch {
+            buttonRepository.createRecord(button.buttonId)
+                .onSuccess { result ->
+                    pendingRecord = PendingRecord(buttonId = result.buttonId, recordId = result.recordId)
+                    refreshButtonLastRecordedAt(result.buttonId)
+                    loadRecentRecord()
+
+                    recordCancelWindowJob?.cancel()
+                    recordCancelWindowJob = viewModelScope.launch {
+                        delay(RECORD_CANCEL_WINDOW_MILLIS)
+                        pendingRecord = null
+                    }
+                }
+                .onFailure { errorMessage = it.message ?: "기록하지 못했어요." }
+        }
+    }
+
+    /** "기록 완료!" 배너의 "취소"를 눌렀을 때 — DELETE .../records/{record_id}/cancel */
+    fun cancelPendingRecord() {
+        val pending = pendingRecord ?: return
+        recordCancelWindowJob?.cancel()
+        pendingRecord = null
+
+        viewModelScope.launch {
+            buttonRepository.cancelRecord(pending.buttonId, pending.recordId)
+                .onSuccess {
+                    refreshButtonLastRecordedAt(pending.buttonId)
+                    loadRecentRecord()
+                }
+                .onFailure { errorMessage = it.message ?: "기록 취소에 실패했어요." }
+        }
+    }
+
+    /** 방금 기록/취소한 버튼 하나만 GET .../records/latest로 다시 조회해 카드에 즉시 반영한다 */
+    private fun refreshButtonLastRecordedAt(buttonId: Long) {
+        viewModelScope.launch {
+            buttonRepository.getLatestRecord(buttonId)
+                .onSuccess { lastRecordedAt ->
+                    val value = lastRecordedAt.orEmpty()
+                    habitButtons = habitButtons.map {
+                        if (it.buttonId == buttonId) it.copy(lastRecordedAt = value) else it
+                    }
+                    favoriteButtons = favoriteButtons.map {
+                        if (it.buttonId == buttonId) it.copy(lastRecordedAt = value) else it
+                    }
+                }
         }
     }
 
