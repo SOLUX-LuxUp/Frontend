@@ -193,3 +193,43 @@ data class RecordLatestResponseDto(
     val lastRecordedAt: String? = null,
     val elapsedSeconds: Long? = null,
 )
+
+/** GET /api/buttons/{button_id}/records/summary — 5.2 최근 기록 조회 (버튼 상세) */
+@Serializable
+data class RecordSummaryResponseDto(
+    val buttonId: Long,
+    val lastRecordedAt: String? = null,
+    val todayCount: Long = 0,
+    val totalCount: Long = 0,
+)
+
+/** GET /api/buttons/{button_id}/records/timeline — 5.3 타임라인 조회 */
+@Serializable
+data class RecordTimelineResponseDto(
+    val records: List<RecordTimelineItemDto> = emptyList(),
+    val nextCursor: Long? = null,
+    val hasMore: Boolean = false,
+)
+
+@Serializable
+data class RecordTimelineItemDto(
+    val recordId: Long,
+    val recordedAt: String? = null,
+    val memo: String? = null,
+    val emoji: String? = null,
+)
+
+/** PATCH /api/buttons/{button_id}/records/{record_id}/detail — 5.4 타임라인 상세 기록 추가 (메모·이모지) */
+@Serializable
+data class RecordDetailUpdateRequestDto(
+    val memo: String?,
+    val emoji: String?,
+)
+
+@Serializable
+data class RecordDetailResponseDto(
+    val recordId: Long,
+    val memo: String? = null,
+    val emoji: String? = null,
+    val recordedAt: String? = null,
+)

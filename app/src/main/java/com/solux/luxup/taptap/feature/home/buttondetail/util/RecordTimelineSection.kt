@@ -37,7 +37,8 @@ import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 fun RecordTimelineSection(
     group: TimelineGroup,
     onItemClick: (ButtonRecordEntry) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    nowMillis: Long = System.currentTimeMillis()
 ) {
     Column(modifier = modifier.fillMaxWidth()
         .padding(horizontal = 10.dp)) {
@@ -48,7 +49,8 @@ fun RecordTimelineSection(
                 entry = entry,
                 showConnectorAbove = index != 0,
                 showConnectorBelow = index != group.items.lastIndex,
-                onClick = { onItemClick(entry) }
+                onClick = { onItemClick(entry) },
+                nowMillis = nowMillis
             )
         }
     }
@@ -63,7 +65,8 @@ private fun RecordTimelineItem(
     entry: ButtonRecordEntry,
     showConnectorAbove: Boolean,
     showConnectorBelow: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    nowMillis: Long = System.currentTimeMillis()
 ) {
     // 메모 유무에 따라 위쪽 행 높이 자체는 다르지만(메모 없음 70dp / 있음 35dp), 마커/커넥터는 고정된 MarkerAnchorHeight를 기준으로
     // 배치해서 메모 유무나 첫 항목(위쪽 선 없음) 여부와 상관없이 위쪽 padding이 항상 동일하게 유지되도록 한다
@@ -147,7 +150,7 @@ private fun RecordTimelineItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = formatRowRelativeText(entry.recordedAt),
+                    text = formatRowRelativeText(entry.recordedAt, nowMillis),
                     fontSize = 14.sp,
                     color = Color(0xFF6D6D6D),
                     modifier = Modifier.width(60.dp)

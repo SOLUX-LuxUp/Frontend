@@ -55,7 +55,7 @@ fun InsightDailyScreen(
     onNavigateToTimelineAll: () -> Unit,
     onNavigateToRatioAll: () -> Unit,
     modifier: Modifier = Modifier,
-    onNavigateToButtonDetail: (buttonId: Long) -> Unit = {},
+    onNavigateToButtonDetail: (item: InsightTimelineItem) -> Unit = {},
     onDeleteRecord: (InsightTimelineItem) -> Unit = {},
     onPrevDay: () -> Unit = {},
     onNextDay: () -> Unit = {},
@@ -144,7 +144,7 @@ fun InsightDailyScreen(
             },
             onMoveToRecordClick = {
                 actionTarget = null
-                onNavigateToButtonDetail(target.buttonId)
+                onNavigateToButtonDetail(target)
             }
         )
     }

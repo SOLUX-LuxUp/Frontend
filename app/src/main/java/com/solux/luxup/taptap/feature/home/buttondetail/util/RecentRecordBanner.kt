@@ -24,8 +24,9 @@ import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 @Composable
 fun RecentRecordBanner(
-    recordedAtIsoTimestamp: String,
-    modifier: Modifier = Modifier
+    recordedAtIsoTimestamp: String?,
+    modifier: Modifier = Modifier,
+    nowMillis: Long = System.currentTimeMillis()
 ) {
     Box(
         modifier = modifier
@@ -35,16 +36,6 @@ fun RecentRecordBanner(
             .background(Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd)))
             .padding(horizontal = 20.dp)
     ) {
-        val mainText = buildString {
-            append(formatBannerDayPrefix(recordedAtIsoTimestamp))
-            append(' ')
-            append(formatRecordedAtDisplay(recordedAtIsoTimestamp))
-            val suffix = formatBannerSuffix(recordedAtIsoTimestamp)
-            if (suffix.isNotEmpty()) {
-                append(" · ")
-                append(suffix)
-            }
-        }
         Row(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
@@ -60,12 +51,31 @@ fun RecentRecordBanner(
                     .fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    mainText,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                if (recordedAtIsoTimestamp == null) {
+                    Text(
+                        "아직 기록이 없어요",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                } else {
+                    val mainText = buildString {
+                        append(formatBannerDayPrefix(recordedAtIsoTimestamp, nowMillis))
+                        append(' ')
+                        append(formatRecordedAtDisplay(recordedAtIsoTimestamp))
+                        val suffix = formatBannerSuffix(recordedAtIsoTimestamp, nowMillis)
+                        if (suffix.isNotEmpty()) {
+                            append(" · ")
+                            append(suffix)
+                        }
+                    }
+                    Text(
+                        mainText,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
         }
     }

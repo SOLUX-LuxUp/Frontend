@@ -64,7 +64,9 @@ fun MemoEmojiDialog(
     onSave: (memo: String?, emoji: String?) -> Unit,
     modifier: Modifier = Modifier,
     initialMemo: String? = null,
-    initialEmoji: String? = null
+    initialEmoji: String? = null,
+    customEmojis: List<String> = emptyList(),
+    onAddCustomEmoji: (String) -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(if (initialEmoji != null) MemoEmojiTab.EMOJI else MemoEmojiTab.MEMO) }
     var memoText by remember { mutableStateOf(initialMemo.orEmpty()) }
@@ -119,7 +121,9 @@ fun MemoEmojiDialog(
                 EmojiGrid(
                     selectedEmoji = selectedEmoji,
                     onEmojiSelected = { selectedEmoji = it },
-                    onClear = { selectedEmoji = null }
+                    onClear = { selectedEmoji = null },
+                    customEmojis = customEmojis,
+                    onAddCustomEmoji = onAddCustomEmoji
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
@@ -197,14 +201,18 @@ private data class EmojiOptionCell(val emoji: String) : EmojiCellSpec
 private fun EmojiGrid(
     selectedEmoji: String?,
     onEmojiSelected: (String) -> Unit,
-    onClear: () -> Unit
+    onClear: () -> Unit,
+    customEmojis: List<String> = emptyList(),
+    onAddCustomEmoji: (String) -> Unit = {}
 ) {
     var showEmojiPicker by remember { mutableStateOf(false) }
     val cells: List<EmojiCellSpec> = buildList {
         add(ClearCell)
         addAll(EmojiOptions.map(::EmojiOptionCell))
-        // 프리셋에 없는 이모지를 피커에서 고른 경우, 선택된 이모지가 보이도록 그리드에 추가
-        if (selectedEmoji != null && selectedEmoji !in EmojiOptions) {
+        // 피커에서 새로 고른 이모지는 프리셋에 없어도 계속 그리드에 남아있도록 추가
+        addAll(customEmojis.filter { it !in EmojiOptions }.map(::EmojiOptionCell))
+        // 프리셋에도 저장된 목록에도 없는, 지금 막 고른 이모지도 즉시 보이도록
+        if (selectedEmoji != null && selectedEmoji !in EmojiOptions && selectedEmoji !in customEmojis) {
             add(EmojiOptionCell(selectedEmoji))
         }
         add(AddCell)
@@ -239,6 +247,7 @@ private fun EmojiGrid(
         EmojiPickerDialog(
             onEmojiPicked = {
                 onEmojiSelected(it)
+                onAddCustomEmoji(it)
                 showEmojiPicker = false
             },
             onDismiss = { showEmojiPicker = false }

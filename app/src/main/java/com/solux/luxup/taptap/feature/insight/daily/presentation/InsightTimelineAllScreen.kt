@@ -49,7 +49,7 @@ fun InsightTimelineAllScreen(
     targetDate: String,
     timeline: List<InsightTimelineItem>,
     onBack: () -> Unit,
-    onNavigateToButtonDetail: (buttonId: Long) -> Unit,
+    onNavigateToButtonDetail: (item: InsightTimelineItem) -> Unit,
     onDeleteRecord: (InsightTimelineItem) -> Unit,
     modifier: Modifier = Modifier,
     onPrevDay: () -> Unit = {},
@@ -120,7 +120,7 @@ fun InsightTimelineAllScreen(
             },
             onMoveToRecordClick = {
                 actionTarget = null
-                onNavigateToButtonDetail(target.buttonId)
+                onNavigateToButtonDetail(target)
             }
         )
     }
