@@ -64,6 +64,14 @@ class TeamInsightViewModel @AssistedInject constructor(
         private set
 
     init {
+        refreshAll()
+    }
+
+    /**
+     * 활동 탭에서 탭 기록을 남기고 인사이트 탭으로 돌아와도 반영되도록,
+     * 탭 전환마다(같은 팀 방문 안에서 ViewModel이 재사용되는 동안) 호출한다.
+     */
+    fun refreshAll() {
         loadDaily()
         loadWeekly()
         loadMonthly()
