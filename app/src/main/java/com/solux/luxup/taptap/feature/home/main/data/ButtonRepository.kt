@@ -4,6 +4,8 @@ import com.solux.luxup.taptap.core.network.ApiCallHandler
 import com.solux.luxup.taptap.core.network.ApiException
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
+import com.solux.luxup.taptap.feature.home.buttondetail.model.ButtonRecordEntry
+import com.solux.luxup.taptap.feature.home.buttondetail.model.ButtonRecordSummary
 import com.solux.luxup.taptap.feature.home.main.model.Category
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
 import com.solux.luxup.taptap.feature.home.main.model.HabitButton
@@ -19,6 +21,12 @@ private val buttonExpiryDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 data class ButtonListResult(
     val favorites: List<FavoriteButton>,
     val habitButtons: List<HabitButton>,
+)
+
+data class ButtonTimelinePage(
+    val records: List<ButtonRecordEntry>,
+    val hasMore: Boolean,
+    val nextCursor: Long?,
 )
 
 @Singleton
@@ -146,6 +154,44 @@ class ButtonRepository @Inject constructor(
     suspend fun getLatestRecord(buttonId: Long): Result<String?> =
         apiCallHandler.execute { buttonApi.getLatestRecord(buttonId) }.map { it.lastRecordedAt }
 
+    /**
+     * GET /api/buttons/{button_id}/records/summary — 버튼 상세 화면 상단의 "최근 기록" 배너.
+     * 기록이 하나도 없으면 data가 null로 내려와 data != null을 요구하는 공통 apiCallHandler를 쓰면
+     * 성공해도 실패로 처리될 수 있어, success 플래그만 직접 확인한다.
+     */
+    suspend fun getButtonSummary(buttonId: Long): Result<ButtonRecordSummary?> = runCatching {
+        val response = buttonApi.getButtonSummary(buttonId)
+        val body = response.body()
+        if (response.isSuccessful && body?.success == true) {
+            body.data?.toModel()
+        } else {
+            throw ApiException(body?.message ?: "최근 기록을 불러오지 못했어요.")
+        }
+    }
+
+    /** GET /api/buttons/{button_id}/records/timeline — 버튼 상세 화면의 타임라인. 30건씩 커서 기반으로 내려온다 */
+    suspend fun getTimeline(buttonId: Long, cursor: Long?, limit: Int = 30): Result<ButtonTimelinePage> =
+        apiCallHandler.execute { buttonApi.getTimeline(buttonId, cursor, limit) }.map { it.toModel() }
+
+    /**
+     * DELETE /api/buttons/{button_id}/records/{record_id} — 타임라인 기록 삭제.
+     * 응답 data가 빈 오브젝트로 내려와 data != null을 요구하는 공통 apiCallHandler를 쓰면
+     * 성공해도 실패로 처리될 수 있어, success 플래그만 직접 확인한다.
+     */
+    suspend fun deleteTimelineRecord(buttonId: Long, recordId: Long): Result<Unit> = runCatching {
+        val response = buttonApi.deleteTimelineRecord(buttonId, recordId)
+        val body = response.body()
+        if (!response.isSuccessful || body?.success != true) {
+            throw ApiException(body?.message ?: "기록을 삭제하지 못했어요.")
+        }
+    }
+
+    /** PATCH /api/buttons/{button_id}/records/{record_id}/detail — 타임라인 기록의 메모·이모지 저장 */
+    suspend fun updateRecordDetail(buttonId: Long, recordId: Long, memo: String?, emoji: String?): Result<Unit> =
+        apiCallHandler.execute {
+            buttonApi.updateRecordDetail(buttonId, recordId, RecordDetailUpdateRequestDto(memo, emoji))
+        }.map { }
+
     /** GET /api/buttons/categories — displayOrder 오름차순으로 정렬되어 내려온다 */
     suspend fun getCategories(): Result<List<Category>> =
         apiCallHandler.execute { buttonApi.getCategories() }
@@ -217,4 +263,24 @@ private fun RecordRecentResponseDto.toModel() = RecentRecord(
     iconTint = IconColor.from(iconColor).color,
     title = buttonName,
     lastRecordedAt = lastRecordedAt.orEmpty(),
+)
+
+private fun RecordSummaryResponseDto.toModel() = ButtonRecordSummary(
+    buttonId = buttonId,
+    lastRecordedAt = lastRecordedAt,
+    todayCount = todayCount,
+    totalCount = totalCount,
+)
+
+private fun RecordTimelineResponseDto.toModel() = ButtonTimelinePage(
+    records = records.map { it.toModel() },
+    hasMore = hasMore,
+    nextCursor = nextCursor,
+)
+
+private fun RecordTimelineItemDto.toModel() = ButtonRecordEntry(
+    recordId = recordId,
+    recordedAt = recordedAt.orEmpty(),
+    memo = memo,
+    emoji = emoji,
 )

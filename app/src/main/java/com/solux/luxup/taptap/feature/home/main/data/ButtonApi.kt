@@ -89,4 +89,29 @@ interface ButtonApi {
     suspend fun getLatestRecord(
         @Path("button_id") buttonId: Long,
     ): Response<BaseResponse<RecordLatestResponseDto>>
+
+    @GET("api/buttons/{button_id}/records/summary")
+    suspend fun getButtonSummary(
+        @Path("button_id") buttonId: Long,
+    ): Response<BaseResponse<RecordSummaryResponseDto>>
+
+    @GET("api/buttons/{button_id}/records/timeline")
+    suspend fun getTimeline(
+        @Path("button_id") buttonId: Long,
+        @Query("cursor") cursor: Long?,
+        @Query("limit") limit: Int,
+    ): Response<BaseResponse<RecordTimelineResponseDto>>
+
+    @DELETE("api/buttons/{button_id}/records/{record_id}")
+    suspend fun deleteTimelineRecord(
+        @Path("button_id") buttonId: Long,
+        @Path("record_id") recordId: Long,
+    ): Response<BaseResponse<JsonElement>>
+
+    @PATCH("api/buttons/{button_id}/records/{record_id}/detail")
+    suspend fun updateRecordDetail(
+        @Path("button_id") buttonId: Long,
+        @Path("record_id") recordId: Long,
+        @Body request: RecordDetailUpdateRequestDto,
+    ): Response<BaseResponse<RecordDetailResponseDto>>
 }

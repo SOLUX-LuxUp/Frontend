@@ -1,6 +1,7 @@
 package com.solux.luxup.taptap.feature.home.buttondetail.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -44,33 +46,44 @@ import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.feature.home.buttondetail.data.mockButtonDetail
 import com.solux.luxup.taptap.feature.home.buttondetail.data.mockButtonRecordEntries
+import com.solux.luxup.taptap.feature.home.buttondetail.data.mockButtonRecordSummary
 import com.solux.luxup.taptap.feature.home.buttondetail.model.ButtonDetail
 import com.solux.luxup.taptap.feature.home.buttondetail.model.ButtonRecordEntry
+import com.solux.luxup.taptap.feature.home.buttondetail.model.ButtonRecordSummary
 import com.solux.luxup.taptap.feature.home.buttondetail.util.MemoEmojiDialog
 import com.solux.luxup.taptap.feature.home.buttondetail.util.RecentRecordBanner
 import com.solux.luxup.taptap.feature.home.buttondetail.util.RecordActionMenu
 import com.solux.luxup.taptap.feature.home.buttondetail.util.RecordTimelineSection
 import com.solux.luxup.taptap.feature.home.buttondetail.util.groupRecordsByDay
+import com.solux.luxup.taptap.feature.home.buttondetail.util.rememberTickingNowMillis
 import com.solux.luxup.taptap.feature.home.main.util.RecordDeleteConfirmDialog
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 
 @Composable
 fun ButtonDetailScreen(
     detail: ButtonDetail = mockButtonDetail,
-    initialRecords: List<ButtonRecordEntry> = mockButtonRecordEntries,
+    summary: ButtonRecordSummary? = mockButtonRecordSummary,
+    records: List<ButtonRecordEntry> = mockButtonRecordEntries,
+    hasMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
     onEditButton: () -> Unit = {},
+    onDeleteRecord: (ButtonRecordEntry) -> Unit = {},
+    onSaveMemo: (record: ButtonRecordEntry, memo: String?, emoji: String?) -> Unit = { _, _, _ -> },
+    customEmojis: List<String> = emptyList(),
+    onAddCustomEmoji: (String) -> Unit = {},
+    errorMessage: String? = null,
+    onErrorConsumed: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var records by remember(initialRecords) { mutableStateOf(initialRecords) }
-
     // 타임라인 항목을 눌렀을 때 뜨는 "기록 삭제"/"메모 추가" 액션 메뉴 대상
     var actionMenuTarget by remember { mutableStateOf<ButtonRecordEntry?>(null) }
     var recordPendingDelete by remember { mutableStateOf<ButtonRecordEntry?>(null) }
     var recordPendingMemo by remember { mutableStateOf<ButtonRecordEntry?>(null) }
 
-    val latestRecord = remember(records) { records.maxByOrNull { it.recordedAt } }
     val timelineGroups = remember(records) { groupRecordsByDay(records) }
+    val nowMillis by rememberTickingNowMillis()
 
     Scaffold(
         modifier = modifier,
@@ -81,7 +94,6 @@ fun ButtonDetailScreen(
                 .fillMaxSize()
                 .background(BaseWhiteColor)
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 40.dp)
         ) {
             Spacer(Modifier.height(15.dp))
@@ -108,23 +120,54 @@ fun ButtonDetailScreen(
                 Text(detail.title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6D6D6D))
             }
 
-            if (latestRecord != null) {
-                Spacer(Modifier.height(30.dp))
-                RecentRecordBanner(recordedAtIsoTimestamp = latestRecord.recordedAt)
-            }
+            Spacer(Modifier.height(30.dp))
+            RecentRecordBanner(recordedAtIsoTimestamp = summary?.lastRecordedAt, nowMillis = nowMillis)
 
             Spacer(Modifier.height(30.dp))
             Text("타임라인", fontSize = 14.sp, color = Color(0xFF6D6D6D))
             Spacer(Modifier.height(20.dp))
 
-            timelineGroups.forEach { group ->
-                RecordTimelineSection(
-                    group = group,
-                    onItemClick = { actionMenuTarget = it }
-                )
+            // 위쪽(아이콘/이름/최근 기록)은 고정하고, 타임라인만 이 안에서 스크롤되게 한다
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                if (records.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 80.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("아직 기록이 없어요", fontSize = 14.sp, color = Color(0xFFB0B0B0))
+                    }
+                }
+
+                timelineGroups.forEach { group ->
+                    RecordTimelineSection(
+                        group = group,
+                        onItemClick = { actionMenuTarget = it },
+                        nowMillis = nowMillis
+                    )
+                    Spacer(Modifier.height(20.dp))
+                }
+
+                // 30건씩 확장 (기능명세서 5.3)
+                if (hasMore) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(41.dp)
+                            .clip(RoundedCornerShape(11.dp))
+                            .border(1.dp, Color(0xFFDADADA), RoundedCornerShape(11.dp))
+                            .clickable(onClick = onLoadMore),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("더보기", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6D6D6D))
+                    }
+                }
+
                 Spacer(Modifier.height(20.dp))
             }
-            Spacer(Modifier.height(20.dp))
         }
     }
 
@@ -162,8 +205,7 @@ fun ButtonDetailScreen(
                 recordedAtIsoTimestamp = target.recordedAt,
                 onDismiss = { recordPendingDelete = null },
                 onConfirmDelete = {
-                    // TODO: 실제 기록 삭제 API 연결
-                    records = records.filterNot { it.recordId == target.recordId }
+                    onDeleteRecord(target)
                     recordPendingDelete = null
                 }
             )
@@ -181,16 +223,19 @@ fun ButtonDetailScreen(
                     .padding(horizontal = 40.dp),
                 initialMemo = target.memo,
                 initialEmoji = target.emoji,
+                customEmojis = customEmojis,
+                onAddCustomEmoji = onAddCustomEmoji,
                 onDismiss = { recordPendingMemo = null },
                 onSave = { memo, emoji ->
-                    // TODO: 실제 메모/이모지 저장 API 연결
-                    records = records.map {
-                        if (it.recordId == target.recordId) it.copy(memo = memo, emoji = emoji) else it
-                    }
+                    onSaveMemo(target, memo, emoji)
                     recordPendingMemo = null
                 }
             )
         }
+    }
+
+    errorMessage?.let { message ->
+        NoticeDialog(message = message, onDismiss = onErrorConsumed)
     }
 }
 

@@ -1,5 +1,6 @@
 package com.solux.luxup.taptap
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,6 +34,7 @@ import com.solux.luxup.taptap.feature.auth.login.presentation.LoginRoute
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupRoute
 import com.solux.luxup.taptap.feature.auth.signup.presentation.signupGraph
 import com.solux.luxup.taptap.feature.home.buttondetail.presentation.ButtonDetailScreen
+import com.solux.luxup.taptap.feature.home.buttondetail.presentation.ButtonDetailViewModel
 import com.solux.luxup.taptap.feature.home.main.util.presentation.CreateButtonScreen
 import com.solux.luxup.taptap.feature.home.main.util.presentation.CreateButtonViewModel
 import com.solux.luxup.taptap.feature.home.main.util.presentation.IconSelectScreen
@@ -201,9 +203,13 @@ class MainActivity : ComponentActivity() {
                             onQuickRecord = mainHomeViewModel::quickRecord,
                             showRecordCompleteBanner = mainHomeViewModel.showRecordCompleteBanner,
                             onCancelRecord = mainHomeViewModel::cancelPendingRecord,
-                            onNavigateToButtonDetail = {
-                                // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
-                                navController.navigate("buttonDetail")
+                            onNavigateToButtonDetail = { button ->
+                                navController.navigate(
+                                    "buttonDetail/${button.buttonId}" +
+                                        "?title=${Uri.encode(button.title)}" +
+                                        "&iconName=${Uri.encode(button.iconName)}" +
+                                        "&iconColor=${Uri.encode(button.iconColorKey.orEmpty())}"
+                                )
                             },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
@@ -255,20 +261,51 @@ class MainActivity : ComponentActivity() {
                             onQuickRecord = mainHomeViewModel::quickRecord,
                             showRecordCompleteBanner = mainHomeViewModel.showRecordCompleteBanner,
                             onCancelRecord = mainHomeViewModel::cancelPendingRecord,
-                            onNavigateToButtonDetail = {
-                                // TODO: 선택한 버튼 id를 라우트에 실어 상세 데이터 조회 연결
-                                navController.navigate("buttonDetail")
+                            onNavigateToButtonDetail = { button ->
+                                navController.navigate(
+                                    "buttonDetail/${button.buttonId}" +
+                                        "?title=${Uri.encode(button.title)}" +
+                                        "&iconName=${Uri.encode(button.iconName)}" +
+                                        "&iconColor=${Uri.encode(button.iconColorKey.orEmpty())}"
+                                )
                             },
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
                             }
                         )
                     }
-                    composable("buttonDetail") {
+                    composable(
+                        "buttonDetail/{buttonId}?title={title}&iconName={iconName}&iconColor={iconColor}",
+                        arguments = listOf(
+                            navArgument("buttonId") { type = NavType.LongType },
+                            navArgument("title") { type = NavType.StringType; nullable = true },
+                            navArgument("iconName") { type = NavType.StringType; nullable = true },
+                            navArgument("iconColor") { type = NavType.StringType; nullable = true },
+                        )
+                    ) { backStackEntry ->
+                        val buttonId = backStackEntry.arguments?.getLong("buttonId") ?: 0L
+                        val title = backStackEntry.arguments?.getString("title")
+                        val iconName = backStackEntry.arguments?.getString("iconName")
+                        val iconColor = backStackEntry.arguments?.getString("iconColor")
+                        val buttonDetailViewModel = hiltViewModel<
+                            ButtonDetailViewModel,
+                            ButtonDetailViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(buttonId, title, iconName, iconColor) })
                         ButtonDetailScreen(
+                            detail = buttonDetailViewModel.detail,
+                            summary = buttonDetailViewModel.summary,
+                            records = buttonDetailViewModel.records,
+                            hasMore = buttonDetailViewModel.hasMore,
+                            onLoadMore = buttonDetailViewModel::loadMore,
                             onNavigateBack = {
                                 navController.popBackStack()
-                            }
+                            },
+                            onDeleteRecord = buttonDetailViewModel::deleteRecord,
+                            onSaveMemo = buttonDetailViewModel::saveMemo,
+                            customEmojis = buttonDetailViewModel.customEmojis,
+                            onAddCustomEmoji = buttonDetailViewModel::addCustomEmoji,
+                            errorMessage = buttonDetailViewModel.errorMessage,
+                            onErrorConsumed = buttonDetailViewModel::consumeError,
                         )
                     }
                     composable("notification") {
@@ -288,9 +325,13 @@ class MainActivity : ComponentActivity() {
                             onNavigateToRatioAll = {
                                 navController.navigate("insightRatioAll")
                             },
-                            onNavigateToButtonDetail = {
-                                // TODO: 선택한 기록의 버튼 상세로 이동
-                                navController.navigate("buttonDetail")
+                            onNavigateToButtonDetail = { item ->
+                                navController.navigate(
+                                    "buttonDetail/${item.buttonId}" +
+                                        "?title=${Uri.encode(item.buttonName)}" +
+                                        "&iconName=${Uri.encode(item.iconName.orEmpty())}" +
+                                        "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
+                                )
                             },
                             onDeleteRecord = {
                                 // TODO: 기록 삭제 API 연결
@@ -386,9 +427,13 @@ class MainActivity : ComponentActivity() {
                             targetDate = targetDate,
                             timeline = MockInsightDaily.timeline,
                             onBack = { navController.popBackStack() },
-                            onNavigateToButtonDetail = {
-                                // TODO: 선택한 기록의 버튼 상세로 이동
-                                navController.navigate("buttonDetail")
+                            onNavigateToButtonDetail = { item ->
+                                navController.navigate(
+                                    "buttonDetail/${item.buttonId}" +
+                                        "?title=${Uri.encode(item.buttonName)}" +
+                                        "&iconName=${Uri.encode(item.iconName.orEmpty())}" +
+                                        "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
+                                )
                             },
                             onDeleteRecord = {
                                 // TODO: 기록 삭제 API 연결
