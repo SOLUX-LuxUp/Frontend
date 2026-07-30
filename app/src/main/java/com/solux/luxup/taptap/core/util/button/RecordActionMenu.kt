@@ -1,4 +1,4 @@
-package com.solux.luxup.taptap.feature.home.buttondetail.util
+package com.solux.luxup.taptap.core.util.button
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
