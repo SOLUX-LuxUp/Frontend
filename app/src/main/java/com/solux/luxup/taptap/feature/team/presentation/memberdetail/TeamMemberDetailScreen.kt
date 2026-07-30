@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,12 @@ fun TeamMemberDetailRoute(
         key = key,
         creationCallback = { factory -> factory.create(teamId, targetUserId, currentUserId) },
     )
+
+    // 목록에서 같은 멤버를 다시 눌러도 캐시된 ViewModel이 그대로 재사용되므로(팀 방문 내내 유지),
+    // 상대가 그 사이에 바꾼 정보(이름 등)를 반영하려면 진입할 때마다 새로고침이 필요하다.
+    LaunchedEffect(key) {
+        viewModel.refresh()
+    }
 
     val detail = viewModel.detail
     if (detail != null) {

@@ -41,11 +41,16 @@ class TeamDeletionViewModel @Inject constructor(
     var dismissed by mutableStateOf(false)
         private set
 
-    /** teamDetail 진입 지점에서만 호출. 새로운 진입(sessionId 변경)이면 dismissed를 리셋한다. */
+    /**
+     * teamDetail 진입 지점에서만 호출. 새로운 진입(sessionId 변경)이면 dismissed를 리셋하고,
+     * 이 팀의 캐시도 버려서 다시 조회한다 — 그래야 이전 방문 때 캐싱된 "삭제 예정 아님" 상태가
+     * 방금 삭제 요청한 뒤 재진입했을 때도 그대로 남아있는 문제가 없다.
+     */
     fun enterTeamSpace(sessionId: String, teamId: Long) {
         if (sessionId != lastEntrySessionId) {
             lastEntrySessionId = sessionId
             dismissed = false
+            cache.remove(teamId)
         }
         ensureLoaded(teamId)
     }

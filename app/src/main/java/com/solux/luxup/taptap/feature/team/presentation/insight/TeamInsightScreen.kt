@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,6 +77,12 @@ fun TeamInsightRoute(
     val viewModel: TeamInsightViewModel = hiltViewModel<TeamInsightViewModel, TeamInsightViewModel.Factory>(
         creationCallback = { factory -> factory.create(teamId) },
     )
+
+    // 활동 탭 ↔ 인사이트 탭은 실제 nav 이동이 아니라 팀 상세 안에서의 탭 전환이라
+    // 화면 전환만으로는 Lifecycle RESUME이 발생하지 않는다 — 탭에 들어올 때마다 새로고침한다.
+    LaunchedEffect(Unit) {
+        viewModel.refreshAll()
+    }
 
     TeamInsightScreen(
         daily = viewModel.daily,
