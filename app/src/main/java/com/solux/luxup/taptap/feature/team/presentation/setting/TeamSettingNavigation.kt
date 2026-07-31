@@ -1,5 +1,8 @@
 package com.solux.luxup.taptap.feature.team.presentation.setting
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +22,8 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.feature.team.presentation.create.TeamIconPickerSheet
+import com.solux.luxup.taptap.feature.team.presentation.create.TeamProfileSourceModal
 
 
 /**
@@ -97,6 +102,15 @@ fun NavGraphBuilder.teamSettingGraph(
             val vm = entry.settingViewModel(navController, currentUserId)
             val settings = vm.settings ?: return@composable
 
+            var showSourceModal by remember { mutableStateOf(false) }
+            var showIconPicker by remember { mutableStateOf(false) }
+
+            val photoPicker = rememberLauncherForActivityResult(
+                ActivityResultContracts.PickVisualMedia()
+            ) { uri ->
+                uri?.let { vm.updateImage(it.toString()) }
+            }
+
             TeamSettingTabScaffold(
                 teamId = teamId,
                 onNavItemSelected = onNavItemSelected,
@@ -108,13 +122,41 @@ fun NavGraphBuilder.teamSettingGraph(
                     currentUserId = vm.currentUserId,
                     onBack = { navController.popBackStack() },
                     onTeamNameChange = vm::updateTeamName,
-                    onProfileClick = { /* TODO 아이콘/이미지 선택 모달 */ },
+                    onProfileClick = { showSourceModal = true },
                     onMaxMemberChange = vm::updateMaxMember,
                     onManageClick = { navController.navigate(TeamSettingRoute.manage(teamId)) },
                     onNotificationChange = { vm.toggleNotification() },
                     onLeaveTeam = {
                         vm.leaveTeam()
                         onExitTeam()
+                    },
+                )
+            }
+
+            if (showSourceModal) {
+                TeamProfileSourceModal(
+                    onSelectImage = {
+                        showSourceModal = false
+                        photoPicker.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    onSelectIcon = {
+                        showSourceModal = false
+                        showIconPicker = true
+                    },
+                    onDismiss = { showSourceModal = false },
+                )
+            }
+
+            if (showIconPicker) {
+                TeamIconPickerSheet(
+                    initialIconName = settings.iconName,
+                    initialIconColor = settings.iconColor,
+                    onDismiss = { showIconPicker = false },
+                    onConfirm = { iconName, iconColor ->
+                        vm.updateIcon(iconName, iconColor)
+                        showIconPicker = false
                     },
                 )
             }
