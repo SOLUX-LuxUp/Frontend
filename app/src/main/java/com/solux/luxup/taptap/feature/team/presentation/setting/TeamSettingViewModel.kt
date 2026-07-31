@@ -106,6 +106,24 @@ class TeamSettingViewModel @AssistedInject constructor(
         updateSettingsField(UpdateTeamSettingsRequestDto(maxMember = value), s.copy(maxMember = value))
     }
 
+    /** 갤러리에서 이미지를 고른 경우. 아이콘 선택은 화면에서 해제된다 */
+    fun updateImage(url: String) {
+        val s = settings ?: return
+        updateSettingsField(
+            UpdateTeamSettingsRequestDto(teamImageUrl = url),
+            s.copy(teamImageUrl = url, iconName = null, iconColor = null),
+        )
+    }
+
+    /** 아이콘을 고른 경우. 이미지 설정은 화면에서 해제된다 */
+    fun updateIcon(iconName: String, iconColor: String) {
+        val s = settings ?: return
+        updateSettingsField(
+            UpdateTeamSettingsRequestDto(iconName = iconName, iconColor = iconColor),
+            s.copy(teamImageUrl = null, iconName = iconName, iconColor = iconColor),
+        )
+    }
+
     fun updatePermission(target: TeamPermissionTarget, permission: TeamButtonPermission) {
         val s = settings ?: return
         val request = when (target) {
