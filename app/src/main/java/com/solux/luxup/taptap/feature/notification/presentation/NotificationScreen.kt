@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,13 +41,16 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
+import com.solux.luxup.taptap.feature.home.main.model.Category
 import com.solux.luxup.taptap.feature.notification.data.mockAddableNotifications
 import com.solux.luxup.taptap.feature.notification.data.mockNotifications
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
+import com.solux.luxup.taptap.feature.notification.model.ReminderConfig
 import com.solux.luxup.taptap.feature.notification.util.NotificationAddDialog
 import com.solux.luxup.taptap.feature.notification.util.NotificationDeleteConfirmDialog
 import com.solux.luxup.taptap.feature.notification.util.NotificationListItem
@@ -58,27 +60,32 @@ import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 @Composable
 fun NotificationScreen(
-    notifications: List<NotificationItem> = mockNotifications,
-    addableNotifications: List<NotificationItem> = mockAddableNotifications,
-    onNavItemSelected: (BottomNavItem) -> Unit = {}
+    reminders: List<NotificationItem> = mockNotifications,
+    addableButtons: List<NotificationItem> = mockAddableNotifications,
+    categories: List<Category> = emptyList(),
+    onToggle: (buttonId: Long, isEnabled: Boolean) -> Unit = { _, _ -> },
+    onSaveDetail: (buttonId: Long, config: ReminderConfig) -> Unit = { _, _ -> },
+    onDeleteReminder: (buttonId: Long) -> Unit = {},
+    onCreateCategory: (name: String) -> Unit = {},
+    onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
+    onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
+    onReorderCategories: (categoryIds: List<Long>) -> Unit = {},
+    onNavItemSelected: (BottomNavItem) -> Unit = {},
+    errorMessage: String? = null,
+    onErrorConsumed: () -> Unit = {}
 ) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.NOTIFICATION) }
-    var notificationsState by remember(notifications) { mutableStateOf(notifications) }
-    var manageableCategories by remember { mutableStateOf(listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK")) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     var showAddDialog by remember { mutableStateOf(false) }
     var showCategoryEditDialog by remember { mutableStateOf(false) }
     var categoryPendingDelete by remember { mutableStateOf<String?>(null) }
-    var checkedAddableIds by remember(addableNotifications) {
-        mutableStateOf(addableNotifications.filter { it.isEnabled }.map { it.id }.toSet())
-    }
     var detailTarget by remember { mutableStateOf<NotificationItem?>(null) }
     var editTarget by remember { mutableStateOf<NotificationItem?>(null) }
     var deleteTarget by remember { mutableStateOf<NotificationItem?>(null) }
 
-    val filteredNotifications = remember(notificationsState, selectedCategory, searchQuery) {
-        notificationsState
+    val filteredNotifications = remember(reminders, selectedCategory, searchQuery) {
+        reminders
             .filter { selectedCategory == null || selectedCategory == "ALL" || it.category == selectedCategory }
             .filter { searchQuery.isBlank() || it.title.contains(searchQuery, ignoreCase = true) }
     }
@@ -88,13 +95,13 @@ fun NotificationScreen(
         // 다이얼로그 창 안이 아니라 화면 전체에 직접 그려야 창 그림자(위/아래 블러)가 생기지 않음
         NotificationDetailScreen(
             item = currentDetailTarget,
-            isNew = !checkedAddableIds.contains(currentDetailTarget.id),
+            isNew = true,
             onBack = {
                 detailTarget = null
                 showAddDialog = true
             },
-            onConfirm = {
-                checkedAddableIds = checkedAddableIds + currentDetailTarget.id
+            onConfirm = { config ->
+                onSaveDetail(currentDetailTarget.id, config)
                 detailTarget = null
                 showAddDialog = true
             }
@@ -109,7 +116,8 @@ fun NotificationScreen(
             item = currentEditTarget,
             isNew = false,
             onBack = { editTarget = null },
-            onConfirm = {
+            onConfirm = { config ->
+                onSaveDetail(currentEditTarget.id, config)
                 editTarget = null
             }
         )
@@ -164,7 +172,7 @@ fun NotificationScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CategoryDropdown(
-                    categories = manageableCategories + "ALL",
+                    categories = categories.map { it.name } + "ALL",
                     onCategorySelected = { selectedCategory = it },
                     onManageCategoriesClick = { showCategoryEditDialog = true }
                 )
@@ -173,7 +181,8 @@ fun NotificationScreen(
                     modifier = Modifier.weight(1f),
                     fillWidth = true,
                     horizontalMargin = 0.dp,
-                    placeholder = "버튼 검색"
+                    placeholder = "버튼 검색",
+                    onQueryChange = { searchQuery = it }
                 )
             }
 
@@ -186,14 +195,19 @@ fun NotificationScreen(
                     .padding(horizontal = 40.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+                if (filteredNotifications.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 80.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("아직 알림이 없어요", fontSize = 14.sp, color = Color(0xFFB0B0B0))
+                    }
+                }
+
                 filteredNotifications.forEach { item ->
                     NotificationListItem(
                         item = item,
-                        onToggle = { checked ->
-                            notificationsState = notificationsState.map {
-                                if (it.id == item.id) it.copy(isEnabled = checked) else it
-                            }
-                        },
+                        onToggle = { checked -> onToggle(item.id, checked) },
                         onEditClick = { editTarget = item },
                         onDeleteClick = { deleteTarget = item }
                     )
@@ -209,29 +223,23 @@ fun NotificationScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             NotificationAddDialog(
-                items = addableNotifications,
-                checkedIds = checkedAddableIds,
+                items = reminders + addableButtons,
+                checkedIds = reminders.map { it.id }.toSet(),
+                categories = categories.map { it.name } + "ALL",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp),
                 onDismiss = { showAddDialog = false },
                 onItemClick = { item ->
                     showAddDialog = false
-                    detailTarget = item
+                    // 이미 알림이 설정된(체크된) 항목이면 "알림 수정"으로, 아니면 "알림 추가"로 연다.
+                    if (item.config != null) {
+                        editTarget = item
+                    } else {
+                        detailTarget = item
+                    }
                 },
-                onSave = { checkedIds ->
-                    checkedAddableIds = checkedIds
-                    val newlyAdded = addableNotifications.filter { candidate ->
-                        checkedIds.contains(candidate.id) &&
-                            notificationsState.none { existing -> existing.title == candidate.title }
-                    }
-                    if (newlyAdded.isNotEmpty()) {
-                        notificationsState = notificationsState + newlyAdded.map { candidate ->
-                            candidate.copy(scheduleText = "알림 설정 필요")
-                        }
-                    }
-                    showAddDialog = false
-                }
+                onSave = { showAddDialog = false }
             )
         }
     }
@@ -245,17 +253,16 @@ fun NotificationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp),
-                categories = manageableCategories,
+                categories = categories.map { it.name },
                 onDismiss = { showCategoryEditDialog = false },
-                onCreate = { name ->
-                    if (name !in manageableCategories) {
-                        manageableCategories = manageableCategories + name
-                    }
-                },
+                onCreate = onCreateCategory,
                 onRename = { oldName, newName ->
-                    manageableCategories = manageableCategories.map { if (it == oldName) newName else it }
+                    categories.find { it.name == oldName }?.let { onRenameCategory(it.id, newName) }
                 },
-                onRequestDelete = { category -> categoryPendingDelete = category }
+                onRequestDelete = { category -> categoryPendingDelete = category },
+                onReorder = { newOrder ->
+                    onReorderCategories(newOrder.mapNotNull { name -> categories.find { it.name == name }?.id })
+                }
             )
         }
     }
@@ -272,10 +279,7 @@ fun NotificationScreen(
                 category = category,
                 onDismiss = { categoryPendingDelete = null },
                 onConfirmDelete = { deleteButtonsToo ->
-                    manageableCategories = manageableCategories - category
-                    if (deleteButtonsToo) {
-                        notificationsState = notificationsState.filter { it.category != category }
-                    }
+                    categories.find { it.name == category }?.let { onDeleteCategory(it.id, deleteButtonsToo) }
                     if (selectedCategory == category) {
                         selectedCategory = null
                     }
@@ -297,11 +301,15 @@ fun NotificationScreen(
                 item = item,
                 onDismiss = { deleteTarget = null },
                 onConfirmDelete = {
-                    notificationsState = notificationsState.filter { it.id != item.id }
+                    onDeleteReminder(item.id)
                     deleteTarget = null
                 }
             )
         }
+    }
+
+    errorMessage?.let { message ->
+        NoticeDialog(message = message, onDismiss = onErrorConsumed)
     }
 }
 

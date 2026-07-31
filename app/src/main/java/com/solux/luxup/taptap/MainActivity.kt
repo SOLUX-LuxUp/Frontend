@@ -26,6 +26,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavController
 import com.solux.luxup.taptap.core.auth.TokenManager
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountInfoScreen
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountSettingsScreen
@@ -55,7 +56,10 @@ import com.solux.luxup.taptap.feature.insight.weekly.data.MockInsightWeekly
 import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyRatioAllScreen
 import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyScreen
 import com.solux.luxup.taptap.feature.insight.weekly.util.shiftWeek
+import com.solux.luxup.taptap.feature.notification.presentation.ButtonReminderSettingsViewModel
+import com.solux.luxup.taptap.feature.notification.presentation.NotificationDetailScreen
 import com.solux.luxup.taptap.feature.notification.presentation.NotificationScreen
+import com.solux.luxup.taptap.feature.notification.presentation.NotificationViewModel
 import com.solux.luxup.taptap.ui.theme.TapTapTheme
 import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashScreen
 import com.solux.luxup.taptap.feature.splash.presentation.PostLoginSplashViewModel
@@ -300,6 +304,9 @@ class MainActivity : ComponentActivity() {
                             onNavigateBack = {
                                 navController.popBackStack()
                             },
+                            onEditButton = {
+                                navController.navigate("editButton/$buttonId")
+                            },
                             onDeleteRecord = buttonDetailViewModel::deleteRecord,
                             onSaveMemo = buttonDetailViewModel::saveMemo,
                             customEmojis = buttonDetailViewModel.customEmojis,
@@ -308,11 +315,34 @@ class MainActivity : ComponentActivity() {
                             onErrorConsumed = buttonDetailViewModel::consumeError,
                         )
                     }
-                    composable("notification") {
+                    composable("notification") { backStackEntry ->
+                        val notificationViewModel: NotificationViewModel = hiltViewModel()
+                        // 버튼/카테고리 생성·수정 화면을 다녀왔을 때(back navigation) 최신 상태로 보이도록 새로고침한다.
+                        DisposableEffect(backStackEntry) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) {
+                                    notificationViewModel.refresh()
+                                }
+                            }
+                            backStackEntry.lifecycle.addObserver(observer)
+                            onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+                        }
                         NotificationScreen(
+                            reminders = notificationViewModel.reminders,
+                            addableButtons = notificationViewModel.addableButtons,
+                            categories = notificationViewModel.categories,
+                            onToggle = notificationViewModel::toggle,
+                            onSaveDetail = notificationViewModel::saveDetail,
+                            onDeleteReminder = notificationViewModel::delete,
+                            onCreateCategory = notificationViewModel::createCategory,
+                            onRenameCategory = notificationViewModel::renameCategory,
+                            onDeleteCategory = notificationViewModel::deleteCategory,
+                            onReorderCategories = notificationViewModel::reorderCategories,
                             onNavItemSelected = { item ->
                                 navController.navigateToTab(item)
-                            }
+                            },
+                            errorMessage = notificationViewModel.errorMessage,
+                            onErrorConsumed = notificationViewModel::consumeError,
                         )
                     }
                     composable("insightDaily") {
@@ -547,6 +577,9 @@ class MainActivity : ComponentActivity() {
                                 CircularProgressIndicator()
                             }
                         } else {
+                            val resolvedIconName = selectedIconName ?: editButtonViewModel.initialIconName
+                            val resolvedIconColor = selectedIconColorKey?.let { IconColor.from(it) }
+                                ?: editButtonViewModel.initialIconColor
                             CreateButtonScreen(
                                 categories = editButtonViewModel.categories,
                                 onCreateCategory = editButtonViewModel::createCategory,
@@ -555,9 +588,8 @@ class MainActivity : ComponentActivity() {
                                 onReorderCategories = editButtonViewModel::reorderCategories,
                                 errorMessage = editButtonViewModel.errorMessage,
                                 onErrorConsumed = editButtonViewModel::consumeError,
-                                selectedIconName = selectedIconName ?: editButtonViewModel.initialIconName,
-                                selectedIconColor = selectedIconColorKey?.let { IconColor.from(it) }
-                                    ?: editButtonViewModel.initialIconColor,
+                                selectedIconName = resolvedIconName,
+                                selectedIconColor = resolvedIconColor,
                                 initialName = editButtonViewModel.initialName,
                                 initialCategoryName = editButtonViewModel.initialCategoryName,
                                 initialHasDeadline = editButtonViewModel.initialDeadlineMillis != null,
@@ -578,8 +610,56 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToIconSelect = {
                                     navController.navigate("iconSelect")
+                                },
+                                onNavigateToAlarmSettings = {
+                                    navController.navigate(
+                                        "buttonAlarmSettings/$buttonId" +
+                                            "?title=${Uri.encode(editButtonViewModel.initialName)}" +
+                                            "&iconName=${Uri.encode(resolvedIconName.orEmpty())}" +
+                                            "&iconColor=${Uri.encode(resolvedIconColor?.key.orEmpty())}"
+                                    )
                                 }
                             )
+                        }
+                    }
+                    composable(
+                        "buttonAlarmSettings/{buttonId}?title={title}&iconName={iconName}&iconColor={iconColor}",
+                        arguments = listOf(
+                            navArgument("buttonId") { type = NavType.LongType },
+                            navArgument("title") { type = NavType.StringType; nullable = true },
+                            navArgument("iconName") { type = NavType.StringType; nullable = true },
+                            navArgument("iconColor") { type = NavType.StringType; nullable = true },
+                        )
+                    ) { backStackEntry ->
+                        val buttonId = backStackEntry.arguments?.getLong("buttonId") ?: 0L
+                        val title = backStackEntry.arguments?.getString("title")
+                        val iconName = backStackEntry.arguments?.getString("iconName")
+                        val iconColor = backStackEntry.arguments?.getString("iconColor")
+                        val reminderSettingsViewModel = hiltViewModel<
+                            ButtonReminderSettingsViewModel,
+                            ButtonReminderSettingsViewModel.Factory,
+                            >(creationCallback = { factory -> factory.create(buttonId, title, iconName, iconColor) })
+
+                        val reminderItem = reminderSettingsViewModel.item
+                        if (reminderItem == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            NotificationDetailScreen(
+                                item = reminderItem,
+                                isNew = reminderItem.config == null,
+                                onBack = { navController.popBackStack() },
+                                onConfirm = { config ->
+                                    reminderSettingsViewModel.saveDetail(config) {
+                                        navController.popBackStack()
+                                    }
+                                }
+                            )
+                        }
+
+                        reminderSettingsViewModel.errorMessage?.let { message ->
+                            NoticeDialog(message = message, onDismiss = reminderSettingsViewModel::consumeError)
                         }
                     }
                     composable("iconSelect") {
