@@ -3,6 +3,7 @@ package com.solux.luxup.taptap.feature.notification.data
 import androidx.compose.ui.graphics.Color
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
+import com.solux.luxup.taptap.feature.notification.model.ReminderConfig
 
 val mockNotifications: List<NotificationItem> = listOf(
     NotificationItem(
@@ -12,7 +13,8 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_bookmark,
         iconTint = Color(0xFFFFC760),
         scheduleText = "매일 · 오후 9:00",
-        isEnabled = true
+        isEnabled = true,
+        config = ReminderConfig(frequencyType = "DAILY", reminderMode = "TIME", remindTimes = listOf("9:00 PM"))
     ),
     NotificationItem(
         id = 2L,
@@ -21,7 +23,8 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_water_drop,
         iconTint = Color(0xFF63C7FF),
         scheduleText = "매일 · 2시간 마다",
-        isEnabled = true
+        isEnabled = true,
+        config = ReminderConfig(frequencyType = "DAILY", reminderMode = "INTERVAL", intervalHours = 2)
     ),
     NotificationItem(
         id = 3L,
@@ -30,7 +33,8 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_medicine,
         iconTint = Color(0xFFFF7171),
         scheduleText = "매일 · 오전 10:00",
-        isEnabled = true
+        isEnabled = true,
+        config = ReminderConfig(frequencyType = "DAILY", reminderMode = "TIME", remindTimes = listOf("10:00 AM"))
     ),
     NotificationItem(
         id = 4L,
@@ -39,7 +43,13 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_dumbbell,
         iconTint = Color(0xFF4C9AFF),
         scheduleText = "화목토 · 오후 5:00",
-        isEnabled = true
+        isEnabled = true,
+        config = ReminderConfig(
+            frequencyType = "WEEKLY",
+            daysOfWeek = listOf(2, 4, 6),
+            reminderMode = "TIME",
+            remindTimes = listOf("5:00 PM")
+        )
     ),
     NotificationItem(
         id = 5L,
@@ -48,7 +58,13 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_pay,
         iconTint = Color(0xFF4C9AFF),
         scheduleText = "매달 · 1일",
-        isEnabled = true
+        isEnabled = true,
+        config = ReminderConfig(
+            frequencyType = "MONTHLY",
+            dayOfMonth = listOf(1),
+            reminderMode = "TIME",
+            remindTimes = listOf("9:00 AM")
+        )
     ),
     NotificationItem(
         id = 6L,
@@ -57,7 +73,13 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_labtop,
         iconTint = Color(0xFFDE76FB),
         scheduleText = "매달 · 16일",
-        isEnabled = false
+        isEnabled = false,
+        config = ReminderConfig(
+            frequencyType = "MONTHLY",
+            dayOfMonth = listOf(16),
+            reminderMode = "TIME",
+            remindTimes = listOf("9:00 AM")
+        )
     ),
     NotificationItem(
         id = 7L,
@@ -66,7 +88,13 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_health,
         iconTint = Color(0xFFFF7171),
         scheduleText = "매주 월 · 오후 4:30",
-        isEnabled = false
+        isEnabled = false,
+        config = ReminderConfig(
+            frequencyType = "WEEKLY",
+            daysOfWeek = listOf(1),
+            reminderMode = "TIME",
+            remindTimes = listOf("4:30 PM")
+        )
     ),
     NotificationItem(
         id = 8L,
@@ -75,7 +103,8 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_fire,
         iconTint = Color(0xFF707070),
         scheduleText = "오늘 · 오전 10:00",
-        isEnabled = false
+        isEnabled = false,
+        config = ReminderConfig(frequencyType = "ONCE", reminderMode = "TIME", remindTimes = listOf("10:00 AM"))
     ),
     NotificationItem(
         id = 9L,
@@ -84,38 +113,12 @@ val mockNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_water_drop,
         iconTint = Color(0xFF63C7FF),
         scheduleText = "매일 · 오후 2:00",
-        isEnabled = false
+        isEnabled = false,
+        config = ReminderConfig(frequencyType = "DAILY", reminderMode = "TIME", remindTimes = listOf("2:00 PM"))
     ),
-    NotificationItem(
-        id = 6L,
-        title = "구독 프로그램 갱신",
-        category = "WORK",
-        iconRes = R.drawable.bt_labtop,
-        iconTint = Color(0xFFDE76FB),
-        scheduleText = "매달 · 16일",
-        isEnabled = false
-    ),
-    NotificationItem(
-        id = 7L,
-        title = "병원 방문",
-        category = "HEALTH",
-        iconRes = R.drawable.bt_health,
-        iconTint = Color(0xFFFF7171),
-        scheduleText = "매주 월 · 오후 4:30",
-        isEnabled = false
-    ),
-    NotificationItem(
-        id = 8L,
-        title = "가스불 확인",
-        category = "ROUTINE",
-        iconRes = R.drawable.bt_fire,
-        iconTint = Color(0xFF707070),
-        scheduleText = "오늘 · 오전 10:00",
-        isEnabled = false
-    )
 )
 
-// "알림 추가" 모달에서 선택할 수 있는 버튼 후보 목록 (isEnabled는 모달의 초기 체크 상태로 사용)
+// "알림 추가" 모달에서 선택할 수 있는 버튼 후보 목록 — 세부 설정을 아직 한 번도 저장한 적 없는(config == null) 버튼들
 val mockAddableNotifications: List<NotificationItem> = listOf(
     NotificationItem(
         id = 101L,
@@ -124,7 +127,7 @@ val mockAddableNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_water_drop,
         iconTint = Color(0xFF63C7FF),
         scheduleText = "",
-        isEnabled = true
+        isEnabled = false
     ),
     NotificationItem(
         id = 102L,
@@ -133,7 +136,7 @@ val mockAddableNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_bookmark,
         iconTint = Color(0xFFFFC760),
         scheduleText = "",
-        isEnabled = true
+        isEnabled = false
     ),
     NotificationItem(
         id = 103L,
@@ -142,7 +145,7 @@ val mockAddableNotifications: List<NotificationItem> = listOf(
         iconRes = R.drawable.bt_dumbbell,
         iconTint = Color(0xFF4C9AFF),
         scheduleText = "",
-        isEnabled = true
+        isEnabled = false
     ),
     NotificationItem(
         id = 104L,
@@ -162,49 +165,4 @@ val mockAddableNotifications: List<NotificationItem> = listOf(
         scheduleText = "",
         isEnabled = false
     ),
-    NotificationItem(
-        id = 101L,
-        title = "물 마시기",
-        category = "HEALTH",
-        iconRes = R.drawable.bt_water_drop,
-        iconTint = Color(0xFF63C7FF),
-        scheduleText = "",
-        isEnabled = true
-    ),
-    NotificationItem(
-        id = 102L,
-        title = "일기 쓰기",
-        category = "ROUTINE",
-        iconRes = R.drawable.bt_bookmark,
-        iconTint = Color(0xFFFFC760),
-        scheduleText = "",
-        isEnabled = true
-    ),
-    NotificationItem(
-        id = 103L,
-        title = "러닝 하기",
-        category = "HEALTH",
-        iconRes = R.drawable.bt_dumbbell,
-        iconTint = Color(0xFF4C9AFF),
-        scheduleText = "",
-        isEnabled = true
-    ),
-    NotificationItem(
-        id = 104L,
-        title = "샤워 하기",
-        category = "ROUTINE",
-        iconRes = R.drawable.bt_shower,
-        iconTint = Color(0xFF63C7FF),
-        scheduleText = "",
-        isEnabled = false
-    ),
-    NotificationItem(
-        id = 105L,
-        title = "구독 프로그램 갱신",
-        category = "WORK",
-        iconRes = R.drawable.bt_labtop,
-        iconTint = Color(0xFFDE76FB),
-        scheduleText = "",
-        isEnabled = false
-    )
 )

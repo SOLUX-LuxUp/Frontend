@@ -50,11 +50,15 @@ fun NotificationAddDialog(
     onDismiss: () -> Unit,
     onSave: (checkedIds: Set<Long>) -> Unit,
     onItemClick: (NotificationItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    categories: List<String> = emptyList()
 ) {
     var query by remember { mutableStateOf("") }
-    val filteredItems = remember(items, query) {
-        if (query.isBlank()) items else items.filter { it.title.contains(query, ignoreCase = true) }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    val filteredItems = remember(items, query, selectedCategory) {
+        items
+            .filter { selectedCategory == null || selectedCategory == "ALL" || it.category == selectedCategory }
+            .filter { query.isBlank() || it.title.contains(query, ignoreCase = true) }
     }
 
     Column(
@@ -80,7 +84,10 @@ fun NotificationAddDialog(
                 .padding(15.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                CategoryDropdown(onCategorySelected = {})
+                CategoryDropdown(
+                    categories = categories,
+                    onCategorySelected = { selectedCategory = it }
+                )
                 Spacer(Modifier.width(12.dp))
                 SearchBar(
                     modifier = Modifier.weight(1f),

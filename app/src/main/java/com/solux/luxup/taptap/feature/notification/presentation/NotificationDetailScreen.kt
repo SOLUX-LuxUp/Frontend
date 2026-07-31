@@ -68,10 +68,15 @@ import com.solux.luxup.taptap.feature.notification.model.CustomRepeatInterval
 import com.solux.luxup.taptap.feature.notification.model.CustomRepeatUnit
 import com.solux.luxup.taptap.feature.notification.model.IntervalUnit
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
+import com.solux.luxup.taptap.feature.notification.model.ReminderConfig
 import com.solux.luxup.taptap.feature.notification.model.RepeatOption
 import com.solux.luxup.taptap.feature.notification.model.TimeRange
+import com.solux.luxup.taptap.feature.notification.model.backendTimeToDisplay
+import com.solux.luxup.taptap.feature.notification.model.displayTimeToBackend
 import com.solux.luxup.taptap.feature.notification.model.parseTimeInput
+import com.solux.luxup.taptap.feature.notification.model.toBackendDaysOfWeek
 import com.solux.luxup.taptap.feature.notification.model.toDisplayText
+import com.solux.luxup.taptap.feature.notification.model.toWeekdayIndices
 import com.solux.luxup.taptap.feature.notification.util.MonthDayPickerDialog
 import com.solux.luxup.taptap.feature.notification.util.NotificationSwitch
 import com.solux.luxup.taptap.feature.notification.util.WeekdayLabels
@@ -93,26 +98,137 @@ fun NotificationDetailScreen(
     isNew: Boolean,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    onConfirm: () -> Unit
+    onConfirm: (ReminderConfig) -> Unit
 ) {
-    var repeatEnabled by remember { mutableStateOf(true) }
-    var repeatOption by remember { mutableStateOf(RepeatOption.DAILY) }
-    var selectedWeekdays by remember { mutableStateOf(emptySet<Int>()) }
-    var selectedMonthDays by remember { mutableStateOf(emptySet<Int>()) }
-    var showMonthDayPicker by remember { mutableStateOf(false) }
-    var customInterval by remember {
-        mutableStateOf(CustomRepeatInterval(value = 1, unit = CustomRepeatUnit.WEEK))
+    val initialConfig = item.config
+
+    var repeatEnabled by remember { mutableStateOf(initialConfig?.let { it.frequencyType != "ONCE" } ?: true) }
+    var repeatOption by remember {
+        mutableStateOf(
+            initialConfig?.frequencyType
+                ?.takeIf { it != "ONCE" }
+                ?.let { runCatching { RepeatOption.valueOf(it) }.getOrNull() }
+                ?: RepeatOption.DAILY
+        )
     }
-    var customWeekdays by remember { mutableStateOf(emptySet<Int>()) }
+    var selectedWeekdays by remember {
+        mutableStateOf(
+            initialConfig?.takeIf { it.frequencyType == "WEEKLY" }?.daysOfWeek?.toWeekdayIndices() ?: emptySet()
+        )
+    }
+    var selectedMonthDays by remember {
+        mutableStateOf(
+            initialConfig?.takeIf { it.frequencyType == "MONTHLY" }?.dayOfMonth?.toSet() ?: emptySet()
+        )
+    }
+    var showMonthDayPicker by remember { mutableStateOf(false) }
+    // "설정"(CUSTOM) 반복은 서버에서 daysOfWeek·intervalWeeks가 항상 함께 필요하고 dayOfMonth는 늘 null이어야 해서
+    // — 달 단위 커스텀 반복 필드가 서버에 따로 없어 — 항상 주 단위로만 저장된다.
+    var customInterval by remember {
+        mutableStateOf(
+            initialConfig?.takeIf { it.frequencyType == "CUSTOM" }?.intervalWeeks
+                ?.let { weeks -> CustomRepeatInterval(weeks, CustomRepeatUnit.WEEK) }
+                ?: CustomRepeatInterval(value = 1, unit = CustomRepeatUnit.WEEK)
+        )
+    }
+    var customWeekdays by remember {
+        mutableStateOf(
+            initialConfig?.takeIf { it.frequencyType == "CUSTOM" }?.daysOfWeek?.toWeekdayIndices() ?: emptySet()
+        )
+    }
     var showCustomWeekdayPicker by remember { mutableStateOf(false) }
     var customMonthDays by remember { mutableStateOf(emptySet<Int>()) }
     var showCustomMonthDayPicker by remember { mutableStateOf(false) }
-    var alarmMode by remember { mutableStateOf(AlarmMode.INTERVAL) }
-    var interval by remember { mutableStateOf(AlarmInterval(value = 1, unit = IntervalUnit.HOUR)) }
-    var activeRanges by remember {
-        mutableStateOf(listOf(TimeRange("12:00 AM", "12:00 AM")))
+    var alarmMode by remember {
+        mutableStateOf(
+            initialConfig?.reminderMode?.let { runCatching { AlarmMode.valueOf(it) }.getOrNull() } ?: AlarmMode.INTERVAL
+        )
     }
-    var scheduledTimes by remember { mutableStateOf(listOf("7:00 AM")) }
+    var interval by remember {
+        mutableStateOf(
+            initialConfig?.intervalHours?.let { AlarmInterval(value = it, unit = IntervalUnit.HOUR) }
+                ?: AlarmInterval(value = 1, unit = IntervalUnit.HOUR)
+        )
+    }
+    var activeRanges by remember {
+        mutableStateOf(
+            initialConfig?.let { cfg ->
+                val start = cfg.activeStartTime
+                val end = cfg.activeEndTime
+                if (start != null && end != null) {
+                    listOf(TimeRange(start.backendTimeToDisplay(), end.backendTimeToDisplay()))
+                } else {
+                    null
+                }
+            } ?: listOf(TimeRange("12:00 AM", "12:00 AM"))
+        )
+    }
+    var scheduledTimes by remember {
+        mutableStateOf(
+            initialConfig?.remindTimes?.takeIf { it.isNotEmpty() }?.map { it.backendTimeToDisplay() }
+                ?: listOf("7:00 AM")
+        )
+    }
+
+    // 화면의 현재 설정 상태를 저장 요청(PUT /api/reminders/{button_id}/detail) payload로 변환한다.
+    // 서버 validation: CUSTOM은 daysOfWeek·intervalWeeks가 항상 함께 필요하고 dayOfMonth는 늘 null이어야 해서
+    // — 달 단위 커스텀 반복(customInterval.unit == MONTH)은 서버에 대응하는 필드가 없다 — CUSTOM은 항상 주 단위로 저장한다.
+    fun buildConfig(): ReminderConfig {
+        val frequencyType = if (!repeatEnabled) "ONCE" else repeatOption.name
+
+        val daysOfWeek = when {
+            repeatEnabled && repeatOption == RepeatOption.WEEKLY -> selectedWeekdays.toBackendDaysOfWeek()
+            repeatEnabled && repeatOption == RepeatOption.CUSTOM -> customWeekdays.toBackendDaysOfWeek()
+            else -> emptyList()
+        }
+
+        val dayOfMonth = if (repeatEnabled && repeatOption == RepeatOption.MONTHLY) {
+            selectedMonthDays.sorted()
+        } else {
+            emptyList()
+        }
+
+        val intervalWeeks = if (repeatEnabled && repeatOption == RepeatOption.CUSTOM) {
+            customInterval.value
+        } else {
+            null
+        }
+
+        val remindTimes = if (alarmMode == AlarmMode.TIME) {
+            scheduledTimes.map { it.displayTimeToBackend() }
+        } else {
+            emptyList()
+        }
+
+        // 백엔드는 시간(intervalHours) 단위만 지원해서, 분 단위로 설정했다면 반올림해 시간으로 환산한다.
+        val intervalHours = if (alarmMode == AlarmMode.INTERVAL) {
+            when (interval.unit) {
+                IntervalUnit.HOUR -> interval.value
+                IntervalUnit.MINUTE -> (interval.value / 60).coerceAtLeast(1)
+            }
+        } else {
+            null
+        }
+
+        // 백엔드는 활성화 시간대를 1개(activeStartTime/activeEndTime)만 지원하고, ONCE에서는 항상 null이어야 한다.
+        // 화면에서 여러 구간을 추가했다면 첫 구간만 저장한다.
+        val firstActiveRange = activeRanges.firstOrNull()
+        val activeTimeRangeAllowed = repeatEnabled && alarmMode == AlarmMode.INTERVAL
+        val activeStartTime = if (activeTimeRangeAllowed) firstActiveRange?.start?.displayTimeToBackend() else null
+        val activeEndTime = if (activeTimeRangeAllowed) firstActiveRange?.end?.displayTimeToBackend() else null
+
+        return ReminderConfig(
+            frequencyType = frequencyType,
+            daysOfWeek = daysOfWeek,
+            intervalWeeks = intervalWeeks,
+            dayOfMonth = dayOfMonth,
+            reminderMode = alarmMode.name,
+            remindTimes = remindTimes,
+            intervalHours = intervalHours,
+            activeStartTime = activeStartTime,
+            activeEndTime = activeEndTime,
+        )
+    }
 
     Column(
         modifier = modifier
@@ -146,7 +262,7 @@ fun NotificationDetailScreen(
                     .size(30.dp)
                     .clip(CircleShape)
                     .background(SelectedGradient)
-                    .clickable { onConfirm() },
+                    .clickable { onConfirm(buildConfig()) },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
