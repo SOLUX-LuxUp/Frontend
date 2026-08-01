@@ -70,6 +70,8 @@ fun NavGraphBuilder.teamButtonTimelineScreen(
                 errorMessage = viewModel.errorMessage,
                 onErrorConsumed = viewModel::consumeError,
                 bottomBar = bottomBar,
+                customEmojis = viewModel.customEmojis,
+                onAddCustomEmoji = viewModel::addCustomEmoji,
             )
         }
     }

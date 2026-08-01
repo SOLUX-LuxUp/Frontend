@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.solux.luxup.taptap.feature.home.buttondetail.data.CustomEmojiStore
 import com.solux.luxup.taptap.feature.team.data.TeamRepository
 import com.solux.luxup.taptap.feature.team.model.TeamButtonLatest
 import com.solux.luxup.taptap.feature.team.model.TeamButtonTimelineRecord
@@ -29,6 +30,7 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
     @Assisted("teamButtonId") private val teamButtonId: Long,
     @Assisted("currentUserId") val currentUserId: Long,
     private val teamRepository: TeamRepository,
+    private val customEmojiStore: CustomEmojiStore,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -61,8 +63,17 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    /** 메모/이모지 다이얼로그의 이모지 피커로 새로 고른 이모지 — 개인 홈과 기기 전역으로 공유된다 */
+    var customEmojis by mutableStateOf(customEmojiStore.getCustomEmojis())
+        private set
+
     init {
         load()
+    }
+
+    fun addCustomEmoji(emoji: String) {
+        customEmojiStore.addCustomEmoji(emoji)
+        customEmojis = customEmojiStore.getCustomEmojis()
     }
 
     private fun load() {
