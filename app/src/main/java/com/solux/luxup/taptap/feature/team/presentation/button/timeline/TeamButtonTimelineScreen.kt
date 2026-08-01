@@ -33,12 +33,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.core.ui.components.BackArrowIcon
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
+import com.solux.luxup.taptap.core.util.button.MemoEmojiDialog
 import com.solux.luxup.taptap.feature.team.data.MockTeamButtonTimeline
 import com.solux.luxup.taptap.feature.team.model.TeamButtonLatest
 import com.solux.luxup.taptap.feature.team.model.TeamButtonTimelineRecord
@@ -71,6 +74,8 @@ fun TeamButtonTimelineScreen(
     errorMessage: String? = null,
     onErrorConsumed: () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
+    customEmojis: List<String> = emptyList(),
+    onAddCustomEmoji: (String) -> Unit = {},
 ) {
     val groups = groupTeamRecordsByDay(records)
 
@@ -189,14 +194,25 @@ fun TeamButtonTimelineScreen(
     }
 
     memoTarget?.let { target ->
-        TeamMemoEmojiDialog(
-            record = target,
-            onDismiss = { memoTarget = null },
-            onSave = { memo, emoji ->
-                memoTarget = null
-                onSaveMemo(target, memo, emoji)
-            },
-        )
+        Dialog(
+            onDismissRequest = { memoTarget = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            MemoEmojiDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp),
+                initialMemo = target.memo,
+                initialEmoji = target.emoji,
+                customEmojis = customEmojis,
+                onAddCustomEmoji = onAddCustomEmoji,
+                onDismiss = { memoTarget = null },
+                onSave = { memo, emoji ->
+                    memoTarget = null
+                    onSaveMemo(target, memo, emoji)
+                },
+            )
+        }
     }
 
     errorMessage?.let { message ->
