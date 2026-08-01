@@ -729,6 +729,13 @@ class MainActivity : ComponentActivity() {
                                 navController.navigateToTab(item)
                             },
                         )
+
+                        teamListViewModel.errorMessage?.let { message ->
+                            NoticeDialog(
+                                message = message,
+                                onDismiss = { teamListViewModel.consumeError() },
+                            )
+                        }
                     }
 
                     // 팀 상세 — 활동·인사이트·멤버 탭 셸 (하단 네비 TEAM 탭 진입점)

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.solux.luxup.taptap.core.network.ApiException
 import com.solux.luxup.taptap.feature.home.buttondetail.data.CustomEmojiStore
 import com.solux.luxup.taptap.feature.team.data.TeamRepository
 import com.solux.luxup.taptap.feature.team.model.TeamButtonLatest
@@ -14,6 +15,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+
+private const val HttpNotFound = 404
+private const val HttpForbidden = 403
 
 private const val PAGE_SIZE = 30
 
@@ -120,8 +124,8 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
      * 기록 삭제.
      * DELETE /api/teams/{teamId}/buttons/{teamButtonId}/records/{record.recordId}
      *
-     * 에러 정책 (연동 시 상태 코드로 분기):
-     *  - 404: 화면을 열어둔 사이 버튼이 삭제됨 → "삭제된 버튼이에요" 안내 후 목록으로 back
+     * 에러 정책 (상태 코드로 분기):
+     *  - 404: 화면을 열어둔 사이 버튼이 삭제됨 → "삭제된 버튼이에요"
      *  - 403: 본인 기록이 아님 → "본인 기록만 삭제할 수 있어요" (그 자리 유지)
      *  - 그 외: "잠시 후 다시 시도해 주세요"
      *
@@ -132,7 +136,14 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
         viewModelScope.launch {
             teamRepository.deleteRecord(teamId, teamButtonId, record.recordId)
                 .onSuccess { load() }
-                .onFailure { errorMessage = "기록을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요." }
+                .onFailure {
+                    errorMessage = recordErrorMessage(
+                        error = it,
+                        notFoundMessage = "삭제된 버튼이에요.",
+                        forbiddenMessage = "본인 기록만 삭제할 수 있어요.",
+                        defaultMessage = "기록을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요.",
+                    )
+                }
         }
     }
 
@@ -142,9 +153,9 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
      *  body: { memo, emoji } — 키 생략 시 기존 값 유지, null이면 삭제, 값이 있으면 수정.
      *  둘 다 키가 없으면 400이므로, 최소 한쪽은 키를 포함해 보낸다.
      *
-     * 에러 정책 (연동 시 상태 코드로 분기):
+     * 에러 정책 (상태 코드로 분기):
      *  - 400: memo·emoji 둘 다 없음 → 전송 전에 막아 발생하지 않도록 한다
-     *  - 404: 버튼이 삭제됨 → "삭제된 버튼이에요" 안내 후 목록으로 back
+     *  - 404: 버튼이 삭제됨 → "삭제된 버튼이에요"
      *  - 403: 본인 기록 아님 → "본인 기록만 수정할 수 있어요"
      *  - 그 외: "잠시 후 다시 시도해 주세요"
      */
@@ -152,8 +163,26 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
         viewModelScope.launch {
             teamRepository.updateRecordDetail(teamId, teamButtonId, record.recordId, memo, emoji)
                 .onSuccess { load() }
-                .onFailure { errorMessage = "메모를 저장하지 못했어요.\n잠시 후 다시 시도해 주세요." }
+                .onFailure {
+                    errorMessage = recordErrorMessage(
+                        error = it,
+                        notFoundMessage = "삭제된 버튼이에요.",
+                        forbiddenMessage = "본인 기록만 수정할 수 있어요.",
+                        defaultMessage = "메모를 저장하지 못했어요.\n잠시 후 다시 시도해 주세요.",
+                    )
+                }
         }
+    }
+
+    private fun recordErrorMessage(
+        error: Throwable,
+        notFoundMessage: String,
+        forbiddenMessage: String,
+        defaultMessage: String,
+    ): String = when ((error as? ApiException)?.statusCode) {
+        HttpNotFound -> notFoundMessage
+        HttpForbidden -> forbiddenMessage
+        else -> defaultMessage
     }
 
     fun consumeError() {

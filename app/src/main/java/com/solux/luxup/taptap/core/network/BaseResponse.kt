@@ -10,4 +10,4 @@ data class BaseResponse<T>(
     val data: T? = null
 )
 
-class ApiException(message: String) : Exception(message)
+class ApiException(message: String, val statusCode: Int? = null) : Exception(message)

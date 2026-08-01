@@ -24,7 +24,7 @@ class ApiCallHandler @Inject constructor(
                 val message = body?.message
                     ?: response.errorBody()?.string()?.let(::parseErrorMessage)
                     ?: "알 수 없는 오류가 발생했습니다."
-                Result.failure(ApiException(message))
+                Result.failure(ApiException(message, response.code()))
             }
         } catch (e: Exception) {
             Result.failure(e)

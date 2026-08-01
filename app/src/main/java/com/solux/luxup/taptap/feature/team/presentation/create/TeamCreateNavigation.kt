@@ -97,6 +97,13 @@ fun NavGraphBuilder.teamCreateGraph(
                     },
                 )
             }
+
+            viewModel.errorMessage?.let { message ->
+                com.solux.luxup.taptap.core.ui.components.NoticeDialog(
+                    message = message,
+                    onDismiss = viewModel::consumeError,
+                )
+            }
         }
 
         composable(TeamCreateRoute.INVITE_CODE) { backStackEntry ->
@@ -146,6 +153,13 @@ fun NavGraphBuilder.teamCreateGraph(
                     }
                 },
             )
+
+            viewModel.errorMessage?.let { message ->
+                com.solux.luxup.taptap.core.ui.components.NoticeDialog(
+                    message = message,
+                    onDismiss = viewModel::consumeError,
+                )
+            }
         }
     }
 }
