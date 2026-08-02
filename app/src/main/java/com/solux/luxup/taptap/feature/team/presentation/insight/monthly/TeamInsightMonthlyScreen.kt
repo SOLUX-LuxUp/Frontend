@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import com.solux.luxup.taptap.feature.insight.monthly.util.monthNavLabel
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightMonthly
 import com.solux.luxup.taptap.feature.team.model.TeamInsightMonthly
 import com.solux.luxup.taptap.feature.team.presentation.insight.components.InsightMemberActivitySection
@@ -30,11 +31,15 @@ fun TeamInsightMonthlyScreen(
     data: TeamInsightMonthly,
     currentUserId: Long,
     onButtonSeeAll: () -> Unit,
+    isThisMonth: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // 이번 달 기록 0건 → 통짜 빈 상태
+    // 팀 기록 0건 → 통짜 빈 상태. 이번 달이면 "아직", 과거 달이면 그 달을 명시한다.
     if (data.totalTapCount <= 0) {
-        MonthlyEmptyState(modifier = modifier)
+        MonthlyEmptyState(
+            message = if (isThisMonth) "아직 이번 달 기록이 없어요" else "${monthNavLabel(data.year, data.month)} 기록이 없어요",
+            modifier = modifier,
+        )
         return
     }
 
@@ -82,7 +87,7 @@ fun TeamInsightMonthlyScreen(
 }
 
 @Composable
-private fun MonthlyEmptyState(modifier: Modifier = Modifier) {
+private fun MonthlyEmptyState(message: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -90,7 +95,7 @@ private fun MonthlyEmptyState(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "아직 이번 달 기록이 없어요",
+            text = message,
             fontSize = 14.sp,
             color = Color(0xFF8A94A6) // ⚠ 임시 회색 — 토큰 교체 대상
         )

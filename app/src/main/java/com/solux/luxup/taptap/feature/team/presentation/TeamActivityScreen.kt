@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -156,6 +157,12 @@ fun TeamActivityScreen(
     var showCategoryEditDialog by remember { mutableStateOf(false) }
     var categoryPendingDelete by remember { mutableStateOf<TeamButtonCategory?>(null) }
 
+    // 빠르게 만들기를 누르면 추천 섹션(리스트 맨 위 header)이 바로 보이도록 스크롤을 올린다
+    val listState = rememberLazyListState()
+    LaunchedEffect(isQuickCreateMode) {
+        if (isQuickCreateMode) listState.scrollToItem(0)
+    }
+
     Column(modifier = modifier) {
         // 최근 기록 배너 — 서버가 latestRecord.recordedAt 최신순으로 정렬해서 주므로
         // 기록이 있는 첫 번째 버튼이 곧 가장 최근 기록이다
@@ -187,8 +194,9 @@ fun TeamActivityScreen(
 
         // 추천 섹션은 팀 생성 직후 진입(quickCreateMode)에서만 노출된다.
         // 그 방문 동안엔 버튼을 몇 개 만들든 유지되다가, X로 닫거나 다른 방문에서는 다시 안 뜬다.
+        // 나중에 버튼을 전부 지워서 다시 0개가 되어도(방금 생성한 게 아니라면) 추천 섹션은 다시 뜨지 않는다.
         when {
-            buttons.isEmpty() -> {
+            buttons.isEmpty() && isQuickCreateMode -> {
                 TeamFirstButtonSection(
                     suggestions = suggestions,
                     onSuggestionClick = onSuggestionClick,
@@ -197,9 +205,21 @@ fun TeamActivityScreen(
                 )
             }
 
+            buttons.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 80.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("버튼이 없어요", fontSize = 14.sp, color = Color(0xFF8A94A6))
+                }
+            }
+
             else -> {
                 TeamButtonList(
                     buttons = buttons,
+                    state = listState,
                     onButtonClick = { button ->
                         if (button.hasTapPermission) onRecordTap(button)
                         else localNotice = if (isTeamOwner) NO_TAP_PERMISSION_MESSAGE_OWNER else NO_TAP_PERMISSION_MESSAGE_MEMBER

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -186,7 +187,10 @@ private fun TeamRecordTimelineItem(
                 Text(
                     text = record.recordedBy.displayName,
                     fontSize = 13.sp,
-                    color = Color(0xFF6D6D6D)
+                    color = Color(0xFF6D6D6D),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 60.dp)
                 )
             }
             record.memo?.let { memo ->

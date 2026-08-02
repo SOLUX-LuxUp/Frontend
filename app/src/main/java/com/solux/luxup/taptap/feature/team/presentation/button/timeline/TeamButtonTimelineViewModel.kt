@@ -125,7 +125,7 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
      * DELETE /api/teams/{teamId}/buttons/{teamButtonId}/records/{record.recordId}
      *
      * 에러 정책 (상태 코드로 분기):
-     *  - 404: 화면을 열어둔 사이 버튼이 삭제됨 → "삭제된 버튼이에요"
+     *  - 404: 화면을 열어둔 사이 버튼이 삭제됨 → "삭제된 기록이에요"
      *  - 403: 본인 기록이 아님 → "본인 기록만 삭제할 수 있어요" (그 자리 유지)
      *  - 그 외: "잠시 후 다시 시도해 주세요"
      *
@@ -139,7 +139,7 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
                 .onFailure {
                     errorMessage = recordErrorMessage(
                         error = it,
-                        notFoundMessage = "삭제된 버튼이에요.",
+                        notFoundMessage = "삭제된 기록이에요.",
                         forbiddenMessage = "본인 기록만 삭제할 수 있어요.",
                         defaultMessage = "기록을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요.",
                     )
@@ -155,7 +155,7 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
      *
      * 에러 정책 (상태 코드로 분기):
      *  - 400: memo·emoji 둘 다 없음 → 전송 전에 막아 발생하지 않도록 한다
-     *  - 404: 버튼이 삭제됨 → "삭제된 버튼이에요"
+     *  - 404: 버튼이 삭제됨 → "삭제된 기록이에요"
      *  - 403: 본인 기록 아님 → "본인 기록만 수정할 수 있어요"
      *  - 그 외: "잠시 후 다시 시도해 주세요"
      */
@@ -166,7 +166,7 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
                 .onFailure {
                     errorMessage = recordErrorMessage(
                         error = it,
-                        notFoundMessage = "삭제된 버튼이에요.",
+                        notFoundMessage = "삭제된 기록이에요.",
                         forbiddenMessage = "본인 기록만 수정할 수 있어요.",
                         defaultMessage = "메모를 저장하지 못했어요.\n잠시 후 다시 시도해 주세요.",
                     )
