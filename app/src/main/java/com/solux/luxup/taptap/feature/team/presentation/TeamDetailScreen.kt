@@ -42,6 +42,7 @@ import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost
+import com.solux.luxup.taptap.feature.team.presentation.insight.InsightViewMode
 import com.solux.luxup.taptap.feature.team.presentation.insight.TeamInsightRoute
 import com.solux.luxup.taptap.feature.team.presentation.memberdetail.TeamMemberDetailRoute
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -71,6 +72,9 @@ fun TeamDetailScreen(
     var selectedMemberId by remember { mutableStateOf(initialMemberId) }
     var showCreateOption by remember { mutableStateOf(false) }
     var quickCreateMode by remember { mutableStateOf(initialQuickCreateMode) }
+    // 인사이트 탭 "전체 타임라인" 여부 — 상단바 뒤로가기가 이 상태를 알아야
+    // 팀 목록까지 나가버리지 않고 인사이트 일반 화면으로만 돌아간다.
+    var insightViewMode by remember { mutableStateOf(InsightViewMode.NORMAL) }
         Scaffold(
         modifier = modifier,
         bottomBar = {
@@ -89,11 +93,13 @@ fun TeamDetailScreen(
                     else -> TopBarAction.ADD
                 },
                 onBackClick = {
-                    // 멤버 상세 보는 중이면 → 목록으로, 아니면 → 팀 상세 나가기
-                    if (selectedTab == TeamDetailTab.MEMBER && selectedMemberId != null) {
-                        selectedMemberId = null
-                    } else {
-                        onExit()
+                    // 멤버 상세 보는 중이면 → 목록으로, 인사이트 전체 타임라인 보는 중이면 → 일반 화면으로,
+                    // 그 외엔 → 팀 상세 나가기
+                    when {
+                        selectedTab == TeamDetailTab.MEMBER && selectedMemberId != null -> selectedMemberId = null
+                        selectedTab == TeamDetailTab.INSIGHT && insightViewMode != InsightViewMode.NORMAL ->
+                            insightViewMode = InsightViewMode.NORMAL
+                        else -> onExit()
                     }
                 },
                 onActionClick = {
@@ -114,6 +120,7 @@ fun TeamDetailScreen(
                 onTabSelected = {
                     selectedTab = it
                     selectedMemberId = null            // 탭 바꾸면 상세 상태 초기화
+                    insightViewMode = InsightViewMode.NORMAL
                 }
             )
 
@@ -129,6 +136,8 @@ fun TeamDetailScreen(
                 TeamDetailTab.INSIGHT  -> TeamInsightRoute(
                     teamId = teamId,
                     currentUserId = currentUserId,
+                    viewMode = insightViewMode,
+                    onViewModeChange = { insightViewMode = it },
                     onNavigateToButtonAll = { period ->
                         onNavigateToInsightButtonAll(teamId, period.name)   // 위로 전달
                     }

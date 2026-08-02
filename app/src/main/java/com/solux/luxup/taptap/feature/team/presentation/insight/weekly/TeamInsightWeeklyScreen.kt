@@ -18,6 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import com.solux.luxup.taptap.feature.insight.weekly.util.toKoreanMonthText
+import com.solux.luxup.taptap.feature.insight.weekly.util.toWeekOfMonthText
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.model.TeamInsightWeekly
 import com.solux.luxup.taptap.feature.team.presentation.insight.components.InsightButtonRatioSection
@@ -31,11 +33,15 @@ fun TeamInsightWeeklyScreen(
     data: TeamInsightWeekly,
     currentUserId: Long,
     onButtonSeeAll: () -> Unit,
+    isThisWeek: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // 이번 주 기록 0건 → 통짜 빈 상태
+    // 팀 기록 0건 → 통짜 빈 상태. 이번 주면 "아직", 과거 주면 그 주를 명시한다.
     if (data.totalTapCount <= 0) {
-        WeeklyEmptyState(modifier = modifier)
+        WeeklyEmptyState(
+            message = if (isThisWeek) "아직 이번 주 기록이 없어요" else "${data.weekStart.toKoreanMonthText()} ${data.weekStart.toWeekOfMonthText()} 기록이 없어요",
+            modifier = modifier,
+        )
         return
     }
 
@@ -84,7 +90,7 @@ fun TeamInsightWeeklyScreen(
 }
 
 @Composable
-private fun WeeklyEmptyState(modifier: Modifier = Modifier) {
+private fun WeeklyEmptyState(message: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -92,7 +98,7 @@ private fun WeeklyEmptyState(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "아직 이번 주 기록이 없어요",
+            text = message,
             fontSize = 14.sp,
             color = Color(0xFF8A94A6) // ⚠ 임시 회색 — 토큰 교체 대상
         )

@@ -27,8 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.SectionCard
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
-import com.solux.luxup.taptap.core.ui.theme.parseHexColor
 import com.solux.luxup.taptap.feature.team.model.TeamInsightBarCategory
 import com.solux.luxup.taptap.feature.team.model.TeamInsightDailyBar
 import java.time.LocalDate
@@ -172,7 +172,7 @@ private fun DayBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(weight)
-                        .background(parseHexColor(category.categoryColor))
+                        .background(IconColor.from(category.categoryColor).color)
                 )
             }
         }
@@ -186,7 +186,7 @@ private fun LegendRow(name: String, colorHex: String) {
             modifier = Modifier
                 .size(12.dp)
                 .clip(CircleShape)
-                .background(parseHexColor(colorHex))
+                .background(IconColor.from(colorHex).color)
         )
         Spacer(Modifier.width(6.dp))
         Text(

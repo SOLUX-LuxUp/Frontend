@@ -12,7 +12,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +77,8 @@ fun TeamInsightRoute(
     teamId: Long,
     currentUserId: Long,
     onNavigateToButtonAll: (InsightPeriod) -> Unit,
+    viewMode: InsightViewMode,
+    onViewModeChange: (InsightViewMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: TeamInsightViewModel = hiltViewModel<TeamInsightViewModel, TeamInsightViewModel.Factory>(
@@ -94,6 +101,8 @@ fun TeamInsightRoute(
         month = viewModel.month,
         currentUserId = currentUserId,
         onNavigateToButtonAll = onNavigateToButtonAll,
+        viewMode = viewMode,
+        onViewModeChange = onViewModeChange,
         onPrevDay = viewModel::goToPreviousDay,
         onNextDay = viewModel::goToNextDay,
         onPrevWeek = viewModel::goToPreviousWeek,
@@ -125,10 +134,18 @@ fun TeamInsightScreen(
     onNextWeek: () -> Unit = {},
     onPrevMonth: () -> Unit = {},
     onNextMonth: () -> Unit = {},
+    viewMode: InsightViewMode = InsightViewMode.NORMAL,
+    onViewModeChange: (InsightViewMode) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var period by remember { mutableStateOf(InsightPeriod.DAILY) }
-    var viewMode by remember { mutableStateOf(InsightViewMode.NORMAL) }
+
+    val today = remember { LocalDate.now() }
+    val isCurrentPeriod = when (period) {
+        InsightPeriod.DAILY -> targetDate == today.format(IsoDateFormatter)
+        InsightPeriod.WEEKLY -> weekStart == today.minusDays((today.dayOfWeek.value - 1).toLong()).format(IsoDateFormatter)
+        InsightPeriod.MONTHLY -> year == today.year && month == today.monthValue
+    }
 
     Column(
         modifier = modifier
@@ -142,7 +159,7 @@ fun TeamInsightScreen(
             selected = period,
             onSelect = {
                 period = it
-                viewMode = InsightViewMode.NORMAL   // 전체보기 리셋
+                onViewModeChange(InsightViewMode.NORMAL)   // 전체보기 리셋
             }
         )
 
@@ -178,7 +195,8 @@ fun TeamInsightScreen(
                             TeamInsightDailyScreen(
                                 data = data,
                                 currentUserId = currentUserId,
-                                onTimelineSeeAll = { viewMode = InsightViewMode.TIMELINE_ALL },
+                                isToday = isCurrentPeriod,
+                                onTimelineSeeAll = { onViewModeChange(InsightViewMode.TIMELINE_ALL) },
                                 onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.DAILY) }
                             )
                         }
@@ -188,6 +206,7 @@ fun TeamInsightScreen(
                             TeamInsightWeeklyScreen(
                                 data = data,
                                 currentUserId = currentUserId,
+                                isThisWeek = isCurrentPeriod,
                                 onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.WEEKLY) }
                             )
                         }
@@ -197,6 +216,7 @@ fun TeamInsightScreen(
                             TeamInsightMonthlyScreen(
                                 data = data,
                                 currentUserId = currentUserId,
+                                isThisMonth = isCurrentPeriod,
                                 onButtonSeeAll = { onNavigateToButtonAll(InsightPeriod.MONTHLY) }
                             )
                         }
@@ -206,7 +226,7 @@ fun TeamInsightScreen(
             InsightViewMode.TIMELINE_ALL -> {
                 TeamInsightTimelineAllScreen(
                     timeline = daily?.timeline.orEmpty(),
-                    onBack = { viewMode = InsightViewMode.NORMAL }
+                    onBack = { onViewModeChange(InsightViewMode.NORMAL) }
                 )
             }
         }
@@ -262,6 +282,11 @@ private fun InsightPeriodToggle(
 
 private val IsoDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
+/**
+ * 개인 인사이트(수민님 컴포넌트, [com.solux.luxup.taptap.feature.insight.daily.util.InsightDateNav] 등)와
+ * 동일한 구성 — 기간마다 줄 구성이 고정돼 있어(일간·주간은 캡션+본문 2줄, 월간은 1줄),
+ * "이번 기간" 여부에 따라 줄이 늘었다 줄었다 하며 튀는 문제가 없다.
+ */
 @Composable
 private fun InsightDateNav(
     period: InsightPeriod,
@@ -272,65 +297,63 @@ private fun InsightDateNav(
     onPrev: () -> Unit,
     onNext: () -> Unit,
 ) {
-    val today = remember { LocalDate.now() }
-    val (badge, label) = when (period) {
-        InsightPeriod.DAILY -> {
-            val isToday = targetDate == today.format(IsoDateFormatter)
-            (if (isToday) "Today" else null) to targetDate.toKoreanDateText()
-        }
-        InsightPeriod.WEEKLY -> {
-            val isThisWeek = weekStart == today.minusDays((today.dayOfWeek.value - 1).toLong()).format(IsoDateFormatter)
-            (if (isThisWeek) "This Week" else null) to "${weekStart.toKoreanMonthText()} ${weekStart.toWeekOfMonthText()}"
-        }
-        InsightPeriod.MONTHLY -> {
-            val isThisMonth = year == today.year && month == today.monthValue
-            (if (isThisMonth) "This Month" else null) to monthNavLabel(year, month)
-        }
-    }
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "‹",
-            fontSize = 20.sp,
-            color = Color(0xFFB0B0B0),
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+            contentDescription = "이전",
+            tint = Color(0xFF727272),
             modifier = Modifier
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { onPrev() }
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 30.dp)
+                .size(50.dp)
         )
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            if (badge != null) {
+        when (period) {
+            InsightPeriod.DAILY -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "Today", fontFamily = Pretendard, fontSize = 13.sp, color = Color(0xFFB0B0B0))
                 Text(
-                    text = badge,
+                    text = targetDate.toKoreanDateText(),
                     fontFamily = Pretendard,
-                    fontSize = 10.sp,
-                    color = Color(0xFF2085FF)
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF727272)
                 )
             }
-            Text(
-                text = label,
+            InsightPeriod.WEEKLY -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = weekStart.toKoreanMonthText(), fontFamily = Pretendard, fontSize = 13.sp, color = Color(0xFFB0B0B0))
+                Text(
+                    text = weekStart.toWeekOfMonthText(),
+                    fontFamily = Pretendard,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF727272)
+                )
+            }
+            InsightPeriod.MONTHLY -> Text(
+                text = monthNavLabel(year, month),
                 fontFamily = Pretendard,
-                fontSize = 14.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A1A1A)
+                color = Color(0xFF727272)
             )
         }
-        Text(
-            text = "›",
-            fontSize = 20.sp,
-            color = Color(0xFFB0B0B0),
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = "다음",
+            tint = Color(0xFF727272),
             modifier = Modifier
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { onNext() }
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 30.dp)
+                .size(50.dp)
         )
     }
 }

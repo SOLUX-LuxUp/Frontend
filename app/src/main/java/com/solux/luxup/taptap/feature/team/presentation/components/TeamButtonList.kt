@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items          // ← 이게 빠졌었음
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,11 +21,13 @@ fun TeamButtonList(
     onButtonLongClick: (TeamButton) -> Unit = {},
     onButtonMenuClick: (TeamButton) -> Unit = {},
     modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
     header: (@Composable () -> Unit)? = null,   // 추가
 
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
+        state = state,
         contentPadding = PaddingValues(horizontal = 40.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

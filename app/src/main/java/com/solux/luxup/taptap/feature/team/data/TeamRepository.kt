@@ -170,8 +170,18 @@ class TeamRepository @Inject constructor(
             teamApi.updateRecordDetail(teamId, teamButtonId, recordId, UpdateTeamButtonRecordDetailRequestDto(memo, emoji))
         }
 
-    suspend fun deleteRecord(teamId: Long, teamButtonId: Long, recordId: Long): Result<Unit> =
-        apiCallHandler.execute { teamApi.deleteRecord(teamId, teamButtonId, recordId) }.mapCatching {}
+    /**
+     * DELETE .../records/{record_id}
+     * 응답 data가 빈 값으로 내려와 data != null을 요구하는 공통 apiCallHandler를 쓰면
+     * 성공해도 실패로 처리될 수 있어, success 플래그만 직접 확인한다.
+     */
+    suspend fun deleteRecord(teamId: Long, teamButtonId: Long, recordId: Long): Result<Unit> = runCatching {
+        val response = teamApi.deleteRecord(teamId, teamButtonId, recordId)
+        val body = response.body()
+        if (!response.isSuccessful || body?.success != true) {
+            throw ApiException(body?.message ?: "기록을 삭제하지 못했어요.", response.code())
+        }
+    }
 
     suspend fun getButtonCategories(teamId: Long): Result<List<TeamButtonCategory>> =
         apiCallHandler.execute { teamApi.getButtonCategories(teamId) }.mapCatching { list -> list.map { it.toModel() } }

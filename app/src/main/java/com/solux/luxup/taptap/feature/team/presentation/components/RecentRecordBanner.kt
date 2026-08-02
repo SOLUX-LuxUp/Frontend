@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,20 +70,31 @@ fun RecentRecordBanner(button: TeamButton) {
         Spacer(Modifier.width(16.dp))
 
         // 오른쪽: 이름 + 시간 + last tapped by
-        Column {
-            Text(button.buttonName, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                button.buttonName,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Spacer(Modifier.height(4.dp))
             button.latestRecord?.let { record ->
                 Text(
                     "${formatTimeAgo(record.recordedAt)}  •  ${formatTimeOfDay(record.recordedAt)}",
                     fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.9f)
+                    color = Color.White.copy(alpha = 0.9f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(13.dp))
                 Text(
                     "last tapped by  ${record.recordedBy.firstOrNull()?.displayName ?: ""}",
                     fontSize = 12.sp,
-                    color = Color.White
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

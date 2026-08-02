@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import com.solux.luxup.taptap.feature.insight.daily.util.toKoreanDateText
 import com.solux.luxup.taptap.feature.team.data.MockTeamInsightDaily
 import com.solux.luxup.taptap.feature.team.model.TeamInsightDaily
 import com.solux.luxup.taptap.feature.team.presentation.insight.components.InsightButtonRatioSection
@@ -31,11 +32,15 @@ fun TeamInsightDailyScreen(
     currentUserId: Long,
     onTimelineSeeAll: () -> Unit,
     onButtonSeeAll: () -> Unit,
+    isToday: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // 오늘 팀 기록 0건 → 통짜 빈 상태
+    // 팀 기록 0건 → 통짜 빈 상태. 오늘이면 "아직", 과거 날짜면 그 날짜를 명시한다.
     if (data.totalTapCount <= 0) {
-        DailyEmptyState(modifier = modifier)
+        DailyEmptyState(
+            message = if (isToday) "아직 오늘 기록이 없어요" else "${data.targetDate.toKoreanDateText()} 기록이 없어요",
+            modifier = modifier,
+        )
         return
     }
 
@@ -86,7 +91,7 @@ fun TeamInsightDailyScreen(
 }
 
 @Composable
-private fun DailyEmptyState(modifier: Modifier = Modifier) {
+private fun DailyEmptyState(message: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -94,7 +99,7 @@ private fun DailyEmptyState(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "아직 오늘 기록이 없어요",
+            text = message,
             fontSize = 14.sp,
             color = Color(0xFF8A94A6) // ⚠ 임시 회색 — 토큰 교체 대상
         )
