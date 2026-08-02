@@ -51,7 +51,7 @@ fun TeamInsightButtonAllScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 40.dp, vertical = 12.dp)
         ) {

@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,13 +69,16 @@ fun TeamDetailScreen(
     onNavigateToInsightButtonAll: (teamId: Long, period: String) -> Unit = { _, _ -> },    onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var selectedTab by remember { mutableStateOf(initialTab) }
-    var selectedMemberId by remember { mutableStateOf(initialMemberId) }
+    // "가장 많이 기록한 버튼 더보기" 같은 진짜 화면 이동을 했다가 popBackStack으로 돌아오면
+    // 이 컴포저블은 처음부터 다시 그려져서 일반 remember는 초기화된다 — rememberSaveable로
+    // 어느 탭/상태에 있었는지 기억해야 활동 탭으로 튕기지 않는다.
+    var selectedTab by rememberSaveable { mutableStateOf(initialTab) }
+    var selectedMemberId by rememberSaveable { mutableStateOf(initialMemberId) }
     var showCreateOption by remember { mutableStateOf(false) }
-    var quickCreateMode by remember { mutableStateOf(initialQuickCreateMode) }
+    var quickCreateMode by rememberSaveable { mutableStateOf(initialQuickCreateMode) }
     // 인사이트 탭 "전체 타임라인" 여부 — 상단바 뒤로가기가 이 상태를 알아야
     // 팀 목록까지 나가버리지 않고 인사이트 일반 화면으로만 돌아간다.
-    var insightViewMode by remember { mutableStateOf(InsightViewMode.NORMAL) }
+    var insightViewMode by rememberSaveable { mutableStateOf(InsightViewMode.NORMAL) }
         Scaffold(
         modifier = modifier,
         bottomBar = {
