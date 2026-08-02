@@ -32,7 +32,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import kotlin.math.ceil
 
-private val BannerColor = Color(0xCCFFACAF)
+private val BannerColor = Color(0x80FFACAF)
 private val BannerTextColor = Color(0xFFEE3A3A)
 
 /**
