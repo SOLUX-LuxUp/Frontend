@@ -144,3 +144,47 @@ data class InsightMonthlyResponseDto(
     val timeSlotCategory: Map<String, TimeSlotCategoryEntryDto> = emptyMap(),
     val prevMonthComparison: PrevMonthComparisonDto? = null,
 )
+
+// ---- 라이프스타일 추천 (12. GET/PATCH /api/lifestyle-recommendations) ----
+
+@Serializable
+data class AnalysisButtonDto(
+    val buttonId: Long,
+    val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
+)
+
+@Serializable
+data class LifestyleRecommendationDto(
+    val recId: Long,
+    val recType: String? = null,
+    val suggestedButtonName: String? = null,
+    val suggestedIconName: String? = null,
+    val suggestedIconColor: String? = null,
+    val buttonId: Long? = null,
+    val buttonName: String? = null,
+    val lastRecordedAt: String? = null,
+)
+
+@Serializable
+data class LifestyleRecommendationsResponseDto(
+    val analysisAvailable: Boolean = false,
+    val lifestyleLabel: String? = null,
+    val lifestyleCaption: String? = null,
+    val analysisButtons: List<AnalysisButtonDto> = emptyList(),
+    val recommendations: List<LifestyleRecommendationDto> = emptyList(),
+)
+
+@Serializable
+data class LifestyleRecommendationActionRequestDto(
+    val action: String,
+)
+
+@Serializable
+data class LifestyleRecommendationActionResponseDto(
+    val recId: Long,
+    val recType: String? = null,
+    val action: String? = null,
+    val createdButtonId: Long? = null,
+)

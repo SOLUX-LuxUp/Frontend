@@ -6,6 +6,9 @@ import com.solux.luxup.taptap.feature.insight.daily.model.InsightCategoryTapCoun
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightDaily
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightTimelineItem
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightTopButton
+import com.solux.luxup.taptap.feature.insight.lifestyle.model.InsightLifestyle
+import com.solux.luxup.taptap.feature.insight.lifestyle.model.InsightLifestyleAnalysisButton
+import com.solux.luxup.taptap.feature.insight.lifestyle.model.InsightLifestyleRecommendation
 import com.solux.luxup.taptap.feature.insight.monthly.model.InsightMonthly
 import com.solux.luxup.taptap.feature.insight.monthly.model.InsightMonthlyComparison
 import com.solux.luxup.taptap.feature.insight.monthly.model.InsightMonthlyRankedButton
@@ -31,6 +34,17 @@ class InsightRepository @Inject constructor(
 
     suspend fun getMonthlyInsight(year: Int? = null, month: Int? = null): Result<InsightMonthly> =
         apiCallHandler.execute { insightApi.getMonthlyInsight(year, month) }.mapCatching { it.toModel() }
+
+    // ---- 라이프스타일 추천 ----
+
+    suspend fun getLifestyleRecommendations(): Result<InsightLifestyle> =
+        apiCallHandler.execute { insightApi.getLifestyleRecommendations() }.mapCatching { it.toModel() }
+
+    /** action: "accept"(수락) | "dismiss"(무시) */
+    suspend fun processLifestyleRecommendation(recId: Long, action: String): Result<Unit> =
+        apiCallHandler.execute {
+            insightApi.processLifestyleRecommendationAction(recId, LifestyleRecommendationActionRequestDto(action))
+        }.map { }
 }
 
 private fun TopButtonDto.toModel() = InsightTopButton(
@@ -160,3 +174,29 @@ private fun InsightMonthlyResponseDto.toModel(): InsightMonthly {
         prevMonthComparison = prevMonthComparison?.toModel(),
     )
 }
+
+private fun AnalysisButtonDto.toModel() = InsightLifestyleAnalysisButton(
+    buttonId = buttonId,
+    buttonName = buttonName.orEmpty(),
+    iconName = iconName,
+    iconColor = iconColor,
+)
+
+private fun LifestyleRecommendationDto.toModel() = InsightLifestyleRecommendation(
+    recId = recId,
+    recType = recType.orEmpty(),
+    suggestedButtonName = suggestedButtonName,
+    suggestedIconName = suggestedIconName,
+    suggestedIconColor = suggestedIconColor,
+    buttonId = buttonId,
+    buttonName = buttonName,
+    lastRecordedAt = lastRecordedAt,
+)
+
+private fun LifestyleRecommendationsResponseDto.toModel() = InsightLifestyle(
+    analysisAvailable = analysisAvailable,
+    lifestyleLabel = lifestyleLabel.orEmpty(),
+    lifestyleCaption = lifestyleCaption.orEmpty(),
+    analysisButtons = analysisButtons.map { it.toModel() },
+    recommendations = recommendations.map { it.toModel() },
+)
