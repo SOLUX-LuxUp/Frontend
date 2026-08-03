@@ -2,7 +2,10 @@ package com.solux.luxup.taptap.feature.insight.data
 
 import com.solux.luxup.taptap.core.network.BaseResponse
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface InsightApi {
@@ -20,4 +23,15 @@ interface InsightApi {
         @Query("year") year: Int? = null,
         @Query("month") month: Int? = null,
     ): Response<BaseResponse<InsightMonthlyResponseDto>>
+
+    // ---- 라이프스타일 추천 ----
+
+    @GET("api/lifestyle-recommendations")
+    suspend fun getLifestyleRecommendations(): Response<BaseResponse<LifestyleRecommendationsResponseDto>>
+
+    @PATCH("api/lifestyle-recommendations/{rec_id}")
+    suspend fun processLifestyleRecommendationAction(
+        @Path("rec_id") recId: Long,
+        @Body request: LifestyleRecommendationActionRequestDto,
+    ): Response<BaseResponse<LifestyleRecommendationActionResponseDto>>
 }

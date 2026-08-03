@@ -9,8 +9,10 @@ import com.solux.luxup.taptap.feature.home.main.data.ButtonRepository
 import com.solux.luxup.taptap.feature.insight.data.InsightRepository
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightButtonTapCount
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightDaily
+import com.solux.luxup.taptap.feature.insight.daily.model.InsightTimelineItem
 import com.solux.luxup.taptap.feature.insight.daily.util.isFutureDate
 import com.solux.luxup.taptap.feature.insight.daily.util.shiftDate
+import com.solux.luxup.taptap.feature.insight.lifestyle.model.InsightLifestyle
 import com.solux.luxup.taptap.feature.insight.monthly.model.InsightMonthly
 import com.solux.luxup.taptap.feature.insight.monthly.util.isFutureMonth
 import com.solux.luxup.taptap.feature.insight.monthly.util.shiftMonth
@@ -77,6 +79,11 @@ class InsightViewModel @Inject constructor(
     // GET /api/buttons/categories(현재 카테고리 목록)를 그대로 쓴다. 인사이트 API의 categoryTapCounts는
     // 과거 기록 기준 집계라 이미 이름이 바뀌었거나 삭제된 카테고리가 섞여 나올 수 있어 드롭다운 소스로 쓰지 않는다.
     var categoryNames by mutableStateOf<List<String>>(emptyList())
+        private set
+
+    // 먼슬리의 "나의 라이프 스타일" 배너에서 진입할 때만 필요해 refreshAll()에는 포함하지 않고,
+    // insightLifestyle 라우트 진입 시 별도로 불러온다.
+    var lifestyle by mutableStateOf<InsightLifestyle?>(null)
         private set
 
     init {
@@ -185,6 +192,32 @@ class InsightViewModel @Inject constructor(
         year = y
         month = m
         loadMonthly()
+    }
+
+    /** 데일리 타임라인 "..." → 기록 삭제. 삭제 후 daily/weekly/monthly 집계가 전부 바뀌므로 다시 불러온다. */
+    fun deleteRecord(item: InsightTimelineItem) {
+        viewModelScope.launch {
+            buttonRepository.deleteTimelineRecord(item.buttonId, item.recordId)
+                .onSuccess { refreshAll() }
+                .onFailure { errorMessage = "기록을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요." }
+        }
+    }
+
+    fun loadLifestyle() {
+        viewModelScope.launch {
+            insightRepository.getLifestyleRecommendations()
+                .onSuccess { lifestyle = it }
+                .onFailure { errorMessage = it.message ?: "라이프스타일 추천을 불러오지 못했어요." }
+        }
+    }
+
+    /** 추천 카드의 "추가"/"삭제" 버튼 — 추천을 수락해 버튼을 실제로 추가/삭제한다. */
+    fun acceptLifestyleRecommendation(recId: Long) {
+        viewModelScope.launch {
+            insightRepository.processLifestyleRecommendation(recId, action = "accept")
+                .onSuccess { loadLifestyle() }
+                .onFailure { errorMessage = it.message ?: "추천을 반영하지 못했어요." }
+        }
     }
 
     fun consumeError() {

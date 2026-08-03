@@ -46,7 +46,6 @@ import com.solux.luxup.taptap.feature.home.template.presentation.OnboardingTempl
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightDailyScreen
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightRatioAllScreen
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightTimelineAllScreen
-import com.solux.luxup.taptap.feature.insight.lifestyle.data.MockInsightLifestyle
 import com.solux.luxup.taptap.feature.insight.lifestyle.presentation.InsightLifestyleScreen
 import com.solux.luxup.taptap.feature.insight.monthly.presentation.InsightMonthlyScreen
 import com.solux.luxup.taptap.feature.insight.presentation.InsightViewModel
@@ -372,9 +371,7 @@ class MainActivity : ComponentActivity() {
                                             "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
                                     )
                                 },
-                                onDeleteRecord = {
-                                    // TODO: 기록 삭제 API 연결
-                                },
+                                onDeleteRecord = viewModel::deleteRecord,
                                 onPrevDay = viewModel::goToPreviousDay,
                                 onNextDay = viewModel::goToNextDay,
                                 onSelectWeekly = {
@@ -453,19 +450,33 @@ class MainActivity : ComponentActivity() {
                             NoticeDialog(message = message, onDismiss = viewModel::consumeError)
                         }
                     }
-                    composable("insightLifestyle") {
-                        InsightLifestyleScreen(
-                            data = MockInsightLifestyle,
-                            onBack = {
-                                navController.popBackStack()
-                            },
-                            onAddRecommendation = {
-                                // TODO: 라이프스타일 추천 수락(ADD) API 연결
-                            },
-                            onDeleteRecommendation = {
-                                // TODO: 라이프스타일 추천 수락(DELETE) API 연결
+                    composable("insightLifestyle") { backStackEntry ->
+                        // 먼슬리 인사이트 화면의 백스택 엔트리에 스코프된 ViewModel을 공유한다.
+                        val monthlyEntry = remember(backStackEntry) {
+                            navController.getBackStackEntry("insightMonthly")
+                        }
+                        val viewModel: InsightViewModel = hiltViewModel(monthlyEntry)
+                        LaunchedEffect(Unit) {
+                            viewModel.loadLifestyle()
+                        }
+                        val data = viewModel.lifestyle
+                        if (data == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
-                        )
+                        } else {
+                            InsightLifestyleScreen(
+                                data = data,
+                                onBack = {
+                                    navController.popBackStack()
+                                },
+                                onAddRecommendation = viewModel::acceptLifestyleRecommendation,
+                                onDeleteRecommendation = viewModel::acceptLifestyleRecommendation
+                            )
+                        }
+                        viewModel.errorMessage?.let { message ->
+                            NoticeDialog(message = message, onDismiss = viewModel::consumeError)
+                        }
                     }
                     composable("insightWeeklyRatioAll") { backStackEntry ->
                         // 위클리 인사이트 화면에서 이미 조회해둔 값을 그대로 쓴다 (같은 백스택 엔트리에 스코프된 ViewModel 공유)
@@ -516,9 +527,7 @@ class MainActivity : ComponentActivity() {
                                             "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
                                     )
                                 },
-                                onDeleteRecord = {
-                                    // TODO: 기록 삭제 API 연결
-                                },
+                                onDeleteRecord = viewModel::deleteRecord,
                                 onPrevDay = viewModel::goToPreviousDay,
                                 onNextDay = viewModel::goToNextDay
                             )
