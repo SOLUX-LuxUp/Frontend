@@ -118,7 +118,7 @@ private fun NoticeContentNoTapPermissionPreview() {
 @Composable
 private fun NoticeContentNoEditPermissionPreview() {
     NoticeContent(
-        message = "버튼을 수정할 권한이 없어요.\n팀장에게 문의해 주세요.",
+        message = "지금은 팀장만 버튼을 수정할 수 있어요.",
         onConfirm = {},
         modifier = Modifier.padding(40.dp),
     )
