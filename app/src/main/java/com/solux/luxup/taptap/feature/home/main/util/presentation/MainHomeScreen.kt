@@ -66,13 +66,11 @@ import com.solux.luxup.taptap.feature.home.main.data.mockFavoriteButtons
 import com.solux.luxup.taptap.feature.home.main.data.mockHabitButtons
 import com.solux.luxup.taptap.feature.home.main.data.mockHomeUser
 import com.solux.luxup.taptap.feature.home.main.data.mockRecentRecord
-import com.solux.luxup.taptap.feature.home.main.data.recommendedButtons
 import com.solux.luxup.taptap.feature.home.main.model.Category
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
 import com.solux.luxup.taptap.feature.home.main.model.HabitButton
 import com.solux.luxup.taptap.feature.home.main.model.HomeUser
 import com.solux.luxup.taptap.feature.home.main.model.RecentRecord
-import com.solux.luxup.taptap.feature.home.main.model.RecommendedButton
 import com.solux.luxup.taptap.feature.home.main.util.AddButtonMenuPopup
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteAddBox
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteButtonBox
@@ -90,13 +88,15 @@ import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
+/** 카테고리 없이 만든 버튼만 모아보는 필터 항목 — 드롭다운에서 "ALL" 바로 위에 노출 */
+private const val NO_CATEGORY_LABEL = "No Category"
+
 @Composable
 fun MainHomeScreen(
     user: HomeUser = mockHomeUser,
     recentRecord: RecentRecord? = mockRecentRecord,
     favoriteButtons: List<FavoriteButton> = mockFavoriteButtons,
     habitButtons: List<HabitButton> = mockHabitButtons,
-    suggestions: List<RecommendedButton> = recommendedButtons,
     firstButtonSuggestions: List<TemplateButtonSuggestion> = emptyList(),
     /** true면 firstButtonSuggestions를 카테고리 탭으로 나눠 보여준다 (템플릿을 골랐을 때). 건너뛴 경우 false. */
     groupFirstButtonSuggestionsByCategory: Boolean = true,
@@ -117,6 +117,7 @@ fun MainHomeScreen(
     showRecordCompleteBanner: Boolean = false,
     onCancelRecord: () -> Unit = {},
     onFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
+    onQuickCreateSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {}
 ) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.HOME) }
@@ -136,10 +137,10 @@ fun MainHomeScreen(
     // 카테고리 드롭다운에서 선택된 카테고리 (null 또는 "ALL"이면 전체 노출)
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     val filteredHabitButtons = remember(buttonsState, selectedCategory) {
-        if (selectedCategory == null || selectedCategory == "ALL") {
-            buttonsState
-        } else {
-            buttonsState.filter { it.category == selectedCategory }
+        when (selectedCategory) {
+            null, "ALL" -> buttonsState
+            NO_CATEGORY_LABEL -> buttonsState.filter { it.category.isEmpty() }
+            else -> buttonsState.filter { it.category == selectedCategory }
         }
     }
 
@@ -149,10 +150,6 @@ fun MainHomeScreen(
 
     // 습관 버튼 카드의 "더보기" 메뉴에서 "버튼 삭제"를 눌렀을 때 뜨는 기록 삭제 확인 팝업 상태
     var recordPendingDelete by remember { mutableStateOf<HabitButton?>(null) }
-
-    fun onRecommendedButtonClick(item: RecommendedButton) {
-        // TODO: 실제 버튼 생성 플로우 연결 (선택한 템플릿으로 다음 화면 이동)
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -172,7 +169,6 @@ fun MainHomeScreen(
                     .fillMaxSize()
                     .background(BaseWhiteColor)
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = 40.dp)
             ) {
                 Spacer(Modifier.height(20.dp))
@@ -236,7 +232,7 @@ fun MainHomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CategoryDropdown(
-                        categories = categories.map { it.name } + "ALL",
+                        categories = categories.map { it.name } + NO_CATEGORY_LABEL + "ALL",
                         onCategorySelected = { selectedCategory = it },
                         onManageCategoriesClick = { showCategoryEditDialog = true }
                     )
@@ -248,27 +244,35 @@ fun MainHomeScreen(
                         placeholder = "버튼 검색"
                     )
                 }
-                Spacer(Modifier.height(30.dp))
+                Spacer(Modifier.height(10.dp))
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // 카드 그림자가 스크롤 뷰포트 상단에서 잘리지 않도록 여백을 스크롤 영역 안쪽에 둔다
+                    Spacer(Modifier.height(20.dp))
 
-                if (buttonsState.isEmpty()) {
-                    HomeFirstButtonSection(
-                        suggestions = firstButtonSuggestions,
-                        onSuggestionClick = onFirstButtonSuggestionClick,
-                        groupByCategory = groupFirstButtonSuggestionsByCategory,
-                    )
-                } else {
-                    HabitButtonGrid(
-                        buttons = filteredHabitButtons,
-                        onToggleFavorite = onToggleFavorite,
-                        onEditRecord = onNavigateToEditButton,
-                        onDeleteRecord = { button -> recordPendingDelete = button },
-                        onQuickRecord = onQuickRecord,
-                        onOpenDetail = onNavigateToButtonDetail,
-                        now = now,
-                    )
+                    if (buttonsState.isEmpty()) {
+                        HomeFirstButtonSection(
+                            suggestions = firstButtonSuggestions,
+                            onSuggestionClick = onFirstButtonSuggestionClick,
+                            groupByCategory = groupFirstButtonSuggestionsByCategory,
+                        )
+                    } else {
+                        HabitButtonGrid(
+                            buttons = filteredHabitButtons,
+                            onToggleFavorite = onToggleFavorite,
+                            onEditRecord = onNavigateToEditButton,
+                            onDeleteRecord = { button -> recordPendingDelete = button },
+                            onQuickRecord = onQuickRecord,
+                            onOpenDetail = onNavigateToButtonDetail,
+                            now = now,
+                        )
+                    }
+
+                    Spacer(Modifier.height(30.dp))
                 }
-
-                Spacer(Modifier.height(30.dp))
             }
         }
 
@@ -289,10 +293,10 @@ fun MainHomeScreen(
         Dialog(onDismissRequest = { showQuickCreatePopup = false }) {
             TemplateSuggestionPopupCard(
                 title = TEMPLATE_QUICK_BUTTON_TITLE,
-                items = suggestions,
+                items = firstButtonSuggestions,
                 onDismiss = { showQuickCreatePopup = false },
                 onItemClick = {
-                    onRecommendedButtonClick(it)
+                    onQuickCreateSuggestionClick(it)
                     showQuickCreatePopup = false
                 }
             )

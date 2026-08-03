@@ -328,6 +328,46 @@ class MainHomeViewModel @AssistedInject constructor(
                     suggestions = suggestions.filterNot {
                         it.presetId == suggestion.presetId && it.templateId == suggestion.templateId
                     }
+                    loadButtons()
+                }
+                .onFailure { e ->
+                    errorMessage = e.message ?: "버튼을 추가하지 못했어요."
+                }
+            isApplying = false
+        }
+    }
+
+    /**
+     * "빠르게 만들기" 팝업에서 추천 항목을 골랐을 때 — POST /api/templates/{id}/apply는
+     * 온보딩을 이미 마친 유저에게는 서버가 400을 내려주므로, 이미 버튼이 있어도 항상 쓸 수 있도록
+     * 일반 버튼 생성 API(POST /api/buttons)로 같은 이름·아이콘·카테고리의 버튼을 만든다.
+     * 카테고리가 아직 없으면 먼저 만들고 그 id를 쓴다.
+     */
+    fun quickCreateFromSuggestion(suggestion: TemplateButtonSuggestion) {
+        if (isApplying) return
+        isApplying = true
+
+        viewModelScope.launch {
+            val existingCategoryId = categories.firstOrNull { it.name == suggestion.categoryName }?.id
+            val categoryIdResult = existingCategoryId?.let { Result.success(it) }
+                ?: buttonRepository.createCategory(suggestion.categoryName).map { it.id }
+
+            categoryIdResult
+                .mapCatching { categoryId ->
+                    buttonRepository.createButton(
+                        name = suggestion.buttonName,
+                        categoryId = categoryId,
+                        iconName = suggestion.iconName,
+                        iconColor = suggestion.iconColor,
+                        deadlineMillis = null,
+                    ).getOrThrow()
+                }
+                .onSuccess {
+                    suggestions = suggestions.filterNot {
+                        it.presetId == suggestion.presetId && it.templateId == suggestion.templateId
+                    }
+                    loadCategories()
+                    loadButtons()
                 }
                 .onFailure { e ->
                     errorMessage = e.message ?: "버튼을 추가하지 못했어요."

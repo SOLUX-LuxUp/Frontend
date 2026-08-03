@@ -121,7 +121,7 @@ fun InsightReportTitle(
     }
 }
 
-/** "< Today  2026년 5월 3일  >" 날짜 네비게이션 */
+/** "< 2026년 5월 3일 >" 날짜 네비게이션 */
 @Composable
 fun InsightDateNav(
     targetDate: String,
@@ -146,21 +146,14 @@ fun InsightDateNav(
                 .padding(horizontal = 30.dp)
                 .size(50.dp)
         )
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = targetDate.toDaysAgoText(),
-                fontFamily = Pretendard,
-                fontSize = 13.sp,
-                color = Color(0xFFB0B0B0)
-            )
-            Text(
-                text = targetDate.toKoreanDateText(),
-                fontFamily = Pretendard,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF727272)
-            )
-        }
+        Text(
+            text = targetDate.toKoreanDateText(),
+            fontFamily = Pretendard,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF727272),
+            textAlign = TextAlign.Center
+        )
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = "다음 날짜",

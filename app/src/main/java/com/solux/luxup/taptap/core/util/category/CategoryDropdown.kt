@@ -48,7 +48,7 @@ fun CategoryDropdown(
     var isExpanded by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
-    val hasManageableCategories = categories.any { it != "ALL" }
+    val hasManageableCategories = categories.any { it != "ALL" && it != "No Category" }
 
     // 선택 중이던 카테고리가 삭제되거나 이름이 바뀌어 목록에서 사라지면 필터를 ALL로 되돌린다.
     LaunchedEffect(categories) {

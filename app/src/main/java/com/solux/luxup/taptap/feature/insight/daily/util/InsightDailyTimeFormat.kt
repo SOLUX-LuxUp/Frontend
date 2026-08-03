@@ -5,7 +5,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 private val ClockFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
@@ -72,17 +71,4 @@ fun String.isFutureDate(): Boolean =
         LocalDate.parse(this, TargetDateFormatter).isAfter(LocalDate.now(ServiceZone))
     } catch (_: Exception) {
         false
-    }
-
-/** "yyyy-MM-dd" → "Today" / "1 day ago" / "3 days ago" (오늘 기준 경과일, 한국 시간 기준) */
-fun String.toDaysAgoText(): String =
-    try {
-        val days = ChronoUnit.DAYS.between(LocalDate.parse(this, TargetDateFormatter), LocalDate.now(ServiceZone))
-        when {
-            days <= 0 -> "Today"
-            days == 1L -> "1 day ago"
-            else -> "$days days ago"
-        }
-    } catch (_: Exception) {
-        "Today"
     }

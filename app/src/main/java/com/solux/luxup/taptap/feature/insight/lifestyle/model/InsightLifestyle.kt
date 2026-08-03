@@ -31,5 +31,7 @@ data class InsightLifestyleRecommendation(
     // DELETE 전용
     val buttonId: Long? = null,
     val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
     val lastRecordedAt: String? = null    // ISO 문자열, DELETE 전용
 )

@@ -74,6 +74,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/** 카테고리 선택 드롭다운에서 "카테고리 없음"을 명시적으로 고를 수 있게 해주는 항목 */
+private const val NO_CATEGORY_LABEL = "No Category"
+
 @Composable
 fun CreateButtonScreen(
     categories: List<Category> = emptyList(),
@@ -118,7 +121,7 @@ fun CreateButtonScreen(
     val selectedIconRes = selectedIconName?.let { ButtonIcons.resOf(it) }
     val selectedIconTint = selectedIconColor?.color
 
-    val isSaveEnabled = name.isNotBlank() && selectedCategory != null && hasDeadline && deadlineMillis != null
+    val isSaveEnabled = name.isNotBlank() && hasDeadline && deadlineMillis != null
 
     fun completeSave() {
         onSave(name.trim(), selectedCategory, selectedIconName, selectedIconColor?.key, if (hasDeadline) deadlineMillis else null) {
@@ -228,9 +231,9 @@ fun CreateButtonScreen(
         Text("카테고리", fontSize = 14.sp, color = Color(0xFF6D6D6D))
         Spacer(Modifier.height(8.dp))
         CategorySelectDropdown(
-            categories = categories.map { it.name },
+            categories = listOf(NO_CATEGORY_LABEL) + categories.map { it.name },
             selectedCategory = selectedCategory,
-            onCategorySelected = { selectedCategory = it },
+            onCategorySelected = { selectedCategory = it.takeIf { it != NO_CATEGORY_LABEL } },
             onManageCategoriesClick = { showCategoryEditDialog = true }
         )
 

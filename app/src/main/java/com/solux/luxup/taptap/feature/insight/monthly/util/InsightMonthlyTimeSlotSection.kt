@@ -261,7 +261,7 @@ private fun TimeSlotLegend(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
     ) {
         sorted.forEach { category ->
             Row(

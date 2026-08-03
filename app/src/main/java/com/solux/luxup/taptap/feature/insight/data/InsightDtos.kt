@@ -164,6 +164,8 @@ data class LifestyleRecommendationDto(
     val suggestedIconColor: String? = null,
     val buttonId: Long? = null,
     val buttonName: String? = null,
+    val iconName: String? = null,
+    val iconColor: String? = null,
     val lastRecordedAt: String? = null,
 )
 

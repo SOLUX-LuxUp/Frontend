@@ -153,7 +153,7 @@ private fun CategoryTab(
 }
 
 @Composable
-private fun SuggestionRow(
+fun SuggestionRow(
     suggestion: TemplateButtonSuggestion,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

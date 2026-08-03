@@ -190,6 +190,7 @@ class MainActivity : ComponentActivity() {
                             errorMessage = mainHomeViewModel.errorMessage,
                             onErrorConsumed = mainHomeViewModel::consumeError,
                             onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
+                            onQuickCreateSuggestionClick = mainHomeViewModel::quickCreateFromSuggestion,
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
                             },
@@ -248,6 +249,7 @@ class MainActivity : ComponentActivity() {
                             errorMessage = mainHomeViewModel.errorMessage,
                             onErrorConsumed = mainHomeViewModel::consumeError,
                             onFirstButtonSuggestionClick = mainHomeViewModel::applySuggestion,
+                            onQuickCreateSuggestionClick = mainHomeViewModel::quickCreateFromSuggestion,
                             onNavigateToCreateButton = {
                                 navController.navigate("createButton")
                             },
