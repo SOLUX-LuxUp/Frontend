@@ -1,5 +1,6 @@
 package com.solux.luxup.taptap.feature.team.presentation
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -159,10 +161,22 @@ fun TeamDetailScreen(
                         androidx.compose.runtime.LaunchedEffect(Unit) {
                             memberListViewModel.refresh()
                         }
+                        val context = LocalContext.current
                         TeamMemberScreen(
                             members = memberListViewModel.members,
                             currentUserId = currentUserId,
-                            onMemberClick = { member -> selectedMemberId = member.userId }
+                            inviteCode = memberListViewModel.inviteCode,
+                            onMemberClick = { member -> selectedMemberId = member.userId },
+                            onShare = {
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(
+                                        Intent.EXTRA_TEXT,
+                                        "TAPTAP에서 '$teamName' 팀에 참여해보세요!\n팀 코드: ${memberListViewModel.inviteCode}",
+                                    )
+                                }
+                                context.startActivity(Intent.createChooser(intent, "팀 코드 공유"))
+                            },
                         )
                         memberListViewModel.errorMessage?.let { message ->
                             com.solux.luxup.taptap.core.ui.components.NoticeDialog(

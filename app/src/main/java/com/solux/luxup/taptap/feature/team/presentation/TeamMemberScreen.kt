@@ -48,6 +48,7 @@ fun TeamMemberScreen(
     currentUserId: Long = 4L,
     inviteCode: String = "SE4EDI",          // 초대코드 (목데이터, API 연결 시 8.0.4)
     onMemberClick: (TeamMember) -> Unit = {},
+    onShare: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showInviteModal by remember { mutableStateOf(false) }
@@ -96,7 +97,7 @@ fun TeamMemberScreen(
         TeamInviteCodeModal(
             inviteCode = inviteCode,
             onDismiss = { showInviteModal = false },
-            onShare = { /* TODO: 공유 방식 미정 */ }
+            onShare = onShare
         )
     }
 }

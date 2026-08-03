@@ -157,6 +157,17 @@ fun TeamActivityScreen(
     var showCategoryEditDialog by remember { mutableStateOf(false) }
     var categoryPendingDelete by remember { mutableStateOf<TeamButtonCategory?>(null) }
 
+    // "ALL" 또는 null이면 전체 노출, 그 외에는 선택된 카테고리 이름으로 categoryId를 찾아 필터링
+    var categoryFilter by remember { mutableStateOf<String?>(null) }
+    val filteredButtons = remember(buttons, categoryFilter, categories) {
+        if (categoryFilter == null || categoryFilter == "ALL") {
+            buttons
+        } else {
+            val categoryId = categories.find { it.categoryName == categoryFilter }?.categoryId
+            buttons.filter { it.categoryId == categoryId }
+        }
+    }
+
     // 빠르게 만들기를 누르면 추천 섹션(리스트 맨 위 header)이 바로 보이도록 스크롤을 올린다
     val listState = rememberLazyListState()
     LaunchedEffect(isQuickCreateMode) {
@@ -186,7 +197,7 @@ fun TeamActivityScreen(
         ) {
             CategoryDropdown(
                 categories = categories.map { it.categoryName } + "ALL",
-                onCategorySelected = { /* TODO: 버튼 필터링 */ },
+                onCategorySelected = { categoryFilter = it },
                 onManageCategoriesClick = { showCategoryEditDialog = true },
             )
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
@@ -216,9 +227,20 @@ fun TeamActivityScreen(
                 }
             }
 
+            filteredButtons.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 80.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("이 카테고리에 버튼이 없어요", fontSize = 14.sp, color = Color(0xFF8A94A6))
+                }
+            }
+
             else -> {
                 TeamButtonList(
-                    buttons = buttons,
+                    buttons = filteredButtons,
                     state = listState,
                     onButtonClick = { button ->
                         if (button.hasTapPermission) onRecordTap(button)

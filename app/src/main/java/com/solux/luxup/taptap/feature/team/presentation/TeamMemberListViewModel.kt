@@ -28,6 +28,10 @@ class TeamMemberListViewModel @AssistedInject constructor(
     var members by mutableStateOf<List<TeamMember>>(emptyList())
         private set
 
+    /** 멤버 초대 모달 공유하기에 쓰는 초대코드 — GET /api/teams/{team_id}/settings */
+    var inviteCode by mutableStateOf("")
+        private set
+
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
@@ -40,6 +44,8 @@ class TeamMemberListViewModel @AssistedInject constructor(
             teamRepository.listMembers(teamId)
                 .onSuccess { members = it }
                 .onFailure { errorMessage = it.message ?: "멤버 목록을 불러오지 못했어요." }
+            teamRepository.getSettings(teamId)
+                .onSuccess { inviteCode = it.inviteCode }
         }
     }
 
