@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.solux.luxup.taptap.core.util.category.CategoryDialogButton
 
 /**
  * 카드의 ⋮ 를 눌렀을 때 뜨는 메뉴.
@@ -44,6 +44,9 @@ fun TeamButtonMenuDialog(
         TeamButtonMenuContent(
             onSelectInfo = onSelectInfo,
             onSelectDelete = onSelectDelete,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp),
         )
     }
 }
@@ -56,37 +59,37 @@ fun TeamButtonMenuContent(
 ) {
     Column(
         modifier = modifier
-            .width(172.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(Color(0xFFDEEFFF))
-            .padding(horizontal = 21.dp, vertical = 19.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(30.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        MenuButton(text = "버튼 정보", onClick = onSelectInfo)
-        MenuButton(text = "버튼 삭제", onClick = onSelectDelete)
+        MenuButton(text = "버튼 정보", textColor = Color(0xFF6D6D6D), onClick = onSelectInfo)
+        MenuButton(text = "버튼 삭제", textColor = DeleteColor, onClick = onSelectDelete)
     }
 }
 
 @Composable
 private fun MenuButton(
     text: String,
+    textColor: Color,
     onClick: () -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(41.dp)
-            .clip(RoundedCornerShape(11.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(Color.White)
-            .border(1.dp, Color(0xFF6D6D6D), RoundedCornerShape(11.dp))
-            .clickable(onClick = onClick),
+            .border(1.dp, textColor, RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 18.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF6D6D6D),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+            color = textColor,
         )
     }
 }
@@ -109,9 +112,14 @@ fun TeamButtonDeleteConfirmDialog(
             buttonName = buttonName,
             onCancel = onDismiss,
             onConfirmDelete = onConfirmDelete,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp),
         )
     }
 }
+
+private val DeleteColor = Color(0xFFF6989C)
 
 @Composable
 fun TeamButtonDeleteConfirmContent(
@@ -122,89 +130,75 @@ fun TeamButtonDeleteConfirmContent(
 ) {
     Column(
         modifier = modifier
-            .width(220.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(Color(0xFFDEEFFF))
-            .padding(horizontal = 21.dp, vertical = 19.dp),
+            .padding(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "정말로 버튼을 삭제할까요?",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF6D6D6D),
-            textAlign = TextAlign.Center,
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        Text(
-            text = buttonName,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
             color = Color(0xFF6D6D6D),
             textAlign = TextAlign.Center,
         )
 
         Spacer(Modifier.height(20.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            ConfirmButton(
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .padding(vertical = 15.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(buttonName, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6D6D6D))
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CategoryDialogButton(
                 text = "취소",
                 textColor = Color(0xFFB1B1B1),
-                borderColor = Color(0xFF6D6D6D),
+                modifier = Modifier.weight(1f),
                 onClick = onCancel,
-                modifier = Modifier.weight(1f),
             )
-            ConfirmButton(
+            CategoryDialogButton(
                 text = "삭제",
-                textColor = Color(0xFFFF7171),
-                borderColor = Color(0xFFFFC0C0),
-                onClick = onConfirmDelete,
+                textColor = DeleteColor,
                 modifier = Modifier.weight(1f),
+                onClick = onConfirmDelete,
             )
         }
     }
 }
 
-@Composable
-private fun ConfirmButton(
-    text: String,
-    textColor: Color,
-    borderColor: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .height(41.dp)
-            .clip(RoundedCornerShape(11.dp))
-            .background(Color.White)
-            .border(1.dp, borderColor, RoundedCornerShape(11.dp))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = text, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
-    }
-}
-
-@Preview(showBackground = true, widthDp = 260, heightDp = 200)
+@Preview(showBackground = true, widthDp = 360, heightDp = 340)
 @Composable
 private fun TeamButtonMenuContentPreview() {
     TeamButtonMenuContent(
         onSelectInfo = {},
         onSelectDelete = {},
-        modifier = Modifier.padding(40.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(40.dp),
     )
 }
 
-@Preview(showBackground = true, widthDp = 320, heightDp = 220)
+@Preview(showBackground = true, widthDp = 360, heightDp = 320)
 @Composable
 private fun TeamButtonDeleteConfirmContentPreview() {
     TeamButtonDeleteConfirmContent(
         buttonName = "물 마시기",
         onCancel = {},
         onConfirmDelete = {},
-        modifier = Modifier.padding(40.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(40.dp),
     )
 }
