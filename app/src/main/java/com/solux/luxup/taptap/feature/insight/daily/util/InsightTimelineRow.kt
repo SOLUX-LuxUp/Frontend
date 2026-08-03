@@ -46,6 +46,8 @@ fun InsightTimelineRow(
     modifier: Modifier = Modifier,
     trailingContent: @Composable () -> Unit = {}
 ) {
+    val now = rememberTickingNow()
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -111,7 +113,7 @@ fun InsightTimelineRow(
             )
             Spacer(Modifier.height(5.dp))
             Text(
-                text = "${item.recordedAt.toClockText()} • ${item.recordedAt.toElapsedText()}",
+                text = "${item.recordedAt.toClockText()} • ${item.recordedAt.toElapsedText(now)}",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = SubColor,

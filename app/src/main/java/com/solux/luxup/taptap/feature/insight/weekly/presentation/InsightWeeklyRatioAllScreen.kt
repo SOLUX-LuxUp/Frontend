@@ -31,9 +31,8 @@ import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightButtonTapCount
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightCategoryTapCount
-import com.solux.luxup.taptap.feature.insight.daily.util.InsightPeriod
+import com.solux.luxup.taptap.feature.insight.daily.util.InsightBackHeader
 import com.solux.luxup.taptap.feature.insight.daily.util.InsightRatioRow
-import com.solux.luxup.taptap.feature.insight.daily.util.InsightReportTitle
 import com.solux.luxup.taptap.feature.insight.daily.util.filterByCategory
 import com.solux.luxup.taptap.feature.insight.weekly.data.MockInsightWeekly
 import com.solux.luxup.taptap.feature.insight.weekly.model.InsightDailyTapCount
@@ -57,12 +56,11 @@ fun InsightWeeklyRatioAllScreen(
     totalTapCount: Int,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    categoryNames: List<String> = emptyList(),
     onPrevWeek: () -> Unit = {},
-    onNextWeek: () -> Unit = {},
-    onSelectDaily: () -> Unit = {},
-    onSelectMonthly: () -> Unit = {}
+    onNextWeek: () -> Unit = {}
 ) {
-    val categories = remember(categoryTapCounts) { listOf("ALL") + categoryTapCounts.map { it.categoryName } }
+    val categories = remember(categoryNames) { listOf("ALL") + categoryNames }
     var selectedCategoryName by remember { mutableStateOf<String?>(null) }
     val filtered = remember(buttonTapCounts, selectedCategoryName) {
         buttonTapCounts.filterByCategory(selectedCategoryName)
@@ -76,12 +74,7 @@ fun InsightWeeklyRatioAllScreen(
             .padding(horizontal = 40.dp)
     ) {
         Spacer(Modifier.height(70.dp))
-        InsightReportTitle(
-            selected = InsightPeriod.WEEKLY,
-            onSelectDaily = onSelectDaily,
-            onSelectMonthly = onSelectMonthly,
-            onBack = onBack
-        )
+        InsightBackHeader(title = "레포트", onBack = onBack)
         Spacer(Modifier.height(20.dp))
         InsightWeekNav(weekStart = weekStart, onPrevWeek = onPrevWeek, onNextWeek = onNextWeek)
         Spacer(Modifier.height(20.dp))

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.TapTap" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.TapTap" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Android 12+ 콜드 스타트 시 앱 아이콘 뒤로 잠깐 보이는 시스템 스플래시 배경 (기본값은 흰색) -->
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+    </style>
 </resources>

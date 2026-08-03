@@ -147,7 +147,12 @@ fun InsightDateNav(
                 .size(50.dp)
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Today", fontFamily = Pretendard, fontSize = 13.sp, color = Color(0xFFB0B0B0))
+            Text(
+                text = targetDate.toDaysAgoText(),
+                fontFamily = Pretendard,
+                fontSize = 13.sp,
+                color = Color(0xFFB0B0B0)
+            )
             Text(
                 text = targetDate.toKoreanDateText(),
                 fontFamily = Pretendard,

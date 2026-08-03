@@ -53,10 +53,11 @@ fun InsightRatioAllScreen(
     totalTapCount: Int,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    categoryNames: List<String> = emptyList(),
     onPrevDay: () -> Unit = {},
     onNextDay: () -> Unit = {}
 ) {
-    val categories = remember(categoryTapCounts) { listOf("ALL") + categoryTapCounts.map { it.categoryName } }
+    val categories = remember(categoryNames) { listOf("ALL") + categoryNames }
     var selectedCategoryName by remember { mutableStateOf<String?>(null) }
     val filtered = remember(buttonTapCounts, selectedCategoryName) {
         buttonTapCounts.filterByCategory(selectedCategoryName)

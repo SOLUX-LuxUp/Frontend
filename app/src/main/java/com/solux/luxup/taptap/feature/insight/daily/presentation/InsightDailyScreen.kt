@@ -33,6 +33,7 @@ import com.solux.luxup.taptap.feature.insight.daily.model.InsightDaily
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightTimelineItem
 import com.solux.luxup.taptap.feature.insight.daily.util.InsightDateNav
 import com.solux.luxup.taptap.feature.insight.daily.util.InsightRatioPreviewSection
+import com.solux.luxup.taptap.feature.insight.daily.util.isPastDate
 import com.solux.luxup.taptap.feature.insight.daily.util.InsightRecordActionMenu
 import com.solux.luxup.taptap.feature.insight.daily.util.InsightRecordDeleteConfirmDialog
 import com.solux.luxup.taptap.feature.insight.daily.util.InsightReportTitle
@@ -55,6 +56,7 @@ fun InsightDailyScreen(
     onNavigateToTimelineAll: () -> Unit,
     onNavigateToRatioAll: () -> Unit,
     modifier: Modifier = Modifier,
+    categoryNames: List<String> = emptyList(),
     onNavigateToButtonDetail: (item: InsightTimelineItem) -> Unit = {},
     onDeleteRecord: (InsightTimelineItem) -> Unit = {},
     onPrevDay: () -> Unit = {},
@@ -96,7 +98,7 @@ fun InsightDailyScreen(
             Spacer(Modifier.height(20.dp))
 
             if (data.totalTapCount <= 0) {
-                DailyEmptyState()
+                DailyEmptyState(isPast = data.targetDate.isPastDate())
                 return@Scaffold
             }
 
@@ -127,7 +129,8 @@ fun InsightDailyScreen(
                 InsightRatioPreviewSection(
                     buttonTapCounts = data.buttonTapCounts,
                     totalTapCount = data.totalTapCount,
-                    onSeeAllClick = onNavigateToRatioAll
+                    onSeeAllClick = onNavigateToRatioAll,
+                    categoryNames = categoryNames
                 )
 
                 Spacer(Modifier.height(40.dp))
@@ -162,14 +165,18 @@ fun InsightDailyScreen(
 }
 
 @Composable
-private fun DailyEmptyState(modifier: Modifier = Modifier) {
+private fun DailyEmptyState(isPast: Boolean, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 80.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "아직 오늘 기록이 없어요", fontSize = 14.sp, color = EmptyStateColor)
+        Text(
+            text = if (isPast) "기록이 없어요" else "아직 기록이 없어요",
+            fontSize = 14.sp,
+            color = EmptyStateColor
+        )
     }
 }
 

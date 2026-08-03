@@ -30,7 +30,9 @@ data class InsightMonthlyRankedButton(
     val rank: Int,
     val buttonId: Long,
     val buttonName: String,
-    val count: Int
+    val count: Int,
+    // ⚠ API 미제공(top3Buttons 자체엔 없음) — 같은 응답의 buttonTapCounts에서 buttonId로 매칭해 채운다
+    val iconColor: String? = null
 )
 
 /** 가장 많이 기록한 카테고리 */

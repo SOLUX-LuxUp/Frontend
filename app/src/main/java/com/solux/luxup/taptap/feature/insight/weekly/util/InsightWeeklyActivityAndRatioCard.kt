@@ -46,6 +46,7 @@ fun InsightWeeklyActivityAndRatioCard(
     buttonTapCounts: List<InsightButtonTapCount>,
     onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier,
+    categoryNames: List<String> = emptyList(),
     maxItems: Int = 3
 ) {
     var selectedCategoryName by remember { mutableStateOf<String?>(null) }
@@ -71,7 +72,7 @@ fun InsightWeeklyActivityAndRatioCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CategoryDropdown(
-                categories = listOf("ALL") + categoryTapCounts.map { it.categoryName },
+                categories = listOf("ALL") + categoryNames,
                 onCategorySelected = { name -> selectedCategoryName = if (name == "ALL") null else name }
             )
             Text(
