@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
@@ -42,20 +43,15 @@ import com.solux.luxup.taptap.feature.home.main.util.presentation.IconSelectScre
 import com.solux.luxup.taptap.feature.home.main.util.presentation.MainHomeScreen
 import com.solux.luxup.taptap.feature.home.main.util.presentation.MainHomeViewModel
 import com.solux.luxup.taptap.feature.home.template.presentation.OnboardingTemplateRoute
-import com.solux.luxup.taptap.feature.insight.daily.data.MockInsightDaily
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightDailyScreen
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightRatioAllScreen
 import com.solux.luxup.taptap.feature.insight.daily.presentation.InsightTimelineAllScreen
-import com.solux.luxup.taptap.feature.insight.daily.util.shiftDate
 import com.solux.luxup.taptap.feature.insight.lifestyle.data.MockInsightLifestyle
 import com.solux.luxup.taptap.feature.insight.lifestyle.presentation.InsightLifestyleScreen
-import com.solux.luxup.taptap.feature.insight.monthly.data.MockInsightMonthly
 import com.solux.luxup.taptap.feature.insight.monthly.presentation.InsightMonthlyScreen
-import com.solux.luxup.taptap.feature.insight.monthly.util.shiftMonth
-import com.solux.luxup.taptap.feature.insight.weekly.data.MockInsightWeekly
+import com.solux.luxup.taptap.feature.insight.presentation.InsightViewModel
 import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyRatioAllScreen
 import com.solux.luxup.taptap.feature.insight.weekly.presentation.InsightWeeklyScreen
-import com.solux.luxup.taptap.feature.insight.weekly.util.shiftWeek
 import com.solux.luxup.taptap.feature.notification.presentation.ButtonReminderSettingsViewModel
 import com.solux.luxup.taptap.feature.notification.presentation.NotificationDetailScreen
 import com.solux.luxup.taptap.feature.notification.presentation.NotificationScreen
@@ -346,80 +342,116 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("insightDaily") {
-                        var targetDate by remember { mutableStateOf(MockInsightDaily.targetDate) }
-                        InsightDailyScreen(
-                            data = MockInsightDaily.copy(targetDate = targetDate),
-                            onNavigateToTimelineAll = {
-                                navController.navigate("insightTimelineAll")
-                            },
-                            onNavigateToRatioAll = {
-                                navController.navigate("insightRatioAll")
-                            },
-                            onNavigateToButtonDetail = { item ->
-                                navController.navigate(
-                                    "buttonDetail/${item.buttonId}" +
-                                        "?title=${Uri.encode(item.buttonName)}" +
-                                        "&iconName=${Uri.encode(item.iconName.orEmpty())}" +
-                                        "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
-                                )
-                            },
-                            onDeleteRecord = {
-                                // TODO: 기록 삭제 API 연결
-                            },
-                            onPrevDay = { targetDate = targetDate.shiftDate(-1) },
-                            onNextDay = { targetDate = targetDate.shiftDate(1) },
-                            onSelectWeekly = {
-                                navController.navigate("insightWeekly")
-                            },
-                            onSelectMonthly = {
-                                navController.navigate("insightMonthly")
-                            },
-                            onNavItemSelected = { item ->
-                                navController.navigateToTab(item)
+                        val viewModel: InsightViewModel = hiltViewModel()
+                        // 홈 탭에서 기록을 남기고 이 탭(RECORD)으로 돌아왔을 때도 최신 값이 보이도록 한다.
+                        // 하단 탭 전환은 launchSingleTop+restoreState라 ViewModel 인스턴스가 재사용되어
+                        // init{}이 다시 안 불리므로, 이 컴포저블이 다시 보일 때마다 새로고침한다.
+                        LaunchedEffect(Unit) {
+                            viewModel.refreshAll()
+                        }
+                        val data = viewModel.daily
+                        if (data == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
-                        )
+                        } else {
+                            InsightDailyScreen(
+                                data = data,
+                                onNavigateToTimelineAll = {
+                                    navController.navigate("insightTimelineAll")
+                                },
+                                onNavigateToRatioAll = {
+                                    navController.navigate("insightRatioAll")
+                                },
+                                categoryNames = viewModel.categoryNames,
+                                onNavigateToButtonDetail = { item ->
+                                    navController.navigate(
+                                        "buttonDetail/${item.buttonId}" +
+                                            "?title=${Uri.encode(item.buttonName)}" +
+                                            "&iconName=${Uri.encode(item.iconName.orEmpty())}" +
+                                            "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
+                                    )
+                                },
+                                onDeleteRecord = {
+                                    // TODO: 기록 삭제 API 연결
+                                },
+                                onPrevDay = viewModel::goToPreviousDay,
+                                onNextDay = viewModel::goToNextDay,
+                                onSelectWeekly = {
+                                    navController.navigate("insightWeekly")
+                                },
+                                onSelectMonthly = {
+                                    navController.navigate("insightMonthly")
+                                },
+                                onNavItemSelected = { item ->
+                                    navController.navigateToTab(item)
+                                }
+                            )
+                        }
+                        viewModel.errorMessage?.let { message ->
+                            NoticeDialog(message = message, onDismiss = viewModel::consumeError)
+                        }
                     }
                     composable("insightWeekly") {
-                        var weekStart by remember { mutableStateOf(MockInsightWeekly.weekStart) }
-                        InsightWeeklyScreen(
-                            data = MockInsightWeekly.copy(weekStart = weekStart),
-                            onNavigateToRatioAll = {
-                                navController.navigate("insightWeeklyRatioAll")
-                            },
-                            onPrevWeek = { weekStart = weekStart.shiftWeek(-1) },
-                            onNextWeek = { weekStart = weekStart.shiftWeek(1) },
-                            onSelectDaily = {
-                                navController.popBackStack()
-                            },
-                            onSelectMonthly = {
-                                navController.navigate("insightMonthly")
-                            },
-                            onNavItemSelected = { item ->
-                                navController.navigateToTab(item)
+                        val viewModel: InsightViewModel = hiltViewModel()
+                        val data = viewModel.weekly
+                        if (data == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
-                        )
+                        } else {
+                            InsightWeeklyScreen(
+                                data = data,
+                                onNavigateToRatioAll = {
+                                    navController.navigate("insightWeeklyRatioAll")
+                                },
+                                categoryNames = viewModel.categoryNames,
+                                onPrevWeek = viewModel::goToPreviousWeek,
+                                onNextWeek = viewModel::goToNextWeek,
+                                onSelectDaily = {
+                                    navController.popBackStack()
+                                },
+                                onSelectMonthly = {
+                                    navController.navigate("insightMonthly")
+                                },
+                                onNavItemSelected = { item ->
+                                    navController.navigateToTab(item)
+                                }
+                            )
+                        }
+                        viewModel.errorMessage?.let { message ->
+                            NoticeDialog(message = message, onDismiss = viewModel::consumeError)
+                        }
                     }
                     composable("insightMonthly") {
-                        var yearMonth by remember {
-                            mutableStateOf(MockInsightMonthly.year to MockInsightMonthly.month)
-                        }
-                        InsightMonthlyScreen(
-                            data = MockInsightMonthly.copy(year = yearMonth.first, month = yearMonth.second),
-                            onPrevMonth = { yearMonth = shiftMonth(yearMonth.first, yearMonth.second, -1) },
-                            onNextMonth = { yearMonth = shiftMonth(yearMonth.first, yearMonth.second, 1) },
-                            onSelectDaily = {
-                                navController.navigate("insightDaily")
-                            },
-                            onSelectWeekly = {
-                                navController.popBackStack()
-                            },
-                            onNavigateToLifestyle = {
-                                navController.navigate("insightLifestyle")
-                            },
-                            onNavItemSelected = { item ->
-                                navController.navigateToTab(item)
+                        val viewModel: InsightViewModel = hiltViewModel()
+                        val data = viewModel.monthly
+                        if (data == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
-                        )
+                        } else {
+                            InsightMonthlyScreen(
+                                data = data,
+                                onPrevMonth = viewModel::goToPreviousMonth,
+                                onNextMonth = viewModel::goToNextMonth,
+                                onSelectDaily = {
+                                    navController.navigate("insightDaily")
+                                },
+                                onSelectWeekly = {
+                                    navController.popBackStack()
+                                },
+                                onNavigateToLifestyle = {
+                                    navController.navigate("insightLifestyle")
+                                },
+                                onNavItemSelected = { item ->
+                                    navController.navigateToTab(item)
+                                }
+                            )
+                        }
+                        viewModel.errorMessage?.let { message ->
+                            NoticeDialog(message = message, onDismiss = viewModel::consumeError)
+                        }
                     }
                     composable("insightLifestyle") {
                         InsightLifestyleScreen(
@@ -435,54 +467,86 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    composable("insightWeeklyRatioAll") {
-                        var weekStart by remember { mutableStateOf(MockInsightWeekly.weekStart) }
-                        InsightWeeklyRatioAllScreen(
-                            weekStart = weekStart,
-                            dailyTapCounts = MockInsightWeekly.dailyTapCounts,
-                            categoryTapCounts = MockInsightWeekly.categoryTapCounts,
-                            buttonTapCounts = MockInsightWeekly.buttonTapCounts,
-                            totalTapCount = MockInsightWeekly.totalTapCount,
-                            onBack = { navController.popBackStack() },
-                            onPrevWeek = { weekStart = weekStart.shiftWeek(-1) },
-                            onNextWeek = { weekStart = weekStart.shiftWeek(1) },
-                            onSelectDaily = {
-                                navController.navigate("insightDaily")
+                    composable("insightWeeklyRatioAll") { backStackEntry ->
+                        // 위클리 인사이트 화면에서 이미 조회해둔 값을 그대로 쓴다 (같은 백스택 엔트리에 스코프된 ViewModel 공유)
+                        val weeklyEntry = remember(backStackEntry) {
+                            navController.getBackStackEntry("insightWeekly")
+                        }
+                        val viewModel: InsightViewModel = hiltViewModel(weeklyEntry)
+                        val data = viewModel.weekly
+                        if (data == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
-                        )
+                        } else {
+                            InsightWeeklyRatioAllScreen(
+                                weekStart = data.weekStart,
+                                dailyTapCounts = data.dailyTapCounts,
+                                categoryTapCounts = data.categoryTapCounts,
+                                buttonTapCounts = data.buttonTapCounts,
+                                totalTapCount = data.totalTapCount,
+                                onBack = { navController.popBackStack() },
+                                categoryNames = viewModel.categoryNames,
+                                onPrevWeek = viewModel::goToPreviousWeek,
+                                onNextWeek = viewModel::goToNextWeek
+                            )
+                        }
                     }
-                    composable("insightTimelineAll") {
-                        var targetDate by remember { mutableStateOf(MockInsightDaily.targetDate) }
-                        InsightTimelineAllScreen(
-                            targetDate = targetDate,
-                            timeline = MockInsightDaily.timeline,
-                            onBack = { navController.popBackStack() },
-                            onNavigateToButtonDetail = { item ->
-                                navController.navigate(
-                                    "buttonDetail/${item.buttonId}" +
-                                        "?title=${Uri.encode(item.buttonName)}" +
-                                        "&iconName=${Uri.encode(item.iconName.orEmpty())}" +
-                                        "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
-                                )
-                            },
-                            onDeleteRecord = {
-                                // TODO: 기록 삭제 API 연결
-                            },
-                            onPrevDay = { targetDate = targetDate.shiftDate(-1) },
-                            onNextDay = { targetDate = targetDate.shiftDate(1) }
-                        )
+                    composable("insightTimelineAll") { backStackEntry ->
+                        // 데일리 인사이트 화면에서 이미 조회해둔 값을 그대로 쓴다 (같은 백스택 엔트리에 스코프된 ViewModel 공유)
+                        val dailyEntry = remember(backStackEntry) {
+                            navController.getBackStackEntry("insightDaily")
+                        }
+                        val viewModel: InsightViewModel = hiltViewModel(dailyEntry)
+                        val data = viewModel.daily
+                        if (data == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            InsightTimelineAllScreen(
+                                targetDate = data.targetDate,
+                                timeline = data.timeline,
+                                onBack = { navController.popBackStack() },
+                                onNavigateToButtonDetail = { item ->
+                                    navController.navigate(
+                                        "buttonDetail/${item.buttonId}" +
+                                            "?title=${Uri.encode(item.buttonName)}" +
+                                            "&iconName=${Uri.encode(item.iconName.orEmpty())}" +
+                                            "&iconColor=${Uri.encode(item.iconColor.orEmpty())}"
+                                    )
+                                },
+                                onDeleteRecord = {
+                                    // TODO: 기록 삭제 API 연결
+                                },
+                                onPrevDay = viewModel::goToPreviousDay,
+                                onNextDay = viewModel::goToNextDay
+                            )
+                        }
                     }
-                    composable("insightRatioAll") {
-                        var targetDate by remember { mutableStateOf(MockInsightDaily.targetDate) }
-                        InsightRatioAllScreen(
-                            targetDate = targetDate,
-                            categoryTapCounts = MockInsightDaily.categoryTapCounts,
-                            buttonTapCounts = MockInsightDaily.buttonTapCounts,
-                            totalTapCount = MockInsightDaily.totalTapCount,
-                            onBack = { navController.popBackStack() },
-                            onPrevDay = { targetDate = targetDate.shiftDate(-1) },
-                            onNextDay = { targetDate = targetDate.shiftDate(1) }
-                        )
+                    composable("insightRatioAll") { backStackEntry ->
+                        // 데일리 인사이트 화면에서 이미 조회해둔 값을 그대로 쓴다 (같은 백스택 엔트리에 스코프된 ViewModel 공유)
+                        val dailyEntry = remember(backStackEntry) {
+                            navController.getBackStackEntry("insightDaily")
+                        }
+                        val viewModel: InsightViewModel = hiltViewModel(dailyEntry)
+                        val data = viewModel.daily
+                        if (data == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            InsightRatioAllScreen(
+                                targetDate = data.targetDate,
+                                categoryTapCounts = data.categoryTapCounts,
+                                buttonTapCounts = data.buttonTapCounts,
+                                totalTapCount = data.totalTapCount,
+                                onBack = { navController.popBackStack() },
+                                categoryNames = viewModel.categoryNames,
+                                onPrevDay = viewModel::goToPreviousDay,
+                                onNextDay = viewModel::goToNextDay
+                            )
+                        }
                     }
                     composable("accountSettings") {
                         AccountSettingsScreen(

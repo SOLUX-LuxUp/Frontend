@@ -169,7 +169,7 @@ private fun Top5ChangeCard(
                 buttons = prevTop5Buttons,
                 modifier = Modifier.weight(1f)
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(10.dp))
             RankedButtonColumn(
                 label = "이번달",
                 buttons = currentTop5Buttons,

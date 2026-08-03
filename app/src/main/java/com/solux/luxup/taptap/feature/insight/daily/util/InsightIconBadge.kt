@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
-import com.solux.luxup.taptap.core.ui.theme.parseHexColor
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 
 private val BadgeBorder = Color(0xFFD0D0D0)
 
@@ -37,7 +37,7 @@ fun InsightIconBadge(
     size: Dp = 50.dp,
     showShadow: Boolean = true
 ) {
-    val tint = parseHexColor(iconColor)
+    val tint = IconColor.from(iconColor).color
     Box(
         modifier = modifier
             .size(size)

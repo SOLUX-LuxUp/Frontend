@@ -76,6 +76,7 @@ private fun Top3ButtonsCard(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(Color.White)
+            .height(height = 194.dp)
             .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 30.dp)
     ) {
         Text(text = "버튼 TOP 3", fontSize = 10.sp, fontWeight = FontWeight.Medium, color = TitleColor)
@@ -134,8 +135,7 @@ private fun RankedButtonRow(button: InsightMonthlyRankedButton) {
             text = "${button.count}회",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF6D6D6D),
-            modifier = Modifier.align(Alignment.Bottom)
+            color = Color(0xFF6D6D6D)
         )
     }
 }

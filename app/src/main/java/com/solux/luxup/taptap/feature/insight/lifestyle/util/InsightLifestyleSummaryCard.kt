@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
-import com.solux.luxup.taptap.core.ui.theme.parseHexColor
 import com.solux.luxup.taptap.feature.insight.lifestyle.model.InsightLifestyleAnalysisButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
@@ -138,7 +138,7 @@ private fun AnalysisButtonChip(button: InsightLifestyleAnalysisButton, modifier:
         Icon(
             painter = painterResource(ButtonIcons.resOf(button.iconName)),
             contentDescription = null,
-            tint = parseHexColor(button.iconColor, fallback = Color.White),
+            tint = button.iconColor?.let { IconColor.from(it).color } ?: Color.White,
             modifier = Modifier
                 .size(15.dp)
                 .clip(CircleShape)

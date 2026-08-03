@@ -103,6 +103,7 @@ fun InsightRatioPreviewSection(
     totalTapCount: Int,
     onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier,
+    categoryNames: List<String> = emptyList(),
     maxItems: Int = 5
 ) {
     var selectedCategoryName by remember { mutableStateOf<String?>(null) }
@@ -120,6 +121,7 @@ fun InsightRatioPreviewSection(
         Spacer(Modifier.height(12.dp))
 
         CategoryDropdown(
+            categories = listOf("ALL") + categoryNames,
             onCategorySelected = { name -> selectedCategoryName = if (name == "ALL") null else name }
         )
 

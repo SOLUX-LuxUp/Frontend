@@ -1,7 +1,7 @@
 package com.solux.luxup.taptap.feature.insight.monthly.util
 
 import androidx.compose.ui.graphics.Color
-import com.solux.luxup.taptap.core.ui.theme.parseHexColor
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightCategoryTapCount
 
 // 카테고리 색 지정이 없을 때(⚠ API 미제공 대비) 기록 수 순번 기준으로 대체할 팔레트 —
@@ -19,7 +19,7 @@ fun buildMonthlyCategoryColorMap(categoryTapCounts: List<InsightCategoryTapCount
     categoryTapCounts
         .sortedByDescending { it.count }
         .mapIndexed { index, category ->
-            category.categoryId to (category.categoryColor?.let { parseHexColor(it) }
+            category.categoryId to (category.categoryColor?.let { IconColor.from(it).color }
                 ?: MonthlyCategoryPalette[index % MonthlyCategoryPalette.size])
         }
         .toMap()

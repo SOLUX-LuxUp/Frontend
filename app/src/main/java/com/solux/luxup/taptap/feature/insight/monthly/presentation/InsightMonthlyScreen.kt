@@ -36,6 +36,7 @@ import com.solux.luxup.taptap.feature.insight.monthly.util.InsightMonthlyCalenda
 import com.solux.luxup.taptap.feature.insight.monthly.util.InsightMonthlyCategoryRatioSection
 import com.solux.luxup.taptap.feature.insight.monthly.util.InsightMonthlyComparisonSection
 import com.solux.luxup.taptap.feature.insight.monthly.util.InsightMonthlyReportSection
+import com.solux.luxup.taptap.feature.insight.monthly.util.isPastMonth
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 
 private val EmptyStateColor = Color(0xFFB0B0B0)
@@ -91,7 +92,7 @@ fun InsightMonthlyScreen(
             Spacer(Modifier.height(20.dp))
 
             if (data.totalTapCount <= 0) {
-                MonthlyEmptyState()
+                MonthlyEmptyState(isPastMonth = isPastMonth(data.year, data.month))
                 return@Scaffold
             }
 
@@ -132,14 +133,18 @@ fun InsightMonthlyScreen(
 }
 
 @Composable
-private fun MonthlyEmptyState(modifier: Modifier = Modifier) {
+private fun MonthlyEmptyState(isPastMonth: Boolean, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 80.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "아직 이번 달 기록이 없어요", fontSize = 14.sp, color = EmptyStateColor)
+        Text(
+            text = if (isPastMonth) "기록이 없어요" else "아직 기록이 없어요",
+            fontSize = 14.sp,
+            color = EmptyStateColor
+        )
     }
 }
 

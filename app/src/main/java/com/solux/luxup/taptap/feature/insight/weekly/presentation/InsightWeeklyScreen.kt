@@ -36,6 +36,7 @@ import com.solux.luxup.taptap.feature.insight.weekly.util.InsightWeekNav
 import com.solux.luxup.taptap.feature.insight.weekly.util.InsightWeeklyActivityAndRatioCard
 import com.solux.luxup.taptap.feature.insight.weekly.util.InsightWeeklyComparisonSection
 import com.solux.luxup.taptap.feature.insight.weekly.util.InsightWeeklySummaryCardsRow
+import com.solux.luxup.taptap.feature.insight.weekly.util.isPastWeek
 import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
@@ -52,6 +53,7 @@ fun InsightWeeklyScreen(
     data: InsightWeekly,
     onNavigateToRatioAll: () -> Unit,
     modifier: Modifier = Modifier,
+    categoryNames: List<String> = emptyList(),
     onPrevWeek: () -> Unit = {},
     onNextWeek: () -> Unit = {},
     onSelectDaily: () -> Unit = {},
@@ -93,7 +95,7 @@ fun InsightWeeklyScreen(
             Spacer(Modifier.height(20.dp))
 
             if (data.totalTapCount <= 0) {
-                WeeklyEmptyState()
+                WeeklyEmptyState(isPastWeek = data.weekStart.isPastWeek())
                 return@Scaffold
             }
 
@@ -122,6 +124,7 @@ fun InsightWeeklyScreen(
                     categoryTapCounts = data.categoryTapCounts,
                     buttonTapCounts = data.buttonTapCounts,
                     onSeeAllClick = onNavigateToRatioAll,
+                    categoryNames = categoryNames,
                     maxItems = 3
                 )
 
@@ -140,14 +143,18 @@ fun InsightWeeklyScreen(
 }
 
 @Composable
-private fun WeeklyEmptyState(modifier: Modifier = Modifier) {
+private fun WeeklyEmptyState(isPastWeek: Boolean, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 80.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "아직 이번 주 기록이 없어요", fontSize = 14.sp, color = EmptyStateColor)
+        Text(
+            text = if (isPastWeek) "기록이 없어요" else "아직 기록이 없어요",
+            fontSize = 14.sp,
+            color = EmptyStateColor
+        )
     }
 }
 

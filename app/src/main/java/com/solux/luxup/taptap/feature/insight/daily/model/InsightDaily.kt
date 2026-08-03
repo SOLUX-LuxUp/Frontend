@@ -40,10 +40,11 @@ data class InsightButtonTapCount(
     val buttonName: String,
     val count: Int,
     val ratio: Double,
-    // ⚠ API 미제공 — 값이 오면 실제 아이콘, 없으면 이니셜로 폴백
+    // 값이 오면 실제 아이콘, 없으면 이니셜로 폴백
     val iconName: String? = null,
     val iconColor: String? = null,
-    // ⚠ API 미제공 — ALL▾ 카테고리 필터에 사용. null이면 필터링 시 제외되지 않고 "ALL"에서만 노출
+    // ⚠ 인사이트 API 자체엔 없는 필드 — GET /api/buttons(내 버튼 목록)에서 buttonId로 매칭해 채운다
+    // ([InsightViewModel]). null이면 필터링 시 제외되지 않고 "ALL"에서만 노출
     val categoryId: Long? = null,
     val categoryName: String? = null
 )
