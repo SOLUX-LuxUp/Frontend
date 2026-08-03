@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.core.ui.components.BackArrowIcon
 import com.solux.luxup.taptap.core.ui.components.CheckMarkIcon
-import com.solux.luxup.taptap.core.ui.components.ConfirmCheckIcon
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
@@ -57,7 +56,7 @@ import com.solux.luxup.taptap.feature.team.model.TeamMember
 
 private val ScreenPadding = 40.dp
 
-private const val NO_EDIT_PERMISSION_MESSAGE = "버튼을 수정할 권한이 없어요.\n팀장에게 문의해 주세요."
+private const val NO_EDIT_PERMISSION_MESSAGE = "지금은 팀장만 버튼을 수정할 수 있어요."
 
 /**
  * 버튼 정보 (8.1.3)
@@ -248,7 +247,9 @@ private fun InfoTopBar(
                 color = Color(0xFF1A1A1A),
                 modifier = Modifier.align(Alignment.Center),
             )
-            // 관리자는 수정 아이콘, 비관리자는 확인 아이콘
+            // 관리자(팀장/생성자)에게는 항상 수정 아이콘을 보여준다 — 클릭 시 실제 권한(canEdit)에 따라
+            // 수정 화면으로 가거나 "지금은 팀장만 수정 가능" 안내를 띄운다. 비관리자는 애초에
+            // 수정 권한을 가질 일이 없으므로 아이콘 자체를 노출하지 않는다.
             if (isManager) {
                 Image(
                     painter = painterResource(R.drawable.ic_edit),
@@ -257,12 +258,6 @@ private fun InfoTopBar(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .size(26.dp)
-                        .clickable(onClick = onEditClick),
-                )
-            } else {
-                ConfirmCheckIcon(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
                         .clickable(onClick = onEditClick),
                 )
             }
