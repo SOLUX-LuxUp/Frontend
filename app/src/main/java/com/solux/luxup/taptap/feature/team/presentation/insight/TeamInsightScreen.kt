@@ -284,7 +284,7 @@ private val IsoDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 /**
  * 개인 인사이트(수민님 컴포넌트, [com.solux.luxup.taptap.feature.insight.daily.util.InsightDateNav] 등)와
- * 동일한 구성 — 기간마다 줄 구성이 고정돼 있어(일간·주간은 캡션+본문 2줄, 월간은 1줄),
+ * 유사한 구성 — 기간마다 줄 구성이 고정돼 있어(주간은 캡션+본문 2줄, 일간·월간은 1줄),
  * "이번 기간" 여부에 따라 줄이 늘었다 줄었다 하며 튀는 문제가 없다.
  */
 @Composable
@@ -315,16 +315,13 @@ private fun InsightDateNav(
                 .size(50.dp)
         )
         when (period) {
-            InsightPeriod.DAILY -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Today", fontFamily = Pretendard, fontSize = 13.sp, color = Color(0xFFB0B0B0))
-                Text(
-                    text = targetDate.toKoreanDateText(),
-                    fontFamily = Pretendard,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF727272)
-                )
-            }
+            InsightPeriod.DAILY -> Text(
+                text = targetDate.toKoreanDateText(),
+                fontFamily = Pretendard,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF727272)
+            )
             InsightPeriod.WEEKLY -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = weekStart.toKoreanMonthText(), fontFamily = Pretendard, fontSize = 13.sp, color = Color(0xFFB0B0B0))
                 Text(
