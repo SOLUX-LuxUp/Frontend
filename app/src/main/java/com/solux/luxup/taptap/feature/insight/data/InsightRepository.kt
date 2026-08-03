@@ -190,6 +190,8 @@ private fun LifestyleRecommendationDto.toModel() = InsightLifestyleRecommendatio
     suggestedIconColor = suggestedIconColor,
     buttonId = buttonId,
     buttonName = buttonName,
+    iconName = iconName,
+    iconColor = iconColor,
     lastRecordedAt = lastRecordedAt,
 )
 

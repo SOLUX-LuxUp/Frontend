@@ -50,6 +50,8 @@ val MockInsightLifestyle = InsightLifestyle(
             recType = "DELETE",
             buttonId = 4,
             buttonName = "텀블러 사용",
+            iconName = "cup",
+            iconColor = "#4D96FF",
             lastRecordedAt = "2026-04-03T09:12:00"
         ),
         InsightLifestyleRecommendation(
@@ -57,6 +59,8 @@ val MockInsightLifestyle = InsightLifestyle(
             recType = "DELETE",
             buttonId = 5,
             buttonName = "기타 연습",
+            iconName = "guitar",
+            iconColor = "#FF9F45",
             lastRecordedAt = "2026-04-01T21:03:00"
         ),
         InsightLifestyleRecommendation(
@@ -64,6 +68,8 @@ val MockInsightLifestyle = InsightLifestyle(
             recType = "DELETE",
             buttonId = 6,
             buttonName = "비타민 먹기",
+            iconName = "medicine",
+            iconColor = "#FF6B6B",
             lastRecordedAt = "2026-03-25T21:03:00"
         ),
     )

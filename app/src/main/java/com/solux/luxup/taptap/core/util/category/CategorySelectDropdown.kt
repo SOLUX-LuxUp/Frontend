@@ -51,6 +51,7 @@ fun CategorySelectDropdown(
     var isExpanded by remember { mutableStateOf(false) }
     var headerWidthPx by remember { mutableIntStateOf(0) }
     var headerHeightPx by remember { mutableIntStateOf(0) }
+    val hasManageableCategories = categories.any { it != "No Category" }
 
     Box(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -132,7 +133,7 @@ fun CategorySelectDropdown(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = if (categories.isEmpty()) "+ ADD" else "카테고리 수정",
+                            text = if (hasManageableCategories) "카테고리 수정" else "+ ADD",
                             fontSize = 18.sp,
                             color = Color.White
                         )

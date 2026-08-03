@@ -80,8 +80,8 @@ private fun ForgottenRow(
     ) {
         InsightIconBadge(
             buttonName = rec.buttonName.orEmpty(),
-            iconName = null,
-            iconColor = null,
+            iconName = rec.iconName,
+            iconColor = rec.iconColor,
             size = 40.dp
         )
         Spacer(Modifier.width(12.dp))
@@ -116,8 +116,8 @@ private fun ForgottenRow(
 }
 
 private val PreviewForgottenItems = listOf(
-    InsightLifestyleRecommendation(6, "DELETE", buttonId = 4, buttonName = "텀블러 사용", lastRecordedAt = "2026-04-03T09:12:00"),
-    InsightLifestyleRecommendation(7, "DELETE", buttonId = 5, buttonName = "기타 연습", lastRecordedAt = "2026-04-01T21:03:00"),
+    InsightLifestyleRecommendation(6, "DELETE", buttonId = 4, buttonName = "텀블러 사용", iconName = "cup", iconColor = "#4D96FF", lastRecordedAt = "2026-04-03T09:12:00"),
+    InsightLifestyleRecommendation(7, "DELETE", buttonId = 5, buttonName = "기타 연습", iconName = "guitar", iconColor = "#FF9F45", lastRecordedAt = "2026-04-01T21:03:00"),
 )
 
 @Preview(showBackground = true)
