@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -283,16 +285,27 @@ fun TeamActivityScreen(
         }
     }
 
-        AnimatedVisibility(
-            visible = showRecordCompleteBanner,
-            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .statusBarsPadding()
-                .padding(top = 12.dp)
+        // 활동 탭 콘텐츠는 팀 상세 상단바/탭 아래에 중첩돼 있어, 일반 Box 정렬로는 화면 진짜
+        // 최상단(개인 파트와 같은 위치)에 띄울 수 없다. Popup은 창 좌표 기준이라 중첩과 무관하게
+        // 항상 화면 맨 위에 뜬다.
+        Popup(
+            alignment = Alignment.TopCenter,
+            properties = PopupProperties(
+                focusable = false,
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+            ),
         ) {
-            RecordCompleteBanner(onCancel = onCancelRecord)
+            AnimatedVisibility(
+                visible = showRecordCompleteBanner,
+                enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(top = 12.dp)
+            ) {
+                RecordCompleteBanner(onCancel = onCancelRecord)
+            }
         }
     }
 
