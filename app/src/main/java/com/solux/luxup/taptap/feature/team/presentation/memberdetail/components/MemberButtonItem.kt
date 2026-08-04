@@ -1,7 +1,6 @@
 package com.solux.luxup.taptap.feature.team.presentation.memberdetail.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
@@ -42,9 +42,9 @@ fun MemberButtonItem(
         Box(
             modifier = Modifier
                 .size(28.dp)
+                .figmaDropShadow(cornerRadius = 14.dp, alpha = 0.24f, blurRadius = 5.dp)
                 .clip(CircleShape)
-                .background(Color.White)
-                .border(1.dp, Color(0xFF7CCBFF), CircleShape),
+                .background(Color.White),
             contentAlignment = Alignment.Center
         ) {
             Icon(
