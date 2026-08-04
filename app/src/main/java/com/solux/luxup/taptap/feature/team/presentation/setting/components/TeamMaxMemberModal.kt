@@ -201,8 +201,13 @@ private fun MaxMemberWheel(
             }
         }
 
-        // 선택 영역 표시 — 가운데 칸 위아래 구분선 (팀 생성 화면의 MaxMemberPicker와 동일)
-        Column(modifier = Modifier.fillMaxSize()) {
+        // 선택 영역 표시 — 가운데 칸 위아래 구분선. 팀 생성 화면의 MaxMemberPicker와 동일하게
+        // 좌우로 살짝 들어가 있다(꽉 채우지 않음).
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp),
+        ) {
             Spacer(Modifier.height(itemHeight))
             SelectionDivider()
             Spacer(Modifier.height(itemHeight))
