@@ -42,7 +42,6 @@ fun TeamInsightButtonAllScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         SettingTopBar(
             title = teamName,
             onBack = onBack,

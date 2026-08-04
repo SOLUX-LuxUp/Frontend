@@ -204,7 +204,6 @@ fun TeamButtonInfoScreen(
             Spacer(Modifier.height(40.dp))
         }
 
-        com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost(teamId = teamId)
         bottomBar()
     }
 
