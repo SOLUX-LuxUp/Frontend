@@ -3,6 +3,8 @@ package com.solux.luxup.taptap.feature.team.presentation.button.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 /**
  * 팀 상세 우상단 + 를 눌렀을 때 뜨는 생성 방식 선택 모달.
@@ -75,21 +82,38 @@ private fun OptionButton(
     text: String,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = if (isPressed) {
+        Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+    } else {
+        Brush.horizontalGradient(listOf(Color.White, Color.White))
+    }
+    val borderBrush = if (isPressed) {
+        background
+    } else {
+        Brush.horizontalGradient(listOf(Color(0xFF6D6D6D), Color(0xFF6D6D6D)))
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(41.dp)
             .clip(RoundedCornerShape(11.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFF6D6D6D), RoundedCornerShape(11.dp))
-            .clickable(onClick = onClick),
+            .background(background)
+            .border(1.dp, borderBrush, RoundedCornerShape(11.dp))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF6D6D6D),
+            color = if (isPressed) Color.White else Color(0xFF6D6D6D),
         )
     }
 }

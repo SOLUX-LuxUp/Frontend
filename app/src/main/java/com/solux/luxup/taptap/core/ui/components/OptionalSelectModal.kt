@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 /**
  * 선택지 2개 이상을 세로로 나열하는 공용 모달.
@@ -164,9 +166,9 @@ private fun CloseIcon(
 
 // TODO: Figma Inspect 값 확정 후 core/ui/theme 로 이동
 private val ModalBackground = Color(0xFFDCEBFB)
-private val GradientStart = Color(0xFF4FA8FF)
-private val GradientEnd = Color(0xFF2E7BFF)
-private val CloseIconColor = Color(0xFF2E7BFF)
+private val GradientStart = BlueGradientStart
+private val GradientEnd = BlueGradientEnd
+private val CloseIconColor = BlueGradientEnd
 
 @Preview(showBackground = true, backgroundColor = 0xFF666666)
 @Composable

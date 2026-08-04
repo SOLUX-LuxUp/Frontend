@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
 import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -148,6 +151,7 @@ fun MemberShareSettingModal(
                     textColor = Color(0xFFFF6B6B),
                     borderColor = Color(0xFFFF6B6B),
                     bgColor = Color.White,
+                    isDanger = true,
                     modifier = Modifier.weight(1f),
                     onClick = onDismiss
                 )
@@ -246,6 +250,7 @@ private fun ShareButtonCheckItem(
     }
 }
 
+/** isDanger(빨간 계열)면 눌렀을 때 회색(#E2E2E2), 아니면 파란 그라데이션으로 바뀐다 */
 @Composable
 private fun ModalButton(
     text: String,
@@ -253,22 +258,35 @@ private fun ModalButton(
     borderColor: Color,
     bgColor: Color = Color.White,
     modifier: Modifier = Modifier,
+    isDanger: Boolean = false,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = when {
+        isPressed && isDanger -> Brush.horizontalGradient(listOf(Color(0xFFE2E2E2), Color(0xFFE2E2E2)))
+        isPressed -> Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+        else -> Brush.horizontalGradient(listOf(bgColor, bgColor))
+    }
+    val borderBrush = if (isPressed) background else Brush.horizontalGradient(listOf(borderColor, borderColor))
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
-            .background(bgColor)
-            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
+            .background(background)
+            .border(1.dp, borderBrush, RoundedCornerShape(24.dp))
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null
             ) { onClick() }
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text, fontFamily = Pretendard, fontSize = 18.sp,
-            fontWeight = FontWeight.Medium, color = textColor)
+        Text(
+            text, fontFamily = Pretendard, fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = if (isPressed && !isDanger) Color.White else textColor,
+        )
     }
 }
 
