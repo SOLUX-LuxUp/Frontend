@@ -23,4 +23,14 @@ interface UserApi {
     suspend fun changePassword(
         @Body request: ChangePasswordRequestDto,
     ): Response<BaseResponse<JsonElement>>
+
+    // ---- Notification Setting ----
+
+    @GET("api/users/notification-settings")
+    suspend fun getNotificationSettings(): Response<BaseResponse<NotificationSettingResponseDto>>
+
+    @PATCH("api/users/notification-settings")
+    suspend fun updateNotificationSettings(
+        @Body request: NotificationSettingUpdateRequestDto,
+    ): Response<BaseResponse<NotificationSettingResponseDto>>
 }

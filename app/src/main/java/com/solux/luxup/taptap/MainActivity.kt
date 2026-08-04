@@ -29,6 +29,7 @@ import com.solux.luxup.taptap.core.auth.TokenManager
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.ui.theme.IconColor
+import com.solux.luxup.taptap.feature.auth.account.data.MockNotificationSettings
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountInfoScreen
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountProfileImageEditor
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountSettingsScreen
@@ -569,6 +570,7 @@ class MainActivity : ComponentActivity() {
                             val observer = LifecycleEventObserver { _, event ->
                                 if (event == Lifecycle.Event.ON_RESUME) {
                                     accountViewModel.loadProfile()
+                                    accountViewModel.loadNotificationSettings()
                                 }
                             }
                             backStackEntry.lifecycle.addObserver(observer)
@@ -578,12 +580,22 @@ class MainActivity : ComponentActivity() {
                             AccountProfileImageEditor(accountViewModel) { onEditProfileClick ->
                                 AccountSettingsScreen(
                                     user = user,
+                                    notificationSettings = accountViewModel.notificationSettings ?: MockNotificationSettings,
                                     onNavigateToAccountInfo = {
                                         navController.navigate("accountInfo")
                                     },
                                     onEditProfileImage = onEditProfileClick,
                                     onSaveNickname = { nickname ->
                                         accountViewModel.updateNickname(nickname)
+                                    },
+                                    onToggleNotificationEnabled = { enabled ->
+                                        accountViewModel.toggleNotificationEnabled(enabled)
+                                    },
+                                    onSelectSoundOption = { option ->
+                                        accountViewModel.selectNotificationSoundOption(option)
+                                    },
+                                    onToggleShowOverOtherApps = { show ->
+                                        accountViewModel.toggleNotificationShowOverOtherApps(show)
                                     },
                                     onNavItemSelected = { item ->
                                         navController.navigateToTab(item)

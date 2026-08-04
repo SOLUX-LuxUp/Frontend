@@ -67,6 +67,9 @@ fun AccountSettingsScreen(
     onNavigateToAccountInfo: () -> Unit = {},
     onEditProfileImage: () -> Unit = {},
     onSaveNickname: (String) -> Unit = {},
+    onToggleNotificationEnabled: (Boolean) -> Unit = {},
+    onSelectSoundOption: (NotificationSoundOption) -> Unit = {},
+    onToggleShowOverOtherApps: (Boolean) -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -121,7 +124,7 @@ fun AccountSettingsScreen(
                         checked = settings.enabled,
                         onCheckedChange = {
                             settings = settings.copy(enabled = it)
-                            // TODO: 알림 on/off API 연동
+                            onToggleNotificationEnabled(it)
                         },
                     )
                 },
@@ -133,16 +136,18 @@ fun AccountSettingsScreen(
                     value = settings.soundOption.label,
                     options = soundOptionLabels,
                     onOptionSelected = { index ->
-                        settings = settings.copy(soundOption = NotificationSoundOption.entries[index])
-                        // TODO: 알림 소리 설정 API 연동
+                        val option = NotificationSoundOption.entries[index]
+                        settings = settings.copy(soundOption = option)
+                        onSelectSoundOption(option)
                     },
                 )
                 NotificationToggleRow(
                     label = "다른 화면 위에 표시",
                     value = if (settings.showOverOtherApps) "허용" else "비허용",
                     onClick = {
-                        settings = settings.copy(showOverOtherApps = !settings.showOverOtherApps)
-                        // TODO: 오버레이 권한 설정 연동
+                        val show = !settings.showOverOtherApps
+                        settings = settings.copy(showOverOtherApps = show)
+                        onToggleShowOverOtherApps(show)
                     },
                 )
             }
