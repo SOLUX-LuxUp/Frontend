@@ -67,6 +67,13 @@ class TeamActivityViewModel @AssistedInject constructor(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    /**
+     * 이 방문(컴포지션) 동안 기록을 한 번이라도 남겼는지 — 팀 생성 직후 뜨는 추천 섹션을
+     * 숨기는 신호로 쓴다. true가 된 뒤로는 계속 true (버튼을 다시 0개로 되돌려도 재노출 안 함).
+     */
+    var hasRecordedThisVisit by mutableStateOf(false)
+        private set
+
     /** 연타로 기록이 중복 생성되는 것을 막는다 */
     private var isRecording = false
 
@@ -171,6 +178,7 @@ class TeamActivityViewModel @AssistedInject constructor(
 
             teamRepository.createRecord(teamId, button.teamButtonId)
                 .onSuccess { result ->
+                    hasRecordedThisVisit = true
                     pendingRecord = PendingRecord(teamButtonId = result.teamButtonId, recordId = result.recordId)
                     load()
 
