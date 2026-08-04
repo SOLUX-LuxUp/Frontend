@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +30,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.feature.team.model.TeamButtonPermission
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 /**
  * 연파랑 컨테이너 안에 흰 알약 옵션을 세로로 쌓는 공용 틀.
@@ -60,14 +65,23 @@ private fun OptionPill(
     val borderColor = if (selected) Color(0xFF2680EB) else Color(0xFFD3E4F5)
     val textColor = if (selected) Color(0xFF2680EB) else Color(0xFFB1B1B1)
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = if (isPressed) {
+        Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+    } else {
+        Brush.horizontalGradient(listOf(Color.White, Color.White))
+    }
+    val borderBrush = if (isPressed) background else Brush.horizontalGradient(listOf(borderColor, borderColor))
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(100.dp))
-            .background(Color.White)
-            .border(1.dp, borderColor, RoundedCornerShape(100.dp))
+            .background(background)
+            .border(1.dp, borderBrush, RoundedCornerShape(100.dp))
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick,
             )
@@ -78,7 +92,7 @@ private fun OptionPill(
             text = label,
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium,
-            color = textColor,
+            color = if (isPressed) Color.White else textColor,
         )
     }
 }

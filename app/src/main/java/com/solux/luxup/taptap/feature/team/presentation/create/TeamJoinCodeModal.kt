@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,10 +20,12 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +38,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 /**
  * 초대코드로 팀 가입하는 모달.
@@ -100,6 +105,7 @@ fun TeamJoinCodeModalContent(
                 PillButton(
                     label = "취소",
                     contentColor = CancelColor,
+                    isDanger = true,
                     onClick = onDismiss,
                 )
                 PillButton(
@@ -180,6 +186,7 @@ private fun InviteCodeField(
     }
 }
 
+/** isDanger(빨간 계열)면 눌렀을 때 회색(#E2E2E2), 아니면 파란 그라데이션으로 바뀐다 */
 @Composable
 private fun PillButton(
     label: String,
@@ -187,15 +194,25 @@ private fun PillButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    isDanger: Boolean = false,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = when {
+        isPressed && isDanger -> Brush.horizontalGradient(listOf(Color(0xFFE2E2E2), Color(0xFFE2E2E2)))
+        isPressed -> Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+        else -> Brush.horizontalGradient(listOf(Color.White, Color.White))
+    }
+    val borderBrush = if (isPressed) background else Brush.horizontalGradient(listOf(contentColor, contentColor))
+
     Box(
         modifier = modifier
             .size(width = ButtonWidth, height = ButtonHeight)
             .clip(RoundedCornerShape(100.dp))
-            .background(Color.White)
-            .border(1.dp, contentColor, RoundedCornerShape(100.dp))
+            .background(background)
+            .border(1.dp, borderBrush, RoundedCornerShape(100.dp))
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled,
                 onClick = onClick,
@@ -207,7 +224,7 @@ private fun PillButton(
             fontSize = 16.sp,
             lineHeight = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = contentColor,
+            color = if (isPressed && !isDanger) Color.White else contentColor,
         )
     }
 }

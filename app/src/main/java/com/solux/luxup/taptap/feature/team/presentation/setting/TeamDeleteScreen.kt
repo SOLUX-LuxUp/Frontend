@@ -41,6 +41,8 @@ import com.solux.luxup.taptap.feature.team.data.mockTeamSettings
 import com.solux.luxup.taptap.feature.team.model.TeamSettings
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamProfileCircle
 import com.solux.luxup.taptap.feature.team.presentation.setting.components.SettingSpec
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 /**
  * 팀 삭제 확인 화면. 모달이 아니라 전체 화면이다.
@@ -222,7 +224,7 @@ private fun DeleteActionButton(
     val pressed by interactionSource.collectIsPressedAsState()
 
     val background = if (pressed && enabled) {
-        Brush.horizontalGradient(listOf(Color(0xFF4BB4FF), Color(0xFF2085FF)))
+        Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
     } else {
         Brush.horizontalGradient(listOf(Color(0xFFD9D9D9), Color(0xFFD9D9D9)))
     }

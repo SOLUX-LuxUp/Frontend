@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +44,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.feature.team.model.TeamSizePolicy
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 /**
  * 최대 인원을 고르는 모달. 5단위 스텝, 5~30.
@@ -128,6 +132,7 @@ fun TeamMaxMemberModalContent(
             MaxMemberPillButton(
                 label = "취소",
                 contentColor = Color(0xFFF08A8A),
+                isDanger = true,
                 onClick = onDismiss,
             )
             MaxMemberPillButton(
@@ -226,21 +231,33 @@ private fun SelectionDivider() {
     )
 }
 
+/** isDanger(빨간 계열 버튼)면 눌렀을 때 회색(#E2E2E2), 아니면 파란 그라데이션으로 바뀐다 */
 @Composable
 private fun MaxMemberPillButton(
     label: String,
     contentColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isDanger: Boolean = false,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = when {
+        isPressed && isDanger -> Brush.horizontalGradient(listOf(Color(0xFFE2E2E2), Color(0xFFE2E2E2)))
+        isPressed -> Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+        else -> Brush.horizontalGradient(listOf(Color.White, Color.White))
+    }
+    // 눌렀을 때는 테두리도 배경과 같은 색으로 — 필 안으로 자연스럽게 묻힌다
+    val borderBrush = if (isPressed) background else Brush.horizontalGradient(listOf(contentColor, contentColor))
+
     Box(
         modifier = modifier
             .size(width = 85.dp, height = 36.dp)
             .clip(RoundedCornerShape(100.dp))
-            .background(Color.White)
-            .border(1.dp, contentColor, RoundedCornerShape(100.dp))
+            .background(background)
+            .border(1.dp, borderBrush, RoundedCornerShape(100.dp))
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick,
             ),
@@ -250,7 +267,7 @@ private fun MaxMemberPillButton(
             text = label,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = contentColor,
+            color = if (isPressed && !isDanger) Color.White else contentColor,
         )
     }
 }
