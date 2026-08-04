@@ -878,6 +878,16 @@ class MainActivity : ComponentActivity() {
                             com.solux.luxup.taptap.feature.team.presentation.TeamDetailViewModel,
                             com.solux.luxup.taptap.feature.team.presentation.TeamDetailViewModel.Factory,
                             >(creationCallback = { factory -> factory.create(teamId) })
+                        // 팀 설정에서 이름을 바꾸고 뒤로가기로 돌아왔을 때 헤더에 바로 반영되도록 새로고침한다.
+                        DisposableEffect(backStackEntry) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) {
+                                    teamDetailViewModel.refreshTeamName()
+                                }
+                            }
+                            backStackEntry.lifecycle.addObserver(observer)
+                            onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+                        }
                         TeamDetailScreen(
                             teamId = teamId,
                             teamName = teamDetailViewModel.teamName ?: "LUX-UP",
@@ -934,6 +944,13 @@ class MainActivity : ComponentActivity() {
                             viewModelStoreOwner = teamDetailEntry,
                             creationCallback = { factory -> factory.create(teamId) },
                         )
+                        val teamDetailViewModelForButtonAll = hiltViewModel<
+                            com.solux.luxup.taptap.feature.team.presentation.TeamDetailViewModel,
+                            com.solux.luxup.taptap.feature.team.presentation.TeamDetailViewModel.Factory,
+                            >(
+                            viewModelStoreOwner = teamDetailEntry,
+                            creationCallback = { factory -> factory.create(teamId) },
+                        )
                         val memberActivity = when (period) {
                             "WEEKLY" -> insightViewModel.weekly?.memberActivity
                             "MONTHLY" -> insightViewModel.monthly?.memberActivity
@@ -941,7 +958,7 @@ class MainActivity : ComponentActivity() {
                         }.orEmpty()
 
                         TeamInsightButtonAllScreen(
-                            teamName = "LUX-UP",              // TODO: 실제 팀명 조회로 교체 (지금은 Mock)
+                            teamName = teamDetailViewModelForButtonAll.teamName ?: "LUX-UP",
                             teamId = teamId,
                             memberActivity = memberActivity,
                             currentUserId = currentUserId,

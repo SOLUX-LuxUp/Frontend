@@ -13,7 +13,11 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+private const val RECORD_CANCEL_WINDOW_MILLIS = 3_000L
 
 /**
  * 팀 활동 탭 — 팀 공유 버튼 목록.
@@ -65,6 +69,14 @@ class TeamActivityViewModel @AssistedInject constructor(
 
     /** 연타로 기록이 중복 생성되는 것을 막는다 */
     private var isRecording = false
+
+    private data class PendingRecord(val teamButtonId: Long, val recordId: Long)
+
+    /** 방금 남긴 기록 — "기록 완료!" 취소 배너가 이걸로 노출 여부·취소 대상을 판단한다 */
+    private var pendingRecord by mutableStateOf<PendingRecord?>(null)
+    val showRecordCompleteBanner: Boolean
+        get() = pendingRecord != null
+    private var recordCancelWindowJob: Job? = null
 
     init {
         load()
@@ -147,6 +159,8 @@ class TeamActivityViewModel @AssistedInject constructor(
     /**
      * 짧게 누르기 = 탭 기록.
      * 메모·이모지는 보내지 않고, 타임라인에서 나중에 추가한다.
+     * 기록 성공 시 화면 상단에 "기록 완료!" 취소 배너를 3초간 띄운다 — 그 안에 취소하지 않으면
+     * 배너는 그냥 사라지고 기록은 그대로 유지된다(개인 파트 RecordCompleteBanner와 동일한 패턴).
      */
     fun recordTap(button: TeamButton) {
         // 권한 없는 버튼은 화면에서 안내 모달로 막지만, 여기서도 한 번 더 확인
@@ -156,15 +170,34 @@ class TeamActivityViewModel @AssistedInject constructor(
             isRecording = true
 
             teamRepository.createRecord(teamId, button.teamButtonId)
-                .onSuccess {
-                    toastMessage = "기록했어요"
+                .onSuccess { result ->
+                    pendingRecord = PendingRecord(teamButtonId = result.teamButtonId, recordId = result.recordId)
                     load()
+
+                    recordCancelWindowJob?.cancel()
+                    recordCancelWindowJob = viewModelScope.launch {
+                        delay(RECORD_CANCEL_WINDOW_MILLIS)
+                        pendingRecord = null
+                    }
                 }
                 .onFailure {
                     errorMessage = "기록하지 못했어요.\n잠시 후 다시 시도해 주세요."
                 }
 
             isRecording = false
+        }
+    }
+
+    /** "기록 완료!" 배너의 "취소" — 방금 남긴 기록을 그대로 삭제한다 */
+    fun cancelPendingRecord() {
+        val pending = pendingRecord ?: return
+        recordCancelWindowJob?.cancel()
+        pendingRecord = null
+
+        viewModelScope.launch {
+            teamRepository.deleteRecord(teamId, pending.teamButtonId, pending.recordId)
+                .onSuccess { load() }
+                .onFailure { errorMessage = it.message ?: "기록 취소에 실패했어요." }
         }
     }
 
@@ -176,7 +209,7 @@ class TeamActivityViewModel @AssistedInject constructor(
                     load()
                 }
                 .onFailure {
-                    errorMessage = "버튼을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요."
+                    errorMessage = it.message ?: "버튼을 삭제하지 못했어요.\n잠시 후 다시 시도해 주세요."
                 }
         }
     }
