@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.solux.luxup.taptap.feature.auth.account.data.UserRepository
 import com.solux.luxup.taptap.feature.auth.account.model.AccountUser
+import com.solux.luxup.taptap.feature.auth.account.model.NotificationSettings
+import com.solux.luxup.taptap.feature.auth.account.model.NotificationSoundOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,8 +33,13 @@ class AccountViewModel @Inject constructor(
     var isPasswordChanged by mutableStateOf(false)
         private set
 
+    /** GET /api/users/notification-settings 로 채운다. 아직 로딩 중이면 null */
+    var notificationSettings by mutableStateOf<NotificationSettings?>(null)
+        private set
+
     init {
         loadProfile()
+        loadNotificationSettings()
     }
 
     fun loadProfile() {
@@ -91,5 +98,42 @@ class AccountViewModel @Inject constructor(
 
     fun consumePasswordChanged() {
         isPasswordChanged = false
+    }
+
+    fun loadNotificationSettings() {
+        viewModelScope.launch {
+            userRepository.getNotificationSettings()
+                .onSuccess { notificationSettings = it }
+                .onFailure { errorMessage = it.message ?: "알림 설정을 불러오지 못했어요." }
+        }
+    }
+
+    fun toggleNotificationEnabled(enabled: Boolean) {
+        val current = notificationSettings ?: return
+        applyNotificationSettings(current.copy(enabled = enabled))
+    }
+
+    fun selectNotificationSoundOption(option: NotificationSoundOption) {
+        val current = notificationSettings ?: return
+        applyNotificationSettings(current.copy(soundOption = option))
+    }
+
+    fun toggleNotificationShowOverOtherApps(show: Boolean) {
+        val current = notificationSettings ?: return
+        applyNotificationSettings(current.copy(showOverOtherApps = show))
+    }
+
+    /** PATCH /api/users/notification-settings — 낙관적으로 먼저 반영하고 실패 시 되돌린다 */
+    private fun applyNotificationSettings(updated: NotificationSettings) {
+        val previous = notificationSettings ?: return
+        notificationSettings = updated
+        viewModelScope.launch {
+            userRepository.updateNotificationSettings(updated)
+                .onSuccess { notificationSettings = it }
+                .onFailure {
+                    notificationSettings = previous
+                    errorMessage = it.message ?: "알림 설정을 변경하지 못했어요."
+                }
+        }
     }
 }

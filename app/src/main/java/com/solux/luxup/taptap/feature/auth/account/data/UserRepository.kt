@@ -3,6 +3,8 @@ package com.solux.luxup.taptap.feature.auth.account.data
 import com.solux.luxup.taptap.core.network.ApiCallHandler
 import com.solux.luxup.taptap.core.network.ApiException
 import com.solux.luxup.taptap.feature.auth.account.model.AccountUser
+import com.solux.luxup.taptap.feature.auth.account.model.NotificationSettings
+import com.solux.luxup.taptap.feature.auth.account.model.NotificationSoundOption
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,10 +45,33 @@ class UserRepository @Inject constructor(
             Result.failure(ApiException(body?.message ?: "비밀번호를 변경하지 못했어요.", response.code()))
         }
     }
+
+    /** GET /api/users/notification-settings */
+    suspend fun getNotificationSettings(): Result<NotificationSettings> =
+        apiCallHandler.execute { userApi.getNotificationSettings() }
+            .mapCatching { it.toModel() }
+
+    /** PATCH /api/users/notification-settings — 4개 필드를 항상 전부 보낸다 */
+    suspend fun updateNotificationSettings(settings: NotificationSettings): Result<NotificationSettings> =
+        apiCallHandler.execute { userApi.updateNotificationSettings(settings.toRequestDto()) }
+            .mapCatching { it.toModel() }
 }
 
 private fun UserProfileResponseDto.toModel() = AccountUser(
     nickname = username,
     email = email,
     profileImageUrl = profileImageUrl,
+)
+
+private fun NotificationSettingResponseDto.toModel() = NotificationSettings(
+    enabled = masterEnabled,
+    soundOption = NotificationSoundOption.fromFlags(soundEnabled, vibrationEnabled),
+    showOverOtherApps = popupOverlay,
+)
+
+private fun NotificationSettings.toRequestDto() = NotificationSettingUpdateRequestDto(
+    masterEnabled = enabled,
+    soundEnabled = soundOption.soundEnabled,
+    vibrationEnabled = soundOption.vibrationEnabled,
+    popupOverlay = showOverOtherApps,
 )
