@@ -101,6 +101,7 @@ fun TeamDetailScreen(
                 teamName = teamName,
                 action = when (selectedTab) {
                     TeamDetailTab.MEMBER -> TopBarAction.SETTINGS
+                    TeamDetailTab.INSIGHT -> TopBarAction.NONE
                     else -> TopBarAction.ADD
                 },
                 onBackClick = {
@@ -116,13 +117,14 @@ fun TeamDetailScreen(
                 onActionClick = {
                     when (selectedTab) {
                         TeamDetailTab.MEMBER -> onOpenTeamSettings()
-                        else -> {
+                        TeamDetailTab.ACTIVITY -> {
                             if (hasSelectedTemplate) {
                                 showCreateOption = true
                             } else {
                                 onCreateButton()
                             }
                         }
+                        TeamDetailTab.INSIGHT -> Unit   // 아이콘 자체가 없어 호출될 일 없음
                     }
                 }
             )
@@ -220,7 +222,7 @@ fun TeamDetailScreen(
 }
 
 // 우측 액션 종류 (함수 위 아무 데나 — TeamDetailTab enum 근처에 둬도 됨)
-enum class TopBarAction { ADD, SETTINGS }
+enum class TopBarAction { ADD, SETTINGS, NONE }
 
 @Composable
 private fun TeamDetailTopBar(
@@ -289,6 +291,7 @@ private fun TeamDetailTopBar(
                         indication = null
                     ) { onActionClick() }
             )
+            TopBarAction.NONE -> Unit   // 인사이트 탭엔 우측 아이콘 없음
         }
     }
 }
