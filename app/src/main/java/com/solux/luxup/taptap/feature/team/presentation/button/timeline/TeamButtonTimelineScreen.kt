@@ -251,6 +251,7 @@ private fun TimelineTopBar(
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
         BackArrowIcon(
+            tint = Color(0xFFB1B1B1),
             size = 31.dp,
             modifier = Modifier
                 .align(Alignment.CenterStart)

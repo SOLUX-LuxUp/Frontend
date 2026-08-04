@@ -79,6 +79,7 @@ fun TeamDeleteScreen(
             contentAlignment = Alignment.CenterStart,
         ) {
             BackArrowIcon(
+                tint = Color(0xFFB1B1B1),
                 size = SettingSpec.BackIconSize,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },

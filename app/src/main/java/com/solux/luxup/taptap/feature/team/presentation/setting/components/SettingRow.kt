@@ -209,6 +209,7 @@ fun SettingTopBar(
                 color = SettingSpec.TitleColor,
             )
             BackArrowIcon(
+                tint = Color(0xFFB1B1B1),
                 size = SettingSpec.BackIconSize,
                 modifier = Modifier
                     .align(Alignment.CenterStart)

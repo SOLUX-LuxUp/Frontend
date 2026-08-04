@@ -235,6 +235,7 @@ private fun TeamDetailTopBar(
             .padding(start = 40.dp, end = 40.dp, top = 20.dp, bottom = 12.dp)
     ) {
         BackArrowIcon(
+            tint = Color(0xFFB1B1B1),
             size = 31.dp,
             modifier = Modifier
                 .align(Alignment.CenterStart)
