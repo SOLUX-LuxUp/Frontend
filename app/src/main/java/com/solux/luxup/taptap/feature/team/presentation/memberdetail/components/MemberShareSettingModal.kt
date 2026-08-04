@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,6 +48,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
 import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -154,6 +159,8 @@ fun MemberShareSettingModal(
                     filtered.forEach { button ->
                         ShareButtonCheckItem(
                             buttonName = button.buttonName,
+                            iconName = button.iconName,
+                            iconColor = button.iconColor,
                             checked = checkState[button.buttonId] ?: false,
                             onToggle = {
                                 checkState[button.buttonId] = !(checkState[button.buttonId] ?: false)
@@ -273,7 +280,9 @@ private fun ShareCategoryFilterDropdown(
 private fun ShareButtonCheckItem(
     buttonName: String,
     checked: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    iconName: String? = null,
+    iconColor: String? = null,
 ) {
     Row(
         modifier = Modifier
@@ -285,13 +294,21 @@ private fun ShareButtonCheckItem(
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 아이콘 자리 (임시 회색 원)
         Box(
             modifier = Modifier
                 .size(28.dp)
+                .figmaDropShadow(cornerRadius = 14.dp, alpha = 0.24f, blurRadius = 5.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF0F0F0))
-        )
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(ButtonIcons.resOf(iconName)),
+                contentDescription = null,
+                tint = IconColor.from(iconColor).color,
+                modifier = Modifier.size(16.dp),
+            )
+        }
         Spacer(Modifier.width(12.dp))
         Text(
             text = buttonName,
