@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
@@ -48,8 +49,9 @@ fun MemberTimelineItem(
         Box(
             modifier = Modifier
                 .size(28.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF0F0F0)),
+                .figmaDropShadow(cornerRadius = 14.dp, alpha = 0.24f, blurRadius = 5.dp)
+                .clip(CircleShape)
+                .background(Color.White),
             contentAlignment = Alignment.Center
         ) {
             if (iconName != null) {
@@ -57,7 +59,7 @@ fun MemberTimelineItem(
                     painter = painterResource(ButtonIcons.resOf(iconName)),
                     contentDescription = null,
                     tint = IconColor.from(iconColor).color,
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(16.dp),
                 )
             } else {
                 record.emoji?.let { Text(it, fontSize = 14.sp) }
