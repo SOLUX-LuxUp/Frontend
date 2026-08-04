@@ -47,6 +47,7 @@ import com.solux.luxup.taptap.feature.team.model.TeamButtonLatest
 import com.solux.luxup.taptap.feature.team.model.TeamButtonTimelineRecord
 
 private val ScreenPadding = 40.dp
+private const val NO_EDIT_PERMISSION_MESSAGE = "지금은 팀장만 버튼을 수정할 수 있어요."
 
 /**
  * 팀 공유 버튼 타임라인 (8.1.5)
@@ -65,6 +66,8 @@ fun TeamButtonTimelineScreen(
     currentUserId: Long,
     teamId: Long,
     hasMore: Boolean,
+    isManager: Boolean = false,
+    canEdit: Boolean = false,
     onBack: () -> Unit,
     onEditButton: () -> Unit,
     onLoadMore: () -> Unit,
@@ -84,6 +87,10 @@ fun TeamButtonTimelineScreen(
     var deleteTarget by remember { mutableStateOf<TeamButtonTimelineRecord?>(null) }
     var memoTarget by remember { mutableStateOf<TeamButtonTimelineRecord?>(null) }
 
+    // 화면 내부 안내(수정 권한 없음)와 ViewModel 에러를 같은 모달로 보여준다
+    var localNotice by remember { mutableStateOf<String?>(null) }
+    val notice = localNotice ?: errorMessage
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -97,7 +104,14 @@ fun TeamButtonTimelineScreen(
         ) {
             Spacer(Modifier.height(70.dp))
 
-            TimelineTopBar(onBack = onBack, onEditClick = onEditButton)
+            TimelineTopBar(
+                isManager = isManager,
+                onBack = onBack,
+                onEditClick = {
+                    if (canEdit) onEditButton()
+                    else localNotice = NO_EDIT_PERMISSION_MESSAGE
+                },
+            )
 
             Spacer(Modifier.height(30.dp))
 
@@ -215,13 +229,20 @@ fun TeamButtonTimelineScreen(
         }
     }
 
-    errorMessage?.let { message ->
-        NoticeDialog(message = message, onDismiss = onErrorConsumed)
+    notice?.let { message ->
+        NoticeDialog(
+            message = message,
+            onDismiss = {
+                localNotice = null
+                onErrorConsumed()
+            },
+        )
     }
 }
 
 @Composable
 private fun TimelineTopBar(
+    isManager: Boolean,
     onBack: () -> Unit,
     onEditClick: () -> Unit,
 ) {
@@ -234,15 +255,18 @@ private fun TimelineTopBar(
                 .padding(4.dp)
                 .size(30.dp),
         )
-        Icon(
-            painter = painterResource(R.drawable.ic_edit),
-            contentDescription = "버튼 수정",
-            tint = Color(0xFF6D6D6D),
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .size(28.dp)
-                .clickable(onClick = onEditClick),
-        )
+        // 관리자(팀장/생성자)에게만 수정 아이콘 노출 — 버튼 정보 화면과 동일한 기준
+        if (isManager) {
+            Icon(
+                painter = painterResource(R.drawable.ic_edit),
+                contentDescription = "버튼 수정",
+                tint = Color(0xFF6D6D6D),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(28.dp)
+                    .clickable(onClick = onEditClick),
+            )
+        }
     }
 }
 
