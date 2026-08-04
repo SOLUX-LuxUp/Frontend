@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -224,19 +225,23 @@ private fun InfoTopBar(
     onBack: () -> Unit,
     onEditClick: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(70.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding(),
+    ) {
+        Spacer(Modifier.height(20.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(30.dp)
                 .padding(horizontal = ScreenPadding),
         ) {
             BackArrowIcon(
+                tint = Color(0xFFB1B1B1),
+                size = 31.dp,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(24.dp)
                     .clickable(onClick = onBack),
             )
             Text(

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -52,26 +53,31 @@ fun FormTopBar(
     confirmEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(70.dp))
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding(),
+    ) {
+        Spacer(Modifier.height(20.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(30.dp)
                 .padding(horizontal = 40.dp),
         ) {
             BackArrowIcon(
+                tint = Color(0xFFB1B1B1),
+                size = 31.dp,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(31.02.dp)
                     .clickable(onClick = onBack),
             )
             Text(
                 text = title,
                 fontSize = 22.sp,
+                lineHeight = 22.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = TextColor,
+                color = Color(0xFF1A1A1A),
                 modifier = Modifier.align(Alignment.Center),
             )
             ConfirmCheckIcon(

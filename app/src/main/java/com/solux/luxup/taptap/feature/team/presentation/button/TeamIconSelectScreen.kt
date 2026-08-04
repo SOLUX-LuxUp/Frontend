@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -58,9 +59,10 @@ fun TeamIconSelectScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color.White)
+            .statusBarsPadding(),
     ) {
-        Spacer(Modifier.height(70.dp))
+        Spacer(Modifier.height(20.dp))
 
         Box(
             Modifier
@@ -69,9 +71,9 @@ fun TeamIconSelectScreen(
         ) {
             BackArrowIcon(
                 tint = Color(0xFFB1B1B1),
+                size = 31.dp,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(31.02.dp)
                     .clickable(onClick = onNavigateBack),
             )
             Text(
