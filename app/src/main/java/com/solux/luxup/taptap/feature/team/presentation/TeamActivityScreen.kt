@@ -58,6 +58,7 @@ import com.solux.luxup.taptap.feature.team.presentation.components.TeamButtonDel
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamButtonList
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamButtonMenuDialog
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamFirstButtonSection
+import com.solux.luxup.taptap.feature.team.presentation.components.TeamQuickCreatePopup
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
@@ -75,13 +76,21 @@ fun TeamActivityRoute(
     onNavigateToTimeline: (TeamButton) -> Unit,
     onNavigateToInfo: (TeamButton) -> Unit,
     modifier: Modifier = Modifier,
-    isQuickCreateMode: Boolean = false,
-    onCloseQuickCreate: () -> Unit = {},
+    showQuickCreatePopup: Boolean = false,
+    onQuickCreatePopupDismissed: () -> Unit = {},
+    /** 팀 생성 직후 진입인지 — true면 추천 섹션을 처음부터 노출한다 */
+    showTemplateSection: Boolean = false,
+    onFirstRecordMade: () -> Unit = {},
 ) {
     val viewModel: TeamActivityViewModel = hiltViewModel<TeamActivityViewModel, TeamActivityViewModel.Factory>(
         creationCallback = { factory -> factory.create(teamId, currentUserId) },
     )
     val context = LocalContext.current
+
+    // 이 방문 동안 기록이 한 번이라도 생기면 위로 알려서 추천 섹션을 닫는다
+    LaunchedEffect(viewModel.hasRecordedThisVisit) {
+        if (viewModel.hasRecordedThisVisit) onFirstRecordMade()
+    }
 
     // 버튼 생성/수정 화면에 다녀와도 이 화면(NavBackStackEntry)의 ViewModel 인스턴스는
     // 재사용되어 init{} 이 다시 안 불리므로, 화면이 다시 보일 때(RESUME)마다 새로고침한다.
@@ -111,8 +120,9 @@ fun TeamActivityRoute(
         onCreateCategory = viewModel::createCategory,
         onRenameCategory = viewModel::renameCategory,
         onDeleteCategory = viewModel::deleteCategory,
-        isQuickCreateMode = isQuickCreateMode,
-        onCloseQuickCreate = onCloseQuickCreate,
+        showQuickCreatePopup = showQuickCreatePopup,
+        onQuickCreatePopupDismissed = onQuickCreatePopupDismissed,
+        showTemplateSection = showTemplateSection,
         onRecordTap = viewModel::recordTap,
         onDeleteButton = viewModel::deleteButton,
         showRecordCompleteBanner = viewModel.showRecordCompleteBanner,
@@ -135,8 +145,12 @@ fun TeamActivityRoute(
  *
  * 버튼 수정은 버튼 정보 화면의 우측 상단 아이콘으로 진입한다.
  *
- * 버튼이 하나도 없으면 "첫 번째 버튼을 만들어보세요" 유도 섹션을 노출한다.
- * 템플릿을 선택한 팀은 추천 리스트가 함께 나오고, 건너뛴 팀은 라벨만 나온다.
+ * 팀 생성 직후에는 [showTemplateSection]이 true로 들어와 "첫 번째 버튼을 만들어보세요" 추천 섹션이
+ * 자동 노출된다. 이 방문 동안 기록이 하나라도 생기면 사라지고(onFirstRecordMade), 이후 버튼을 다시
+ * 0개로 되돌려도 다시 뜨지 않는다 — 다른 방문에서는 애초에 showTemplateSection이 false로 들어온다.
+ * 건너뛴 팀은 suggestions가 비어 있어 제목만 노출된다.
+ *
+ * 그와 별개로 "+" → "빠르게 만들기"는 언제든 [TeamQuickCreatePopup] 팝업으로 추천 목록을 보여준다.
  */
 @Composable
 fun TeamActivityScreen(
@@ -148,8 +162,9 @@ fun TeamActivityScreen(
     onCreateCategory: (String) -> Unit = {},
     onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
     onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
-    isQuickCreateMode: Boolean = false,
-    onCloseQuickCreate: () -> Unit = {},
+    showQuickCreatePopup: Boolean = false,
+    onQuickCreatePopupDismissed: () -> Unit = {},
+    showTemplateSection: Boolean = false,
     onRecordTap: (TeamButton) -> Unit = {},
     onDeleteButton: (TeamButton) -> Unit = {},
     showRecordCompleteBanner: Boolean = false,
@@ -180,11 +195,7 @@ fun TeamActivityScreen(
         }
     }
 
-    // 빠르게 만들기를 누르면 추천 섹션(리스트 맨 위 header)이 바로 보이도록 스크롤을 올린다
     val listState = rememberLazyListState()
-    LaunchedEffect(isQuickCreateMode) {
-        if (isQuickCreateMode) listState.scrollToItem(0)
-    }
 
     Box(modifier = modifier) {
     Column {
@@ -216,11 +227,8 @@ fun TeamActivityScreen(
             SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
         }
 
-        // 추천 섹션은 팀 생성 직후 진입(quickCreateMode)에서만 노출된다.
-        // 그 방문 동안엔 버튼을 몇 개 만들든 유지되다가, X로 닫거나 다른 방문에서는 다시 안 뜬다.
-        // 나중에 버튼을 전부 지워서 다시 0개가 되어도(방금 생성한 게 아니라면) 추천 섹션은 다시 뜨지 않는다.
         when {
-            buttons.isEmpty() && isQuickCreateMode -> {
+            buttons.isEmpty() && showTemplateSection -> {
                 TeamFirstButtonSection(
                     suggestions = suggestions,
                     onSuggestionClick = onSuggestionClick,
@@ -261,13 +269,12 @@ fun TeamActivityScreen(
                     },
                     onButtonLongClick = onNavigateToTimeline,
                     onButtonMenuClick = { menuTarget = it },
-                    header = if (isQuickCreateMode) {
+                    header = if (showTemplateSection) {
                         {
                             TeamFirstButtonSection(
                                 suggestions = suggestions,
                                 onSuggestionClick = onSuggestionClick,
                                 isFirstButton = false,
-                                onClose = onCloseQuickCreate,
                             )
                         }
                     } else null,
@@ -287,6 +294,17 @@ fun TeamActivityScreen(
         ) {
             RecordCompleteBanner(onCancel = onCancelRecord)
         }
+    }
+
+    if (showQuickCreatePopup) {
+        TeamQuickCreatePopup(
+            suggestions = suggestions,
+            onDismiss = onQuickCreatePopupDismissed,
+            onSuggestionClick = { suggestion ->
+                onSuggestionClick(suggestion)
+                onQuickCreatePopupDismissed()
+            },
+        )
     }
 
     menuTarget?.let { target ->
@@ -422,13 +440,13 @@ private fun TeamActivityScreenSkipPreview() {
     )
 }
 
-/** 버튼이 있는 팀에서 빠르게 만들기 모드 */
+/** "+" → "빠르게 만들기" 팝업이 떠 있는 상태 */
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, heightDp = 700)
 @Composable
 private fun TeamActivityScreenQuickCreatePreview() {
     TeamActivityScreen(
         buttons = mockTeamButtons,
         suggestions = mockSuggestionsTogether,
-        isQuickCreateMode = true,
+        showQuickCreatePopup = true,
     )
 }

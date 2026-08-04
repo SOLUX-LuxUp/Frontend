@@ -60,7 +60,7 @@ fun TeamDetailScreen(
     currentUserId: Long = 4L,                    // 임시 (로그인 유저 id, API 연결 시 교체)
     /** GET /api/teams/{team_id}/template 의 hasSelectedTemplate. 호출부(MainActivity)에서 채워준다 */
     hasSelectedTemplate: Boolean = true,
-    /** 팀 생성 직후 진입인지 — true면 활동 탭에 추천 섹션을 처음부터 노출한다 */
+    /** 팀 생성 직후 진입인지 — true면 활동 탭에서 "빠르게 만들기" 팝업을 처음부터 띄운다 */
     initialQuickCreateMode: Boolean = false,
     onExit: () -> Unit = {},                     // 팀 상세에서 완전히 나가기 (라우팅 붙일 때)
     onCreateButton: () -> Unit = {},
@@ -77,7 +77,12 @@ fun TeamDetailScreen(
     var selectedTab by rememberSaveable { mutableStateOf(initialTab) }
     var selectedMemberId by rememberSaveable { mutableStateOf(initialMemberId) }
     var showCreateOption by remember { mutableStateOf(false) }
-    var quickCreateMode by rememberSaveable { mutableStateOf(initialQuickCreateMode) }
+    // 팀 생성 직후 진입 시 활동 탭에 자동으로 뜨는 추천 섹션 — 이 방문 중 기록이 한 번이라도
+    // 생기면(onFirstRecordMade) false로 고정되고, 다른 방문에서는 애초에 false로 시작한다.
+    var showTemplateSection by rememberSaveable { mutableStateOf(initialQuickCreateMode) }
+    // "+" → "빠르게 만들기"로 켜지는 추천 팝업 노출 여부 (TeamActivityScreen 안의 Dialog) — 위 추천
+    // 섹션과 별개로 언제든 켤 수 있다.
+    var showQuickCreatePopup by rememberSaveable { mutableStateOf(false) }
     // 인사이트 탭 "전체 타임라인" 여부 — 상단바 뒤로가기가 이 상태를 알아야
     // 팀 목록까지 나가버리지 않고 인사이트 일반 화면으로만 돌아간다.
     var insightViewMode by rememberSaveable { mutableStateOf(InsightViewMode.NORMAL) }
@@ -136,8 +141,10 @@ fun TeamDetailScreen(
                     currentUserId = currentUserId,
                     onNavigateToTimeline = { onOpenButtonTimeline(it.teamButtonId) },
                     onNavigateToInfo = { onOpenButtonInfo(it.teamButtonId) },
-                    isQuickCreateMode = quickCreateMode,
-                    onCloseQuickCreate = { quickCreateMode = false },
+                    showQuickCreatePopup = showQuickCreatePopup,
+                    onQuickCreatePopupDismissed = { showQuickCreatePopup = false },
+                    showTemplateSection = showTemplateSection,
+                    onFirstRecordMade = { showTemplateSection = false },
                 )
                 TeamDetailTab.INSIGHT  -> TeamInsightRoute(
                     teamId = teamId,
@@ -205,7 +212,7 @@ fun TeamDetailScreen(
                 },
                 onSelectQuick = {
                     showCreateOption = false
-                    quickCreateMode = true
+                    showQuickCreatePopup = true
                 },
             )
         }

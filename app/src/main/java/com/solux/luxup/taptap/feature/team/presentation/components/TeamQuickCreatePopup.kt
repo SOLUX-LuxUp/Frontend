@@ -5,7 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,7 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.solux.luxup.taptap.core.ui.components.SectionCard
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
@@ -41,44 +43,76 @@ import com.solux.luxup.taptap.feature.team.data.mockSuggestionsTogether
 import com.solux.luxup.taptap.feature.team.model.TeamButtonSuggestion
 
 /**
- * 팀 생성 직후(fromCreation) 활동 탭에 자동으로 뜨는 유도 섹션.
- * 이 방문 동안 기록이 하나라도 생기면 사라지고, 그 뒤로는(버튼을 다시 0개로 되돌려도) 다시 뜨지 않는다
- * — 다른 방문에서는 fromCreation이 항상 false라 애초에 노출되지 않는다.
- *
- * 템플릿을 선택한 팀만 추천 리스트가 채워지며, 카테고리 탭으로 분류해 보여준다.
- * 건너뛴 팀은 suggestions가 비어 있어 제목만 노출된다.
- * 추천 항목 탭 → POST /api/teams/{team_id}/buttons 로 개별 생성.
- * 생성된 항목은 다음 조회부터 목록에서 자동 제외된다.
- *
- * @param isFirstButton 버튼이 아직 없는 팀이면 true. 헤더 문구를 결정한다
+ * "+" → "빠르게 만들기"를 눌렀을 때 뜨는 추천 버튼 팝업 (개인 파트 TemplateSuggestionPopupCard 참고).
+ * 항목을 탭하면 그 자리에서 생성되고 팝업이 닫힌다.
  */
 @Composable
-fun TeamFirstButtonSection(
+fun TeamQuickCreatePopup(
     suggestions: List<TeamButtonSuggestion>,
+    onDismiss: () -> Unit,
+    onSuggestionClick: (TeamButtonSuggestion) -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        TeamQuickCreatePopupContent(
+            suggestions = suggestions,
+            onDismiss = onDismiss,
+            onSuggestionClick = onSuggestionClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp),
+        )
+    }
+}
+
+/** Dialog는 preview가 안 돼서 내용만 분리 */
+@Composable
+fun TeamQuickCreatePopupContent(
+    suggestions: List<TeamButtonSuggestion>,
+    onDismiss: () -> Unit,
     onSuggestionClick: (TeamButtonSuggestion) -> Unit,
     modifier: Modifier = Modifier,
-    isFirstButton: Boolean = true,
 ) {
-    SectionCard(
-        modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(13.dp))
+            .background(Color.White)
+            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 30.dp),
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_x),
+                contentDescription = "닫기",
+                tint = Color.Unspecified,
+                modifier = Modifier
+                    .size(23.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onDismiss,
+                    ),
+            )
+        }
+        Spacer(Modifier.height(10.dp))
         Text(
-            text = if (isFirstButton) "첫 번째 버튼을 만들어보세요"
-            else "버튼을 빠르게 만들어보세요",
-            fontSize = 20.sp,
+            text = "빠르게 버튼을 만들어보세요",
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF6D6D6D),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
 
-        if (suggestions.isEmpty()) return@SectionCard
+        if (suggestions.isEmpty()) return@Column
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(20.dp))
 
         // 카테고리 탭. categoryName이 null인 프리셋은 "기타"로 묶는다.
-        // TODO: No Category 탭 라벨 확정 필요
         val categories = remember(suggestions) {
             suggestions.map { it.categoryName ?: NO_CATEGORY_LABEL }.distinct()
         }
@@ -100,7 +134,7 @@ fun TeamFirstButtonSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         val filtered = remember(suggestions, selectedCategory) {
             suggestions
@@ -108,7 +142,6 @@ fun TeamFirstButtonSection(
                 .shuffled()
         }
 
-        // 추천 버튼만 감싸는 내부 스크롤 영역
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -191,26 +224,15 @@ private fun SuggestionRow(
 
 private const val NO_CATEGORY_LABEL = "기타"
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview(showBackground = true, widthDp = 390)
 @Composable
-private fun TeamFirstButtonSectionSkipPreview() {
+private fun TeamQuickCreatePopupContentPreview() {
     PreviewContainer {
-        TeamFirstButtonSection(
-            suggestions = emptyList(),
-            onSuggestionClick = {},
-            modifier = Modifier.padding(16.dp),
-        )
-    }
-}
-
-@Preview(showBackground = true, widthDp = 320)
-@Composable
-private fun TeamFirstButtonSectionTemplatePreview() {
-    PreviewContainer {
-        TeamFirstButtonSection(
+        TeamQuickCreatePopupContent(
             suggestions = mockSuggestionsTogether,
+            onDismiss = {},
             onSuggestionClick = {},
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(40.dp),
         )
     }
 }
