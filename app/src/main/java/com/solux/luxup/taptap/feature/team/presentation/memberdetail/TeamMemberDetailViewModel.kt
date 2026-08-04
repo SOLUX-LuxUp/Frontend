@@ -91,13 +91,21 @@ class TeamMemberDetailViewModel @AssistedInject constructor(
         }
     }
 
-    /** 공유 설정 모달 저장 — 낙관적으로 반영하고, 실패하면 되돌린다 */
+    /**
+     * 공유 설정 모달 저장 — 낙관적으로 반영하고, 실패하면 되돌린다.
+     * 공유 대상이 바뀌면 헤더의 "최근 기록" 카드가 참조하는 [detail]도 새로 반영해야
+     * 화면을 나갔다 들어오지 않아도 새로 공유한 버튼의 기록이 바로 보인다.
+     */
     fun saveSharedButtons(updated: List<TeamMemberSharedButton>) {
         val previous = sharedButtons
         sharedButtons = updated
         viewModelScope.launch {
             teamRepository.updateButtonSharing(teamId, updated)
-                .onSuccess { sharedButtons = it }
+                .onSuccess {
+                    sharedButtons = it
+                    teamRepository.getMemberRecords(teamId, targetUserId)
+                        .onSuccess { refreshed -> detail = refreshed }
+                }
                 .onFailure {
                     sharedButtons = previous
                     errorMessage = it.message ?: "공유 설정을 저장하지 못했어요."

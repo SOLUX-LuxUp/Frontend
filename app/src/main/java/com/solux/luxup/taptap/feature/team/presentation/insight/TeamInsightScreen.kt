@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -138,7 +139,9 @@ fun TeamInsightScreen(
     onViewModeChange: (InsightViewMode) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var period by remember { mutableStateOf(InsightPeriod.DAILY) }
+    // rememberSaveable — "가장 많이 기록한 버튼" 화면에 갔다가 뒤로가기로 돌아올 때
+    // 이 컴포저블이 완전히 재구성되면서 plain remember는 초기화돼 항상 DAILY로 튕기는 문제가 있었다.
+    var period by rememberSaveable { mutableStateOf(InsightPeriod.DAILY) }
 
     val today = remember { LocalDate.now() }
     val isCurrentPeriod = when (period) {

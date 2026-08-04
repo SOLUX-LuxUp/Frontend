@@ -1,14 +1,21 @@
 package com.solux.luxup.taptap.feature.team.presentation
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +47,7 @@ import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
 import com.solux.luxup.taptap.core.util.SearchBar
+import com.solux.luxup.taptap.feature.home.main.util.RecordCompleteBanner
 import com.solux.luxup.taptap.feature.team.data.mockSuggestionsTogether
 import com.solux.luxup.taptap.feature.team.data.mockTeamButtons
 import com.solux.luxup.taptap.feature.team.model.TeamButton
@@ -107,6 +115,8 @@ fun TeamActivityRoute(
         onCloseQuickCreate = onCloseQuickCreate,
         onRecordTap = viewModel::recordTap,
         onDeleteButton = viewModel::deleteButton,
+        showRecordCompleteBanner = viewModel.showRecordCompleteBanner,
+        onCancelRecord = viewModel::cancelPendingRecord,
         onNavigateToTimeline = onNavigateToTimeline,
         onNavigateToInfo = onNavigateToInfo,
         errorMessage = viewModel.errorMessage,
@@ -142,6 +152,8 @@ fun TeamActivityScreen(
     onCloseQuickCreate: () -> Unit = {},
     onRecordTap: (TeamButton) -> Unit = {},
     onDeleteButton: (TeamButton) -> Unit = {},
+    showRecordCompleteBanner: Boolean = false,
+    onCancelRecord: () -> Unit = {},
     onNavigateToTimeline: (TeamButton) -> Unit = {},
     onNavigateToInfo: (TeamButton) -> Unit = {},
     errorMessage: String? = null,
@@ -174,7 +186,8 @@ fun TeamActivityScreen(
         if (isQuickCreateMode) listState.scrollToItem(0)
     }
 
-    Column(modifier = modifier) {
+    Box(modifier = modifier) {
+    Column {
         // 최근 기록 배너 — 서버가 latestRecord.recordedAt 최신순으로 정렬해서 주므로
         // 기록이 있는 첫 번째 버튼이 곧 가장 최근 기록이다
         val recentButton = buttons.firstOrNull { it.latestRecord != null }
@@ -260,6 +273,19 @@ fun TeamActivityScreen(
                     } else null,
                 )
             }
+        }
+    }
+
+        AnimatedVisibility(
+            visible = showRecordCompleteBanner,
+            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 12.dp)
+        ) {
+            RecordCompleteBanner(onCancel = onCancelRecord)
         }
     }
 

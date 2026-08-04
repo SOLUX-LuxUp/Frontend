@@ -1,6 +1,7 @@
 package com.solux.luxup.taptap.feature.team.presentation.memberdetail.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,21 +10,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
 import com.solux.luxup.taptap.feature.team.model.TeamMemberButton
 
 @Composable
 fun MemberButtonItem(
     buttonName: String,               // TeamMemberButton → String (타입 무관 재사용)
+    iconName: String? = null,
+    iconColor: String? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -32,13 +39,21 @@ fun MemberButtonItem(
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 버튼 아이콘 자리 (실제 iconName SVG는 아이콘 세트 확정 후)
         Box(
             modifier = Modifier
                 .size(28.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF0F0F0))
-        )
+                .background(Color.White)
+                .border(1.dp, Color(0xFF7CCBFF), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(ButtonIcons.resOf(iconName)),
+                contentDescription = null,
+                tint = IconColor.from(iconColor).color,
+                modifier = Modifier.size(16.dp)
+            )
+        }
         Spacer(Modifier.width(12.dp))
         Text(
             text = buttonName,
@@ -55,7 +70,7 @@ private fun MemberButtonItemPreview() {
     androidx.compose.foundation.layout.Column(
         modifier = androidx.compose.ui.Modifier.padding(16.dp)
     ) {
-        MemberButtonItem(buttonName = "일기 쓰기")
-        MemberButtonItem(buttonName = "코드 수정")
+        MemberButtonItem(buttonName = "일기 쓰기", iconName = "book", iconColor = "#FFCB45")
+        MemberButtonItem(buttonName = "코드 수정", iconName = "labtop", iconColor = "#2085FF")
     }
 }

@@ -44,6 +44,11 @@ class TeamDetailViewModel @AssistedInject constructor(
             teamRepository.getTemplateStatus(teamId)
                 .onSuccess { hasSelectedTemplate = it.hasSelectedTemplate }
         }
+        refreshTeamName()
+    }
+
+    /** 팀 설정 화면에서 이름을 바꾸고 돌아왔을 때(RESUME) 헤더에 반영하기 위해 호출한다 */
+    fun refreshTeamName() {
         viewModelScope.launch {
             teamRepository.getSettings(teamId)
                 .onSuccess { teamName = it.teamName }
