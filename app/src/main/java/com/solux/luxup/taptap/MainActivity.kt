@@ -30,7 +30,9 @@ import com.solux.luxup.taptap.core.navigation.BottomNavItem
 import com.solux.luxup.taptap.core.ui.components.NoticeDialog
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountInfoScreen
+import com.solux.luxup.taptap.feature.auth.account.presentation.AccountProfileImageEditor
 import com.solux.luxup.taptap.feature.auth.account.presentation.AccountSettingsScreen
+import com.solux.luxup.taptap.feature.auth.account.presentation.AccountViewModel
 import com.solux.luxup.taptap.feature.auth.account.presentation.ChangePasswordScreen
 import com.solux.luxup.taptap.feature.auth.login.presentation.LoginRoute
 import com.solux.luxup.taptap.feature.auth.signup.presentation.SignupRoute
@@ -170,6 +172,7 @@ class MainActivity : ComponentActivity() {
                             val observer = LifecycleEventObserver { _, event ->
                                 if (event == Lifecycle.Event.ON_RESUME) {
                                     mainHomeViewModel.refreshButtons()
+                                    mainHomeViewModel.refreshProfile()
                                 }
                             }
                             backStackEntry.lifecycle.addObserver(observer)
@@ -230,6 +233,7 @@ class MainActivity : ComponentActivity() {
                             val observer = LifecycleEventObserver { _, event ->
                                 if (event == Lifecycle.Event.ON_RESUME) {
                                     mainHomeViewModel.refreshButtons()
+                                    mainHomeViewModel.refreshProfile()
                                 }
                             }
                             backStackEntry.lifecycle.addObserver(observer)
@@ -559,27 +563,66 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
-                    composable("accountSettings") {
-                        AccountSettingsScreen(
-                            onNavigateToAccountInfo = {
-                                navController.navigate("accountInfo")
-                            },
-                            onNavItemSelected = { item ->
-                                navController.navigateToTab(item)
+                    composable("accountSettings") { backStackEntry ->
+                        val accountViewModel: AccountViewModel = hiltViewModel()
+                        DisposableEffect(backStackEntry) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) {
+                                    accountViewModel.loadProfile()
+                                }
                             }
-                        )
+                            backStackEntry.lifecycle.addObserver(observer)
+                            onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+                        }
+                        accountViewModel.profile?.let { user ->
+                            AccountProfileImageEditor(accountViewModel) { onEditProfileClick ->
+                                AccountSettingsScreen(
+                                    user = user,
+                                    onNavigateToAccountInfo = {
+                                        navController.navigate("accountInfo")
+                                    },
+                                    onEditProfileImage = onEditProfileClick,
+                                    onSaveNickname = { nickname ->
+                                        accountViewModel.updateNickname(nickname)
+                                    },
+                                    onNavItemSelected = { item ->
+                                        navController.navigateToTab(item)
+                                    }
+                                )
+                            }
+                        }
                     }
-                    composable("accountInfo") {
-                        AccountInfoScreen(
-                            onBack = {
-                                navController.popBackStack()
-                            },
-                            onNavigateToChangePassword = {
-                                navController.navigate("changePassword")
+                    composable("accountInfo") { backStackEntry ->
+                        val accountViewModel: AccountViewModel = hiltViewModel()
+                        DisposableEffect(backStackEntry) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) {
+                                    accountViewModel.loadProfile()
+                                }
                             }
-                        )
+                            backStackEntry.lifecycle.addObserver(observer)
+                            onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+                        }
+                        accountViewModel.profile?.let { user ->
+                            AccountProfileImageEditor(accountViewModel) { onEditProfileClick ->
+                                AccountInfoScreen(
+                                    user = user,
+                                    onBack = {
+                                        navController.popBackStack()
+                                    },
+                                    onEditProfileImage = onEditProfileClick,
+                                    onSaveNickname = { nickname ->
+                                        accountViewModel.updateNickname(nickname)
+                                    },
+                                    onNavigateToChangePassword = {
+                                        navController.navigate("changePassword")
+                                    }
+                                )
+                            }
+                        }
                     }
                     composable("changePassword") {
+                        val accountViewModel: AccountViewModel = hiltViewModel()
                         ChangePasswordScreen(
                             onBack = {
                                 navController.popBackStack()
@@ -587,9 +630,13 @@ class MainActivity : ComponentActivity() {
                             onChangeComplete = {
                                 navController.popBackStack()
                             },
-                            onNavItemSelected = { item ->
-                                navController.navigateToTab(item)
-                            }
+                            onSubmit = { current, new, confirm ->
+                                accountViewModel.changePassword(current, new, confirm)
+                            },
+                            errorMessage = accountViewModel.errorMessage,
+                            onErrorConsumed = accountViewModel::consumeError,
+                            isSuccess = accountViewModel.isPasswordChanged,
+                            onSuccessConsumed = accountViewModel::consumePasswordChanged,
                         )
                     }
                     composable("createButton") { backStackEntry ->

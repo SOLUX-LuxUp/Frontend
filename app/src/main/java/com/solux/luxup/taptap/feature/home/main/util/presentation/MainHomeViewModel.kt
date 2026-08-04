@@ -382,6 +382,11 @@ class MainHomeViewModel @AssistedInject constructor(
         loadCategories()
     }
 
+    /** 설정에서 닉네임/프로필 이미지를 바꾸고 돌아왔을 때 홈 화면에 바로 반영되도록 새로고침한다 */
+    fun refreshProfile() {
+        loadProfile()
+    }
+
     fun consumeError() {
         errorMessage = null
     }

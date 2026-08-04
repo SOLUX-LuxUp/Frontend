@@ -43,7 +43,7 @@ fun AppPopup(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White, RoundedCornerShape(10.dp))
+                .background(Color.White, RoundedCornerShape(16.dp))
                 .padding(30.dp)
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -51,7 +51,7 @@ fun AppPopup(
                     text = message,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF000000),
+                    color = Color(0xFF1A1A1A),
                     textAlign = TextAlign.Center
                 )
 

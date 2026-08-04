@@ -52,7 +52,8 @@ private enum class AccountInfoAction { LOGOUT, DELETE_ACCOUNT_CONFIRM, DELETE_AC
 fun AccountInfoScreen(
     user: AccountUser = MockAccountUser,
     onBack: () -> Unit = {},
-    onNavigateToProfileEdit: () -> Unit = {},
+    onEditProfileImage: () -> Unit = {},
+    onSaveNickname: (String) -> Unit = {},
     onNavigateToChangePassword: () -> Unit = {},
     onLogout: () -> Unit = {},
     onDeleteAccount: () -> Unit = {},
@@ -72,7 +73,8 @@ fun AccountInfoScreen(
         Column(modifier = Modifier.padding(horizontal = ScreenPadding)) {
             AccountProfileHeader(
                 user = user,
-                onEditProfileClick = onNavigateToProfileEdit,
+                onEditProfileClick = onEditProfileImage,
+                onSaveNickname = onSaveNickname,
             )
             Spacer(Modifier.height(30.dp))
 
