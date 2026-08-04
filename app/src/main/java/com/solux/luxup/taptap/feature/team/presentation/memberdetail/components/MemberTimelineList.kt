@@ -24,16 +24,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
+import com.solux.luxup.taptap.feature.team.model.TeamMemberButton
 import com.solux.luxup.taptap.feature.team.model.TeamMemberRecord
 
 @Composable
 fun MemberTimelineList(
     records: List<TeamMemberRecord>,
     modifier: Modifier = Modifier,
-    collapsedCount: Int = 5          // 접힘 5개 (버튼 목록과 통일)
+    collapsedCount: Int = 5,          // 접힘 5개 (버튼 목록과 통일)
+    /** 기록의 iconName/iconColor를 buttonName으로 매칭하기 위한 현재 버튼 목록 */
+    buttons: List<TeamMemberButton> = emptyList(),
 ) {
     var expanded by remember { mutableStateOf(false) }
     val visible = if (expanded) records else records.take(collapsedCount)
+    val iconByButtonName = remember(buttons) { buttons.associateBy { it.buttonName } }
 
     MemberSectionCard(modifier = modifier) {
         Text(
@@ -46,7 +50,12 @@ fun MemberTimelineList(
         Spacer(Modifier.height(4.dp))
 
         visible.forEach { record ->
-            MemberTimelineItem(record = record)
+            val matched = iconByButtonName[record.buttonName]
+            MemberTimelineItem(
+                record = record,
+                iconName = matched?.iconName,
+                iconColor = matched?.iconColor,
+            )
         }
 
         // 5개 초과일 때만 펼치기 화살표 (버튼 목록과 동일)

@@ -144,8 +144,11 @@ fun MemberProfileHeader(
                 }
 
                 detail.recentTimeline.maxByOrNull { it.recordedAt }?.let { latest ->
+                    val matched = detail.buttons.firstOrNull { it.buttonName == latest.buttonName }
                     MemberLatestRecordCard(
                         record = latest,
+                        iconName = matched?.iconName,
+                        iconColor = matched?.iconColor,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
