@@ -1,7 +1,6 @@
 package com.solux.luxup.taptap.feature.team.presentation.memberdetail.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Settings
@@ -42,13 +40,7 @@ fun MemberSharedButtonList(
     var showModal by remember { mutableStateOf(false) }   // 모달 표시 상태
     var expanded by remember { mutableStateOf(false) }
     val shared = buttons.filter { it.isShared }
-
-    val categoryNames = remember(shared) { shared.mapNotNull { it.categoryName }.distinct() }
-    var categoryFilter by remember { mutableStateOf<String?>(null) }   // null = 전체
-    val filteredShared = remember(shared, categoryFilter) {
-        if (categoryFilter == null) shared else shared.filter { it.categoryName == categoryFilter }
-    }
-    val visible = if (expanded) filteredShared else filteredShared.take(collapsedCount)
+    val visible = if (expanded) shared else shared.take(collapsedCount)
 
     MemberSectionCard(modifier = modifier) {
         // 라벨 + ⚙️
@@ -75,21 +67,6 @@ fun MemberSharedButtonList(
         }
         Spacer(Modifier.height(4.dp))
 
-        if (categoryNames.isNotEmpty()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
-            ) {
-                CategoryFilterChip(text = "전체", selected = categoryFilter == null, onClick = { categoryFilter = null })
-                categoryNames.forEach { name ->
-                    CategoryFilterChip(text = name, selected = categoryFilter == name, onClick = { categoryFilter = name })
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-
         visible.forEach { button ->
             MemberButtonItem(
                 buttonName = button.buttonName,
@@ -98,7 +75,7 @@ fun MemberSharedButtonList(
             )
         }
 
-        if (filteredShared.size > collapsedCount) {
+        if (shared.size > collapsedCount) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -131,25 +108,6 @@ fun MemberSharedButtonList(
             }
         )
     }
-}
-
-@Composable
-private fun CategoryFilterChip(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    Text(
-        text = text,
-        fontFamily = Pretendard,
-        fontSize = 13.sp,
-        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-        color = if (selected) Color(0xFF2085FF) else Color(0xFFB1B1B1),
-        modifier = Modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-        ) { onClick() }
-    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)

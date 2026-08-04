@@ -90,7 +90,7 @@ fun TeamMemberDetailScreen(
         )
 
         // 최근 기록 섹션
-        MemberTimelineList(records = detail.recentTimeline)
+        MemberTimelineList(records = detail.recentTimeline, buttons = detail.buttons)
 
         // 버튼 섹션 — 나/남 분기
         if (isMe) {

@@ -20,10 +20,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,12 +35,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
 import com.solux.luxup.taptap.feature.team.model.TeamMemberSharedButton
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -60,7 +67,12 @@ fun MemberShareSettingModal(
         }
     }
     var query by remember { mutableStateOf("") }
-    val filtered = buttons.filter { it.buttonName.contains(query.trim(), ignoreCase = true) }
+    val categoryNames = remember(buttons) { buttons.mapNotNull { it.categoryName }.distinct() }
+    var categoryFilter by remember { mutableStateOf<String?>(null) }   // null = 전체
+    val filtered = buttons.filter {
+        (categoryFilter == null || it.categoryName == categoryFilter) &&
+            it.buttonName.contains(query.trim(), ignoreCase = true)
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         // 바깥: 연한 파랑 배경
@@ -91,17 +103,15 @@ fun MemberShareSettingModal(
                     .background(Color.White)
                     .padding(14.dp)
             ) {
-                // 카테고리 + 검색 자리 (기능은 2단계, 지금은 모양만)
+                // 카테고리 필터 + 검색
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "ALL ▼",
-                        fontFamily = Pretendard,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF6D6D6D)
+                    ShareCategoryFilterDropdown(
+                        categories = categoryNames,
+                        selected = categoryFilter,
+                        onSelect = { categoryFilter = it },
                     )
                     Spacer(Modifier.width(8.dp))
                     Box(
@@ -111,11 +121,25 @@ fun MemberShareSettingModal(
                             .background(Color(0xFFF2F2F2))
                             .padding(horizontal = 12.dp, vertical = 8.dp)
                     ) {
-                        Text(
-                            text = "검색",
-                            fontFamily = Pretendard,
-                            fontSize = 12.sp,
-                            color = Color(0xFFB1B1B1)
+                        if (query.isEmpty()) {
+                            Text(
+                                text = "검색",
+                                fontFamily = Pretendard,
+                                fontSize = 12.sp,
+                                color = Color(0xFFB1B1B1)
+                            )
+                        }
+                        BasicTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            singleLine = true,
+                            textStyle = androidx.compose.ui.text.TextStyle(
+                                fontFamily = Pretendard,
+                                fontSize = 12.sp,
+                                color = Color(0xFF6D6D6D),
+                            ),
+                            cursorBrush = SolidColor(Color(0xFF2085FF)),
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -127,7 +151,7 @@ fun MemberShareSettingModal(
                         .heightIn(max = 280.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    buttons.forEach { button ->
+                    filtered.forEach { button ->
                         ShareButtonCheckItem(
                             buttonName = button.buttonName,
                             checked = checkState[button.buttonId] ?: false,
@@ -168,6 +192,78 @@ fun MemberShareSettingModal(
                         onSave(result)
                     }
                 )
+            }
+        }
+    }
+}
+
+/** "ALL ▼" 카테고리 필터 드롭다운. 카테고리 관리 진입점은 없이 필터 용도로만 쓴다. */
+@Composable
+private fun ShareCategoryFilterDropdown(
+    categories: List<String>,
+    selected: String?,
+    onSelect: (String?) -> Unit,
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var headerHeightPx by remember { mutableIntStateOf(0) }
+
+    Box {
+        Row(
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                ) { isExpanded = !isExpanded }
+                .onGloballyPositioned { headerHeightPx = it.size.height },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = selected ?: "ALL",
+                fontFamily = Pretendard,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF6D6D6D),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = if (isExpanded) "▲" else "▼",
+                fontSize = 10.sp,
+                color = Color(0xFF6D6D6D),
+            )
+        }
+
+        if (isExpanded) {
+            Popup(
+                alignment = Alignment.TopStart,
+                offset = IntOffset(0, headerHeightPx),
+                onDismissRequest = { isExpanded = false },
+                properties = PopupProperties(dismissOnClickOutside = true),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(Color.White)
+                        .border(0.5.dp, Color(0xFFE5E5E5), RoundedCornerShape(4.dp))
+                        .padding(4.dp)
+                ) {
+                    val options = listOf<String?>(null) + categories
+                    options.forEach { option ->
+                        Text(
+                            text = option ?: "ALL",
+                            fontFamily = Pretendard,
+                            fontSize = 13.sp,
+                            color = Color(0xFF6D6D6D),
+                            modifier = Modifier
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                ) {
+                                    onSelect(option)
+                                    isExpanded = false
+                                }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             }
         }
     }

@@ -11,17 +11,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
+import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.Pretendard
 import com.solux.luxup.taptap.core.util.formatTimeAgo
 import com.solux.luxup.taptap.feature.team.model.TeamMemberRecord
@@ -29,7 +33,11 @@ import com.solux.luxup.taptap.feature.team.model.TeamMemberRecord
 @Composable
 fun MemberTimelineItem(
     record: TeamMemberRecord,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** 기록 시점 버튼의 iconName/iconColor. 서버 응답 자체엔 없어 buttonName으로 매칭해 채운다.
+     * 매칭 실패(버튼 삭제/이름 변경 등)면 null — 이때는 기존 이모지로 대신 보여준다. */
+    iconName: String? = null,
+    iconColor: String? = null,
 ) {
     Row(
         modifier = modifier
@@ -37,7 +45,6 @@ fun MemberTimelineItem(
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 아이콘 (실제 iconName SVG는 아이콘 세트 확정 후)
         Box(
             modifier = Modifier
                 .size(28.dp)
@@ -45,7 +52,16 @@ fun MemberTimelineItem(
                 .background(Color(0xFFF0F0F0)),
             contentAlignment = Alignment.Center
         ) {
-            record.emoji?.let { Text(it, fontSize = 14.sp) }
+            if (iconName != null) {
+                Icon(
+                    painter = painterResource(ButtonIcons.resOf(iconName)),
+                    contentDescription = null,
+                    tint = IconColor.from(iconColor).color,
+                    modifier = Modifier.size(18.dp),
+                )
+            } else {
+                record.emoji?.let { Text(it, fontSize = 14.sp) }
+            }
         }
 
         Spacer(Modifier.width(12.dp))
