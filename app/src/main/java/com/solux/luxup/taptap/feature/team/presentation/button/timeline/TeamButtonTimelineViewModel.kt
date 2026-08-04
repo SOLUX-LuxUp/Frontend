@@ -49,6 +49,14 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
     var latest by mutableStateOf<TeamButtonLatest?>(null)
         private set
 
+    /** 우측 상단 수정 아이콘 노출 여부(팀장/생성자) — 버튼 정보 화면과 동일한 기준 */
+    var isManager by mutableStateOf(false)
+        private set
+
+    /** 실제 수정 가능 여부 — 팀 설정의 buttonEditPermission 정책 반영 */
+    var canEdit by mutableStateOf(false)
+        private set
+
     var records by mutableStateOf<List<TeamButtonTimelineRecord>>(emptyList())
         private set
 
@@ -87,6 +95,12 @@ class TeamButtonTimelineViewModel @AssistedInject constructor(
             teamRepository.getLatestRecord(teamId, teamButtonId)
                 .onSuccess { latest = it }
                 .onFailure { errorMessage = it.message ?: "버튼 정보를 불러오지 못했어요." }
+
+            teamRepository.getButtonDetail(teamId, teamButtonId)
+                .onSuccess {
+                    isManager = it.isManager(currentUserId)
+                    canEdit = it.canEdit
+                }
 
             teamRepository.getTimeline(teamId, teamButtonId, cursor = null, limit = PAGE_SIZE)
                 .onSuccess { timeline ->

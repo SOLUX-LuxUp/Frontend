@@ -60,6 +60,8 @@ fun NavGraphBuilder.teamButtonTimelineScreen(
                 currentUserId = currentUserId,
                 teamId = teamId,
                 hasMore = viewModel.hasMore,
+                isManager = viewModel.isManager,
+                canEdit = viewModel.canEdit,
                 onBack = { navController.popBackStack() },
                 onEditButton = {
                     navController.navigate(TeamButtonEditRoute.graph(teamId, teamButtonId))
