@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -94,27 +95,29 @@ fun TeamButtonTimelineScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color.White)
+            .statusBarsPadding(),
     ) {
+        Spacer(Modifier.height(20.dp))
+
+        TimelineTopBar(
+            isManager = isManager,
+            onBack = onBack,
+            onEditClick = {
+                if (canEdit) onEditButton()
+                else localNotice = NO_EDIT_PERMISSION_MESSAGE
+            },
+            modifier = Modifier.padding(horizontal = ScreenPadding),
+        )
+
+        Spacer(Modifier.height(30.dp))
+
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = ScreenPadding),
         ) {
-            Spacer(Modifier.height(70.dp))
-
-            TimelineTopBar(
-                isManager = isManager,
-                onBack = onBack,
-                onEditClick = {
-                    if (canEdit) onEditButton()
-                    else localNotice = NO_EDIT_PERMISSION_MESSAGE
-                },
-            )
-
-            Spacer(Modifier.height(30.dp))
-
             // 버튼 헤더 — 어떤 버튼의 타임라인인지 명시
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -244,15 +247,14 @@ private fun TimelineTopBar(
     isManager: Boolean,
     onBack: () -> Unit,
     onEditClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = modifier.fillMaxWidth()) {
         BackArrowIcon(
-            tint = Color(0xFFB1B1B1),
+            size = 31.dp,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .clickable(onClick = onBack)
-                .padding(4.dp)
-                .size(30.dp),
+                .clickable(onClick = onBack),
         )
         // 관리자(팀장/생성자)에게만 수정 아이콘 노출 — 버튼 정보 화면과 동일한 기준
         if (isManager) {

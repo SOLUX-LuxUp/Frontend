@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.navigation.BottomNavBar
 import com.solux.luxup.taptap.core.navigation.BottomNavItem
+import com.solux.luxup.taptap.core.ui.components.BackArrowIcon
 import com.solux.luxup.taptap.feature.team.presentation.button.components.TeamButtonCreateOptionDialog
 import com.solux.luxup.taptap.feature.team.presentation.components.TeamDeletionBannerHost
 import com.solux.luxup.taptap.feature.team.presentation.insight.InsightViewMode
@@ -229,18 +229,15 @@ private fun TeamDetailTopBar(
     onBackClick: () -> Unit = {},
     onActionClick: () -> Unit = {}              // ← onAddClick → onActionClick (범용 이름)
 ) {
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 70.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(start = 40.dp, end = 40.dp, top = 20.dp, bottom = 12.dp)
     ) {
-        Icon(
-            Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = "뒤로가기",
-            tint = Color(0xFF6D6D6D),
+        BackArrowIcon(
+            size = 31.dp,
             modifier = Modifier
-                .size(24.dp)
+                .align(Alignment.CenterStart)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
@@ -249,10 +246,11 @@ private fun TeamDetailTopBar(
         Text(
             teamName,
             fontSize = 22.sp,
+            lineHeight = 22.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF1A1A1A),
             textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.align(Alignment.Center)
         )
 
         // 우측 아이콘 — 탭에 따라 + 또는 ⚙️
@@ -261,6 +259,7 @@ private fun TeamDetailTopBar(
                 Icons.Default.Add,
                 contentDescription = "버튼 추가",
                 modifier = Modifier
+                    .align(Alignment.CenterEnd)
                     .size(28.dp)
                     .graphicsLayer(alpha = 0.99f)
                     .drawWithContent {
@@ -282,6 +281,7 @@ private fun TeamDetailTopBar(
                 contentDescription = "팀 설정",
                 tint = Color(0xFF6D6D6D),
                 modifier = Modifier
+                    .align(Alignment.CenterEnd)
                     .size(26.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },

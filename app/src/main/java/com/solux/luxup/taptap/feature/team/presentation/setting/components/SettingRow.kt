@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -187,8 +188,12 @@ fun SettingTopBar(
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(70.dp))
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding(),
+    ) {
+        Spacer(Modifier.height(20.dp))
 
         Box(
             modifier = Modifier
