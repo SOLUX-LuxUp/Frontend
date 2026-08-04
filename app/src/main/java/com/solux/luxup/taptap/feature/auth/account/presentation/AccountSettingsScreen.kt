@@ -65,7 +65,8 @@ fun AccountSettingsScreen(
     user: AccountUser = MockAccountUser,
     notificationSettings: NotificationSettings = MockNotificationSettings,
     onNavigateToAccountInfo: () -> Unit = {},
-    onNavigateToProfileEdit: () -> Unit = {},
+    onEditProfileImage: () -> Unit = {},
+    onSaveNickname: (String) -> Unit = {},
     onNavItemSelected: (BottomNavItem) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -100,7 +101,8 @@ fun AccountSettingsScreen(
 
             AccountProfileHeader(
                 user = user,
-                onEditProfileClick = onNavigateToProfileEdit,
+                onEditProfileClick = onEditProfileImage,
+                onSaveNickname = onSaveNickname,
             )
             Spacer(Modifier.height(30.dp))
 
