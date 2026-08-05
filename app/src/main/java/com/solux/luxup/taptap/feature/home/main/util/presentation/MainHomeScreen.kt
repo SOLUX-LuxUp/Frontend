@@ -24,7 +24,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -61,6 +60,8 @@ import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
+import com.solux.luxup.taptap.core.util.category.NO_CATEGORY_LABEL
+import com.solux.luxup.taptap.core.util.category.categoryFilterOptions
 import com.solux.luxup.taptap.feature.home.main.data.TEMPLATE_QUICK_BUTTON_TITLE
 import com.solux.luxup.taptap.feature.home.main.data.mockFavoriteButtons
 import com.solux.luxup.taptap.feature.home.main.data.mockHabitButtons
@@ -88,9 +89,6 @@ import com.solux.luxup.taptap.ui.theme.BaseWhiteColor
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
 import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
-/** 카테고리 없이 만든 버튼만 모아보는 필터 항목 — 드롭다운에서 "ALL" 바로 위에 노출 */
-private const val NO_CATEGORY_LABEL = "No Category"
-
 @Composable
 fun MainHomeScreen(
     user: HomeUser = mockHomeUser,
@@ -101,6 +99,9 @@ fun MainHomeScreen(
     /** true면 firstButtonSuggestions를 카테고리 탭으로 나눠 보여준다 (템플릿을 골랐을 때). 건너뛴 경우 false. */
     groupFirstButtonSuggestionsByCategory: Boolean = true,
     categories: List<Category> = emptyList(),
+    /** GET /api/buttons/search 결과 — null이면 검색 중이 아니라는 뜻이라 카테고리 필터 목록을 그대로 보여준다 */
+    searchResults: List<HabitButton>? = null,
+    onSearchQueryChange: (String) -> Unit = {},
     onCreateCategory: (name: String) -> Unit = {},
     onRenameCategory: (categoryId: Long, newName: String) -> Unit = { _, _ -> },
     onDeleteCategory: (categoryId: Long, deleteButtonsToo: Boolean) -> Unit = { _, _ -> },
@@ -143,6 +144,8 @@ fun MainHomeScreen(
             else -> buttonsState.filter { it.category == selectedCategory }
         }
     }
+    // 검색어가 있으면(searchResults != null) 카테고리 필터 대신 검색 결과를 보여준다
+    val displayedHabitButtons = searchResults ?: filteredHabitButtons
 
     // 카테고리 드롭다운 아래 "카테고리 수정" 버튼 및 그 안의 카테고리별 삭제 확인 팝업 상태
     var showCategoryEditDialog by remember { mutableStateOf(false) }
@@ -232,7 +235,7 @@ fun MainHomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CategoryDropdown(
-                        categories = categories.map { it.name } + NO_CATEGORY_LABEL + "ALL",
+                        categories = categoryFilterOptions(categories.map { it.name }),
                         onCategorySelected = { selectedCategory = it },
                         onManageCategoriesClick = { showCategoryEditDialog = true }
                     )
@@ -241,7 +244,8 @@ fun MainHomeScreen(
                         modifier = Modifier.weight(1f),
                         fillWidth = true,
                         horizontalMargin = 0.dp,
-                        placeholder = "버튼 검색"
+                        placeholder = "버튼 검색",
+                        onQueryChange = onSearchQueryChange
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -261,7 +265,7 @@ fun MainHomeScreen(
                         )
                     } else {
                         HabitButtonGrid(
-                            buttons = filteredHabitButtons,
+                            buttons = displayedHabitButtons,
                             onToggleFavorite = onToggleFavorite,
                             onEditRecord = onNavigateToEditButton,
                             onDeleteRecord = { button -> recordPendingDelete = button },
@@ -418,12 +422,6 @@ private fun HomeTopBar(
             )
         )
         Spacer(Modifier.weight(1f))
-        GradientIcon(
-            imageVector = Icons.Default.Search,
-            contentDescription = "검색",
-            modifier = Modifier.size(31.dp)
-        )
-        Spacer(Modifier.width(10.dp))
         AddButtonWithMenu(
             onCreateManually = onCreateManually,
             onCreateQuickly = onCreateQuickly

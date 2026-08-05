@@ -1,5 +1,6 @@
 package com.solux.luxup.taptap.core.network
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import retrofit2.Response
@@ -26,6 +27,8 @@ class ApiCallHandler @Inject constructor(
                     ?: "알 수 없는 오류가 발생했습니다."
                 Result.failure(ApiException(message, response.code()))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

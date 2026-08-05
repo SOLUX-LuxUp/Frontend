@@ -35,6 +35,27 @@ import com.solux.luxup.taptap.R
 
 private val defaultCategories = listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK", "ALL")
 
+/** 카테고리가 지정되지 않은 버튼만 보고 싶을 때 고르는 필터 옵션의 표시 라벨 */
+const val NO_CATEGORY_LABEL = "No Category"
+
+/**
+ * 카테고리 필터 드롭다운에 쓸 표준 옵션 순서 — 홈/인사이트(데일리·위클리) 화면이 모두 이 순서를 따른다.
+ * 카테고리들 다음에 "No Category", 맨 끝에 "ALL"이 오도록 고정한다.
+ */
+fun categoryFilterOptions(categoryNames: List<String>): List<String> =
+    categoryNames + NO_CATEGORY_LABEL + "ALL"
+
+/**
+ * 드롭다운에서 고른 라벨을 실제 필터 키로 변환한다.
+ * "ALL"은 필터 없음(null), [NO_CATEGORY_LABEL]은 카테고리가 없는 항목(빈 문자열), 그 외엔 카테고리 이름 그대로.
+ */
+fun resolveCategoryFilter(selectedLabel: String?): String? =
+    when (selectedLabel) {
+        "ALL" -> null
+        NO_CATEGORY_LABEL -> ""
+        else -> selectedLabel
+    }
+
 // 필터용 카테고리 드롭다운 - "ALL"을 포함한 카테고리 중 하나를 선택.
 // 관리 가능한 카테고리("ALL" 제외)가 하나도 없으면 "카테고리 수정" 대신 "+ ADD"를 보여준다 -
 // 두 경우 모두 onManageCategoriesClick으로 같은 관리 모달을 띄우는 진입점일 뿐, 생성/수정/삭제는 항상 그 모달 안에서만 이뤄진다.
@@ -48,7 +69,7 @@ fun CategoryDropdown(
     var isExpanded by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
-    val hasManageableCategories = categories.any { it != "ALL" && it != "No Category" }
+    val hasManageableCategories = categories.any { it != "ALL" && it != NO_CATEGORY_LABEL }
 
     // 선택 중이던 카테고리가 삭제되거나 이름이 바뀌어 목록에서 사라지면 필터를 ALL로 되돌린다.
     LaunchedEffect(categories) {

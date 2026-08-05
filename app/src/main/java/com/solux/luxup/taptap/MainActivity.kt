@@ -187,6 +187,8 @@ class MainActivity : ComponentActivity() {
                             firstButtonSuggestions = mainHomeViewModel.suggestions,
                             groupFirstButtonSuggestionsByCategory = false,
                             categories = mainHomeViewModel.categories,
+                            searchResults = mainHomeViewModel.searchResults,
+                            onSearchQueryChange = mainHomeViewModel::searchButtons,
                             onCreateCategory = mainHomeViewModel::createCategory,
                             onRenameCategory = mainHomeViewModel::renameCategory,
                             onDeleteCategory = mainHomeViewModel::deleteCategory,
@@ -247,6 +249,8 @@ class MainActivity : ComponentActivity() {
                             habitButtons = mainHomeViewModel.habitButtons,
                             firstButtonSuggestions = mainHomeViewModel.suggestions,
                             categories = mainHomeViewModel.categories,
+                            searchResults = mainHomeViewModel.searchResults,
+                            onSearchQueryChange = mainHomeViewModel::searchButtons,
                             onCreateCategory = mainHomeViewModel::createCategory,
                             onRenameCategory = mainHomeViewModel::renameCategory,
                             onDeleteCategory = mainHomeViewModel::deleteCategory,
@@ -398,6 +402,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("insightWeekly") {
                         val viewModel: InsightViewModel = hiltViewModel()
+                        // 홈 탭에서 기록을 남기고 이 화면으로 돌아왔을 때도 최신 값이 보이도록 한다.
+                        // 하단 탭 전환은 launchSingleTop+restoreState라 ViewModel 인스턴스가 재사용되어
+                        // init{}이 다시 안 불리므로, 이 컴포저블이 다시 보일 때마다 새로고침한다.
+                        LaunchedEffect(Unit) {
+                            viewModel.loadWeekly()
+                        }
                         val data = viewModel.weekly
                         if (data == null) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -429,6 +439,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("insightMonthly") {
                         val viewModel: InsightViewModel = hiltViewModel()
+                        // 홈 탭에서 기록을 남기고 이 화면으로 돌아왔을 때도 최신 값이 보이도록 한다.
+                        // 하단 탭 전환은 launchSingleTop+restoreState라 ViewModel 인스턴스가 재사용되어
+                        // init{}이 다시 안 불리므로, 이 컴포저블이 다시 보일 때마다 새로고침한다.
+                        LaunchedEffect(Unit) {
+                            viewModel.loadMonthly()
+                        }
                         val data = viewModel.monthly
                         if (data == null) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

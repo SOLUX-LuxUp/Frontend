@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.SectionCard
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.categoryFilterOptions
+import com.solux.luxup.taptap.core.util.category.resolveCategoryFilter
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightButtonTapCount
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightCategoryTapCount
 import com.solux.luxup.taptap.feature.insight.daily.util.InsightRatioRow
@@ -72,8 +74,8 @@ fun InsightWeeklyActivityAndRatioCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CategoryDropdown(
-                categories = listOf("ALL") + categoryNames,
-                onCategorySelected = { name -> selectedCategoryName = if (name == "ALL") null else name }
+                categories = categoryFilterOptions(categoryNames),
+                onCategorySelected = { name -> selectedCategoryName = resolveCategoryFilter(name) }
             )
             Text(
                 text = "전체보기",

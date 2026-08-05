@@ -11,6 +11,7 @@ data class ButtonListResponseDto(
     val categories: List<CategoryGroupDto> = emptyList(),
 )
 
+/** GET /api/buttons/favorites, GET /api/buttons/search 공통 응답 아이템 */
 @Serializable
 data class FavoriteButtonItemDto(
     val buttonId: Long,
@@ -21,6 +22,8 @@ data class FavoriteButtonItemDto(
     val categoryName: String? = null,
     val isFavorite: Boolean = false,
     val favoriteOrder: Int? = null,
+    val expiryEnabled: Boolean = false,
+    val expiredAt: String? = null,
     val lastRecordedAt: String? = null,
 )
 

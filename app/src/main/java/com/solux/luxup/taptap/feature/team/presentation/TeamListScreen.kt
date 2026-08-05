@@ -91,7 +91,7 @@ fun TeamListScreen(
         bottomBar = {
             BottomNavBar(
                 selected = BottomNavItem.TEAM,
-                onItemSelected = { /* 탭 이동(라우팅)은 나중에 */ }
+                onItemSelected = onNavItemSelected
             )
         }
     ) { innerPadding ->

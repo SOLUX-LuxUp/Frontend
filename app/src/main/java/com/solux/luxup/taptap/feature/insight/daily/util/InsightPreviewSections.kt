@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.R
 import com.solux.luxup.taptap.core.ui.components.SectionCard
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.categoryFilterOptions
+import com.solux.luxup.taptap.core.util.category.resolveCategoryFilter
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightButtonTapCount
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightTimelineItem
 
@@ -121,8 +123,8 @@ fun InsightRatioPreviewSection(
         Spacer(Modifier.height(12.dp))
 
         CategoryDropdown(
-            categories = listOf("ALL") + categoryNames,
-            onCategorySelected = { name -> selectedCategoryName = if (name == "ALL") null else name }
+            categories = categoryFilterOptions(categoryNames),
+            onCategorySelected = { name -> selectedCategoryName = resolveCategoryFilter(name) }
         )
 
         Spacer(Modifier.height(20.dp))

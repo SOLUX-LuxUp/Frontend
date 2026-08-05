@@ -39,6 +39,17 @@ import kotlinx.coroutines.launch
 /** cancelRecord는 서버 정책상 기록 생성 3초 이내에만 가능하다 */
 private const val RECORD_CANCEL_WINDOW_MILLIS = 3_000L
 
+/** 검색어 입력 중 매 타이핑마다 API를 호출하지 않도록 두는 디바운스 간격 */
+private const val SEARCH_DEBOUNCE_MILLIS = 300L
+
+/**
+ * 메인 화면 버튼 목록 정렬 — 즐겨찾기한 버튼이 먼저 오고, 그 안에서는(그리고 즐겨찾기가 아닌 버튼끼리도)
+ * 먼저 만든 버튼일수록 앞에 온다. buttonId는 서버에서 생성 순서대로 증가하는 값이라 오래된 순 정렬에 그대로 쓴다.
+ * 결과적으로 새로 만든 버튼은 항상 맨 아래로 간다.
+ */
+private fun List<HabitButton>.sortedForMainDisplay(): List<HabitButton> =
+    sortedWith(compareByDescending<HabitButton> { it.isFavorite }.thenBy { it.buttonId })
+
 @HiltViewModel(assistedFactory = MainHomeViewModel.Factory::class)
 class MainHomeViewModel @AssistedInject constructor(
     @Assisted private val templateId: Long?,
@@ -71,6 +82,12 @@ class MainHomeViewModel @AssistedInject constructor(
 
     var recentRecord by mutableStateOf<RecentRecord?>(null)
         private set
+
+    /** GET /api/buttons/search 결과. null이면 검색 중이 아니라는 뜻이라 화면에서는 카테고리 필터 목록을 그대로 보여준다 */
+    var searchResults by mutableStateOf<List<HabitButton>?>(null)
+        private set
+
+    private var searchJob: Job? = null
 
     /** 방금 남긴 기록 — null이 아니면 화면 상단에 "기록 완료!" 취소 배너를 띄운다 */
     private var pendingRecord by mutableStateOf<PendingRecord?>(null)
@@ -117,7 +134,7 @@ class MainHomeViewModel @AssistedInject constructor(
         viewModelScope.launch {
             buttonRepository.getButtons()
                 .onSuccess { result ->
-                    habitButtons = result.habitButtons
+                    habitButtons = result.habitButtons.sortedForMainDisplay()
                     favoriteButtons = result.favorites
                 }
         }
@@ -186,6 +203,8 @@ class MainHomeViewModel @AssistedInject constructor(
                 .onSuccess {
                     habitButtons = habitButtons.filterNot { it.buttonId == buttonId }
                     favoriteButtons = favoriteButtons.filterNot { it.buttonId == buttonId }
+                    // 삭제한 버튼이 "최근 기록" 배너에 떠 있었을 수도 있어 함께 새로고침한다.
+                    loadRecentRecord()
                 }
                 .onFailure { errorMessage = it.message ?: "버튼을 삭제하지 못했어요." }
         }
@@ -202,17 +221,16 @@ class MainHomeViewModel @AssistedInject constructor(
         val target = habitButtons.find { it.buttonId == buttonId }
 
         habitButtons = habitButtons.map { if (it.buttonId == buttonId) it.copy(isFavorite = isFavorite) else it }
+            .sortedForMainDisplay()
         favoriteButtons = when {
             isFavorite && target != null && favoriteButtons.none { it.buttonId == buttonId } ->
-                listOf(
-                    FavoriteButton(
-                        buttonId = target.buttonId,
-                        iconRes = target.iconRes,
-                        iconTint = target.iconTint,
-                        title = target.title,
-                        lastRecordedAt = target.lastRecordedAt,
-                    )
-                ) + favoriteButtons
+                favoriteButtons + FavoriteButton(
+                    buttonId = target.buttonId,
+                    iconRes = target.iconRes,
+                    iconTint = target.iconTint,
+                    title = target.title,
+                    lastRecordedAt = target.lastRecordedAt,
+                )
             !isFavorite -> favoriteButtons.filterNot { it.buttonId == buttonId }
             else -> favoriteButtons
         }
@@ -256,6 +274,27 @@ class MainHomeViewModel @AssistedInject constructor(
         viewModelScope.launch {
             buttonRepository.getRecentRecord()
                 .onSuccess { recentRecord = it }
+        }
+    }
+
+    /**
+     * 카테고리 옆 검색창에 입력할 때마다 호출된다 — GET /api/buttons/search를 디바운스해서 호출하고,
+     * 검색어가 비어 있으면 검색을 종료해(searchResults = null) 카테고리 필터 목록으로 되돌린다.
+     */
+    fun searchButtons(keyword: String) {
+        searchJob?.cancel()
+
+        val trimmed = keyword.trim()
+        if (trimmed.isEmpty()) {
+            searchResults = null
+            return
+        }
+
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_DEBOUNCE_MILLIS)
+            buttonRepository.searchButtons(trimmed)
+                .onSuccess { searchResults = it }
+                .onFailure { errorMessage = it.message ?: "버튼을 검색하지 못했어요." }
         }
     }
 
@@ -376,10 +415,14 @@ class MainHomeViewModel @AssistedInject constructor(
         }
     }
 
-    /** 버튼 생성 화면 등에서 돌아왔을 때 목록을 다시 불러온다 — 그 화면에서 새 카테고리를 만들었을 수도 있어 카테고리도 함께 새로고침한다 */
+    /**
+     * 버튼 생성 화면, 버튼 상세(기록) 화면 등에서 돌아왔을 때 다시 불러온다 —
+     * 새 카테고리를 만들었을 수도 있어 카테고리도, 기록을 남기거나 삭제했을 수도 있어 최근 기록도 함께 새로고침한다.
+     */
     fun refreshButtons() {
         loadButtons()
         loadCategories()
+        loadRecentRecord()
     }
 
     /** 설정에서 닉네임/프로필 이미지를 바꾸고 돌아왔을 때 홈 화면에 바로 반영되도록 새로고침한다 */

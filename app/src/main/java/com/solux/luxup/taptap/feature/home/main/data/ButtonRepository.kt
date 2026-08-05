@@ -44,10 +44,15 @@ class ButtonRepository @Inject constructor(
         apiCallHandler.execute { buttonApi.setFavorite(buttonId, FavoriteRequestDto(isFavorite)) }
             .map { it.isFavorite }
 
-    /** GET /api/buttons/favorites — favoriteOrder가 클수록 즐겨찾기를 나중에 추가한 것이라 내림차순으로 앞에 오도록 정렬한다 */
+    /** GET /api/buttons/favorites — favoriteOrder가 클수록 즐겨찾기를 나중에 추가한 것이라 오름차순으로 정렬해 먼저 즐겨찾기한 것이 앞에 오도록 한다 */
     suspend fun getFavoriteButtons(): Result<List<FavoriteButton>> =
         apiCallHandler.execute { buttonApi.getFavoriteButtons() }
-            .map { list -> list.sortedByDescending { it.favoriteOrder ?: 0 }.map { it.toModel() } }
+            .map { list -> list.sortedBy { it.favoriteOrder ?: 0 }.map { it.toModel() } }
+
+    /** GET /api/buttons/search — keyword가 버튼 이름에 포함된 버튼을 검색한다 */
+    suspend fun searchButtons(keyword: String): Result<List<HabitButton>> =
+        apiCallHandler.execute { buttonApi.searchButtons(keyword) }
+            .map { list -> list.map { it.toHabitButtonModel() } }
 
     /** PATCH /api/buttons/favorite-order — buttonIds를 원하는 순서 그대로 보내면 그 순서대로 favoriteOrder에 반영된다 */
     suspend fun updateFavoriteOrder(buttonIds: List<Long>): Result<Unit> =
@@ -239,6 +244,21 @@ private fun FavoriteButtonItemDto.toModel() = FavoriteButton(
     iconRes = ButtonIcons.resOf(iconName),
     iconTint = IconColor.from(iconColor).color,
     title = buttonName,
+    lastRecordedAt = lastRecordedAt.orEmpty(),
+)
+
+private fun FavoriteButtonItemDto.toHabitButtonModel() = HabitButton(
+    buttonId = buttonId,
+    title = buttonName,
+    category = categoryName.orEmpty(),
+    categoryId = categoryId,
+    iconRes = ButtonIcons.resOf(iconName),
+    iconName = iconName.orEmpty(),
+    iconTint = IconColor.from(iconColor).color,
+    iconColorKey = iconColor,
+    isFavorite = isFavorite,
+    expiryEnabled = expiryEnabled,
+    expiredAt = expiredAt,
     lastRecordedAt = lastRecordedAt.orEmpty(),
 )
 
