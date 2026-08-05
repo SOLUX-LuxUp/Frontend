@@ -44,6 +44,11 @@ interface ButtonApi {
     @GET("api/buttons/favorites")
     suspend fun getFavoriteButtons(): Response<BaseResponse<List<FavoriteButtonItemDto>>>
 
+    @GET("api/buttons/search")
+    suspend fun searchButtons(
+        @Query("keyword") keyword: String,
+    ): Response<BaseResponse<List<FavoriteButtonItemDto>>>
+
     @PATCH("api/buttons/favorite-order")
     suspend fun updateFavoriteOrder(
         @Body request: FavoriteOrderRequestDto,

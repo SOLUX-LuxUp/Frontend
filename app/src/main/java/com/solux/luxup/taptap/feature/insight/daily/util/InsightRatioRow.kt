@@ -150,7 +150,7 @@ fun InsightRatioRow(
     }
 }
 
-/** ALL▾ 필터 — null이면 전체, 아니면 categoryName 일치 항목만 */
+/** ALL▾ 필터 — null이면 전체, ""이면 카테고리 없는 항목만("No Category" 선택 시), 그 외엔 categoryName 일치 항목만 */
 fun List<InsightButtonTapCount>.filterByCategory(categoryName: String?): List<InsightButtonTapCount> =
     this
         .filter { categoryName == null || it.categoryName == categoryName }

@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.ui.components.SectionCard
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.categoryFilterOptions
+import com.solux.luxup.taptap.core.util.category.resolveCategoryFilter
 import com.solux.luxup.taptap.feature.insight.daily.data.MockInsightDaily
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightButtonTapCount
 import com.solux.luxup.taptap.feature.insight.daily.model.InsightCategoryTapCount
@@ -57,7 +59,7 @@ fun InsightRatioAllScreen(
     onPrevDay: () -> Unit = {},
     onNextDay: () -> Unit = {}
 ) {
-    val categories = remember(categoryNames) { listOf("ALL") + categoryNames }
+    val categories = remember(categoryNames) { categoryFilterOptions(categoryNames) }
     var selectedCategoryName by remember { mutableStateOf<String?>(null) }
     val filtered = remember(buttonTapCounts, selectedCategoryName) {
         buttonTapCounts.filterByCategory(selectedCategoryName)
@@ -113,7 +115,7 @@ fun InsightRatioAllScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CategoryDropdown(
                         categories = categories,
-                        onCategorySelected = { name -> selectedCategoryName = if (name == "ALL") null else name }
+                        onCategorySelected = { name -> selectedCategoryName = resolveCategoryFilter(name) }
                     )
                     Spacer(Modifier.width(15.dp))
                     Text(

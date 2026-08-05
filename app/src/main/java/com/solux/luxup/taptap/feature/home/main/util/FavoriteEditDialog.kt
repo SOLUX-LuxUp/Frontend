@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
@@ -45,6 +48,13 @@ import androidx.compose.ui.zIndex
 import com.solux.luxup.taptap.core.util.category.CategoryDialogButton
 import com.solux.luxup.taptap.feature.home.main.model.FavoriteButton
 import kotlin.math.roundToInt
+
+/** 항목 행 높이(아이콘 40dp에 의해 결정) + 항목 사이 간격 */
+private val FavoriteRowHeight = 40.dp
+private val FavoriteRowSpacing = 20.dp
+
+/** 5개까지만 보이고 그 아래는 스크롤되도록 하는 최대 목록 높이 */
+private val FavoriteListMaxHeight = FavoriteRowHeight * 5 + FavoriteRowSpacing * 4
 
 // "즐겨찾기 수정" 팝업 - 즐겨찾기 목록에서 항목 제거
 @Composable
@@ -83,10 +93,12 @@ fun FavoriteEditDialog(
                 .clip(RoundedCornerShape(15.dp))
                 .background(Color.White)
                 .padding(15.dp)
+                .heightIn(max = FavoriteListMaxHeight)
+                .verticalScroll(rememberScrollState())
         ) {
             favoriteList.forEachIndexed { index, favorite ->
                 if (index > 0) {
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(FavoriteRowSpacing))
                 }
                 key(favorite.buttonId) {
                 val isDragging = draggingIndex == index
