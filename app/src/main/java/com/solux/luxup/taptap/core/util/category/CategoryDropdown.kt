@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +37,10 @@ import androidx.compose.ui.window.PopupProperties
 import com.solux.luxup.taptap.R
 
 private val defaultCategories = listOf("HEALTH", "ROUTINE", "TRAVEL", "WORK", "ALL")
+
+/** 드롭다운 목록 항목 한 줄의 높이(15sp 텍스트 + 상하 padding 2dp) — 5개 높이로 잘라 보여줄 때 쓴다 */
+private val CategoryItemHeight = 26.dp
+private const val MAX_VISIBLE_CATEGORY_ITEMS = 5
 
 /** 카테고리가 지정되지 않은 버튼만 보고 싶을 때 고르는 필터 옵션의 표시 라벨 */
 const val NO_CATEGORY_LABEL = "No Category"
@@ -113,19 +120,25 @@ fun CategoryDropdown(
                         .border(0.5.dp, Color(0xFFE5E5E5), RoundedCornerShape(0.dp))
                         .padding(all = 4.dp)
                 ) {
-                    categories.forEach { category ->
-                        Text(
-                            text = category,
-                            fontSize = 15.sp,
-                            color = Color(0xFF6D6D6D),
-                            modifier = Modifier
-                                .clickable {
-                                    selectedCategory = category
-                                    onCategorySelected(category)
-                                    isExpanded = false
-                                }
-                                .padding(vertical = 2.dp)
-                        )
+                    Column(
+                        modifier = Modifier
+                            .heightIn(max = CategoryItemHeight * MAX_VISIBLE_CATEGORY_ITEMS)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        categories.forEach { category ->
+                            Text(
+                                text = category,
+                                fontSize = 15.sp,
+                                color = Color(0xFF6D6D6D),
+                                modifier = Modifier
+                                    .clickable {
+                                        selectedCategory = category
+                                        onCategorySelected(category)
+                                        isExpanded = false
+                                    }
+                                    .padding(vertical = 2.dp)
+                            )
+                        }
                     }
                     Spacer(Modifier.height(2.dp))
                     Box(

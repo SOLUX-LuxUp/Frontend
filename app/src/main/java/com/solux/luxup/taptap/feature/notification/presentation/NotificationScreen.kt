@@ -46,6 +46,8 @@ import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.core.util.category.CategoryDeleteConfirmDialog
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
 import com.solux.luxup.taptap.core.util.category.CategoryEditDialog
+import com.solux.luxup.taptap.core.util.category.categoryFilterOptions
+import com.solux.luxup.taptap.core.util.category.resolveCategoryFilter
 import com.solux.luxup.taptap.feature.home.main.model.Category
 import com.solux.luxup.taptap.feature.notification.data.mockAddableNotifications
 import com.solux.luxup.taptap.feature.notification.data.mockNotifications
@@ -86,7 +88,7 @@ fun NotificationScreen(
 
     val filteredNotifications = remember(reminders, selectedCategory, searchQuery) {
         reminders
-            .filter { selectedCategory == null || selectedCategory == "ALL" || it.category == selectedCategory }
+            .filter { selectedCategory == null || it.category == selectedCategory }
             .filter { searchQuery.isBlank() || it.title.contains(searchQuery, ignoreCase = true) }
     }
 
@@ -172,8 +174,8 @@ fun NotificationScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CategoryDropdown(
-                    categories = categories.map { it.name } + "ALL",
-                    onCategorySelected = { selectedCategory = it },
+                    categories = categoryFilterOptions(categories.map { it.name }),
+                    onCategorySelected = { selectedCategory = resolveCategoryFilter(it) },
                     onManageCategoriesClick = { showCategoryEditDialog = true }
                 )
                 Spacer(Modifier.width(16.dp))
@@ -225,7 +227,7 @@ fun NotificationScreen(
             NotificationAddDialog(
                 items = reminders + addableButtons,
                 checkedIds = reminders.map { it.id }.toSet(),
-                categories = categories.map { it.name } + "ALL",
+                categories = categoryFilterOptions(categories.map { it.name }),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp),

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.solux.luxup.taptap.core.auth.TokenManager
 import com.solux.luxup.taptap.feature.auth.account.data.UserRepository
 import com.solux.luxup.taptap.feature.home.main.data.ButtonRepository
 import com.solux.luxup.taptap.feature.home.main.model.Category
@@ -56,6 +57,7 @@ class MainHomeViewModel @AssistedInject constructor(
     private val onboardingTemplateRepository: OnboardingTemplateRepository,
     private val buttonRepository: ButtonRepository,
     private val userRepository: UserRepository,
+    private val tokenManager: TokenManager,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -85,6 +87,14 @@ class MainHomeViewModel @AssistedInject constructor(
 
     /** GET /api/buttons/search 결과. null이면 검색 중이 아니라는 뜻이라 화면에서는 카테고리 필터 목록을 그대로 보여준다 */
     var searchResults by mutableStateOf<List<HabitButton>?>(null)
+        private set
+
+    /**
+     * 버튼이 0개일 때 "첫 번째 버튼을 만들어보세요" 추천을 보여줄지, 아니면 "버튼이 없어요"만 보여줄지 결정한다.
+     * 로그인/회원가입 때 서버가 내려준 isOnboardingRequired를 시작값으로 쓰고, 버튼이 하나라도 있는 걸
+     * 확인하는 순간(생성했든, 원래 있었든) 영구히 false로 굳혀서 — 나중에 전부 삭제해도 다시 추천이 뜨지 않게 한다.
+     */
+    var isFirstTimeEmptyState by mutableStateOf(tokenManager.isOnboardingRequired())
         private set
 
     private var searchJob: Job? = null
@@ -136,6 +146,10 @@ class MainHomeViewModel @AssistedInject constructor(
                 .onSuccess { result ->
                     habitButtons = result.habitButtons.sortedForMainDisplay()
                     favoriteButtons = result.favorites
+                    if (isFirstTimeEmptyState && (habitButtons.isNotEmpty() || favoriteButtons.isNotEmpty())) {
+                        isFirstTimeEmptyState = false
+                        tokenManager.saveOnboardingRequired(false)
+                    }
                 }
         }
     }
@@ -354,26 +368,13 @@ class MainHomeViewModel @AssistedInject constructor(
     }
 
     /**
-     * 추천 버튼 하나를 골라 실제 버튼으로 생성한다.
-     * 성공하면 다음 조회부터 빠지도록 목록에서 즉시 제거한다.
+     * "첫 번째 버튼을 만들어보세요" 추천 카드에서 하나를 골랐을 때 호출된다.
+     * [quickCreateFromSuggestion]과 동일한 방식(POST /api/buttons)으로 처리한다 —
+     * POST /api/templates/{id}/apply는 온보딩을 이미 마친 유저에게 서버가 400을 내려주는데,
+     * 이 추천을 하나라도 만들면 그 즉시 온보딩이 완료 처리되어 바로 다음 추천부터도 그 API가 막힌다.
      */
     fun applySuggestion(suggestion: TemplateButtonSuggestion) {
-        if (isApplying) return
-        isApplying = true
-
-        viewModelScope.launch {
-            onboardingTemplateRepository.applyTemplate(suggestion.templateId, listOf(suggestion.presetId))
-                .onSuccess {
-                    suggestions = suggestions.filterNot {
-                        it.presetId == suggestion.presetId && it.templateId == suggestion.templateId
-                    }
-                    loadButtons()
-                }
-                .onFailure { e ->
-                    errorMessage = e.message ?: "버튼을 추가하지 못했어요."
-                }
-            isApplying = false
-        }
+        quickCreateFromSuggestion(suggestion)
     }
 
     /**

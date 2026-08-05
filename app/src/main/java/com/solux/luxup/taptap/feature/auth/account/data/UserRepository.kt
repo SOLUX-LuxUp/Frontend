@@ -1,5 +1,6 @@
 package com.solux.luxup.taptap.feature.auth.account.data
 
+import com.solux.luxup.taptap.core.auth.TokenManager
 import com.solux.luxup.taptap.core.network.ApiCallHandler
 import com.solux.luxup.taptap.core.network.ApiException
 import com.solux.luxup.taptap.feature.auth.account.model.AccountUser
@@ -12,6 +13,7 @@ import javax.inject.Singleton
 class UserRepository @Inject constructor(
     private val userApi: UserApi,
     private val apiCallHandler: ApiCallHandler,
+    private val tokenManager: TokenManager,
 ) {
     /** GET /api/users/profile — 닉네임(username)·이메일·프로필 이미지 */
     suspend fun getProfile(): Result<AccountUser> =
@@ -43,6 +45,24 @@ class UserRepository @Inject constructor(
             Result.success(Unit)
         } else {
             Result.failure(ApiException(body?.message ?: "비밀번호를 변경하지 못했어요.", response.code()))
+        }
+    }
+
+    /**
+     * DELETE /api/users/me — 회원 탈퇴.
+     * 응답 data가 없는(=null) 성공 응답이라 data != null을 요구하는 공통 apiCallHandler를 쓰면
+     * 성공해도 실패로 처리될 수 있어, success 플래그만 직접 확인한다. 성공하면 로컬 토큰도 지운다.
+     */
+    suspend fun withdraw(): Result<Unit> {
+        val refreshToken = tokenManager.getRefreshToken()
+            ?: return Result.failure(ApiException("로그인 정보가 없어요."))
+        val response = userApi.withdraw(WithdrawRequestDto(refreshToken))
+        val body = response.body()
+        return if (response.isSuccessful && body?.success == true) {
+            tokenManager.clearTokens()
+            Result.success(Unit)
+        } else {
+            Result.failure(ApiException(body?.message ?: "계정을 삭제하지 못했어요.", response.code()))
         }
     }
 

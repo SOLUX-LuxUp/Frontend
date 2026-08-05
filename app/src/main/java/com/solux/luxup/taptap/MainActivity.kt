@@ -186,6 +186,7 @@ class MainActivity : ComponentActivity() {
                             habitButtons = mainHomeViewModel.habitButtons,
                             firstButtonSuggestions = mainHomeViewModel.suggestions,
                             groupFirstButtonSuggestionsByCategory = false,
+                            isFirstTimeEmptyState = mainHomeViewModel.isFirstTimeEmptyState,
                             categories = mainHomeViewModel.categories,
                             searchResults = mainHomeViewModel.searchResults,
                             onSearchQueryChange = mainHomeViewModel::searchButtons,
@@ -248,6 +249,7 @@ class MainActivity : ComponentActivity() {
                             favoriteButtons = mainHomeViewModel.favoriteButtons,
                             habitButtons = mainHomeViewModel.habitButtons,
                             firstButtonSuggestions = mainHomeViewModel.suggestions,
+                            isFirstTimeEmptyState = mainHomeViewModel.isFirstTimeEmptyState,
                             categories = mainHomeViewModel.categories,
                             searchResults = mainHomeViewModel.searchResults,
                             onSearchQueryChange = mainHomeViewModel::searchButtons,
@@ -644,9 +646,28 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onNavigateToChangePassword = {
                                         navController.navigate("changePassword")
+                                    },
+                                    onLogout = {
+                                        accountViewModel.logout {
+                                            navController.navigate("login") {
+                                                popUpTo(0) { inclusive = true }
+                                            }
+                                        }
+                                    },
+                                    onRequestDeleteAccount = {
+                                        accountViewModel.withdraw()
+                                    },
+                                    isAccountDeleted = accountViewModel.isAccountDeleted,
+                                    onDeleteAccount = {
+                                        navController.navigate("login") {
+                                            popUpTo(0) { inclusive = true }
+                                        }
                                     }
                                 )
                             }
+                        }
+                        accountViewModel.errorMessage?.let { message ->
+                            NoticeDialog(message = message, onDismiss = accountViewModel::consumeError)
                         }
                     }
                     composable("changePassword") {

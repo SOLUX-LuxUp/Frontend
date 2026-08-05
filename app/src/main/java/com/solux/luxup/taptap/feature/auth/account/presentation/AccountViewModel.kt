@@ -9,6 +9,7 @@ import com.solux.luxup.taptap.feature.auth.account.data.UserRepository
 import com.solux.luxup.taptap.feature.auth.account.model.AccountUser
 import com.solux.luxup.taptap.feature.auth.account.model.NotificationSettings
 import com.solux.luxup.taptap.feature.auth.account.model.NotificationSoundOption
+import com.solux.luxup.taptap.feature.auth.data.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     /** GET /api/users/profile 로 채운다. 아직 로딩 중이면 null */
@@ -31,6 +33,10 @@ class AccountViewModel @Inject constructor(
         private set
 
     var isPasswordChanged by mutableStateOf(false)
+        private set
+
+    /** DELETE /api/users/me 성공 시 true — "탈퇴 완료" 안내로 넘어가는 신호 */
+    var isAccountDeleted by mutableStateOf(false)
         private set
 
     /** GET /api/users/notification-settings 로 채운다. 아직 로딩 중이면 null */
@@ -89,6 +95,23 @@ class AccountViewModel @Inject constructor(
             userRepository.changePassword(currentPassword, newPassword, newPasswordConfirm)
                 .onSuccess { isPasswordChanged = true }
                 .onFailure { errorMessage = it.message ?: "비밀번호를 변경하지 못했어요." }
+        }
+    }
+
+    /** DELETE /api/auth/sessions — 서버 호출 성공 여부와 무관하게 로컬 토큰은 항상 지운다(best-effort) */
+    fun logout(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            authRepository.logout()
+            onComplete()
+        }
+    }
+
+    /** DELETE /api/users/me — 회원 탈퇴 */
+    fun withdraw() {
+        viewModelScope.launch {
+            userRepository.withdraw()
+                .onSuccess { isAccountDeleted = true }
+                .onFailure { errorMessage = it.message ?: "계정을 삭제하지 못했어요." }
         }
     }
 
