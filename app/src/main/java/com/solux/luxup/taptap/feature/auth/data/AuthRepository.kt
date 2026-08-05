@@ -16,6 +16,7 @@ class AuthRepository @Inject constructor(
             .onSuccess {
                 tokenManager.saveTokens(it.accessToken, it.refreshToken)
                 tokenManager.saveUserId(it.userId)
+                tokenManager.saveOnboardingRequired(it.isOnboardingRequired)
             }
 
     suspend fun register(
@@ -29,6 +30,7 @@ class AuthRepository @Inject constructor(
         }.onSuccess {
             tokenManager.saveTokens(it.accessToken, it.refreshToken)
             tokenManager.saveUserId(it.userId)
+            tokenManager.saveOnboardingRequired(it.isOnboardingRequired)
         }
 
     suspend fun googleLogin(idToken: String): Result<GoogleLoginResponseDto> =
@@ -36,6 +38,7 @@ class AuthRepository @Inject constructor(
             .onSuccess {
                 tokenManager.saveTokens(it.accessToken, it.refreshToken)
                 tokenManager.saveUserId(it.userId)
+                tokenManager.saveOnboardingRequired(it.isOnboardingRequired)
             }
 
     suspend fun sendVerificationCode(email: String): Result<VerificationCodeResponseDto> =

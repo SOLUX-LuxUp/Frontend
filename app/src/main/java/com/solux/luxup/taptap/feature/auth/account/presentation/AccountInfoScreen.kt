@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,10 +57,21 @@ fun AccountInfoScreen(
     onSaveNickname: (String) -> Unit = {},
     onNavigateToChangePassword: () -> Unit = {},
     onLogout: () -> Unit = {},
+    /** "탈퇴" 확인을 눌렀을 때 — 실제 탈퇴 API를 호출한다 */
+    onRequestDeleteAccount: () -> Unit = {},
+    /** 탈퇴 API가 성공하면 true — "탈퇴 완료" 안내로 넘어간다 */
+    isAccountDeleted: Boolean = false,
+    /** "탈퇴 완료" 안내를 닫았을 때 — 로그인 화면 등으로 최종 이동 */
     onDeleteAccount: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var pendingAction by remember { mutableStateOf<AccountInfoAction?>(null) }
+
+    LaunchedEffect(isAccountDeleted) {
+        if (isAccountDeleted) {
+            pendingAction = AccountInfoAction.DELETE_ACCOUNT_COMPLETE
+        }
+    }
 
     Column(
         modifier = modifier
@@ -112,8 +124,8 @@ fun AccountInfoScreen(
         AccountInfoAction.DELETE_ACCOUNT_CONFIRM -> AccountDeleteConfirmDialog(
             onDismiss = { pendingAction = null },
             onConfirm = {
-                // TODO: 실제 계정 삭제 API 호출
-                pendingAction = AccountInfoAction.DELETE_ACCOUNT_COMPLETE
+                pendingAction = null
+                onRequestDeleteAccount()
             },
         )
         AccountInfoAction.DELETE_ACCOUNT_COMPLETE -> AccountDeleteCompleteDialog(

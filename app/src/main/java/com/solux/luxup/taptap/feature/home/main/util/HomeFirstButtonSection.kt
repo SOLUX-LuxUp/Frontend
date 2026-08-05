@@ -125,6 +125,29 @@ fun HomeFirstButtonSection(
     }
 }
 
+/**
+ * 온보딩을 이미 마친 유저가 버튼을 전부 삭제해 0개가 됐을 때 보여주는 빈 상태.
+ * [HomeFirstButtonSection]과 달리 추천 목록 없이 안내 문구만 보여준다 —
+ * 버튼은 상단 "+" 메뉴의 "직접 만들기"/"빠르게 만들기"로만 다시 만들 수 있다.
+ */
+@Composable
+fun NoButtonsSection(modifier: Modifier = Modifier) {
+    SectionCard(
+        modifier = modifier,
+        cornerRadius = 13.dp,
+        contentPadding = PaddingValues(30.dp),
+    ) {
+        Text(
+            text = "버튼이 없어요",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF6D6D6D),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
 @Composable
 private fun CategoryTab(
     label: String,

@@ -34,6 +34,12 @@ data class ChangePasswordRequestDto(
     val newPasswordConfirm: String,
 )
 
+/** DELETE /api/users/me — 9.4 회원 탈퇴 */
+@Serializable
+data class WithdrawRequestDto(
+    val refreshToken: String,
+)
+
 /** GET/PATCH /api/users/notification-settings 공통 응답 shape */
 @Serializable
 data class NotificationSettingResponseDto(

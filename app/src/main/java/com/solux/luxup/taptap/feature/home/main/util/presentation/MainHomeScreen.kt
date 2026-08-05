@@ -78,6 +78,7 @@ import com.solux.luxup.taptap.feature.home.main.util.FavoriteButtonBox
 import com.solux.luxup.taptap.feature.home.main.util.FavoriteEditDialog
 import com.solux.luxup.taptap.feature.home.main.util.HabitButtonGrid
 import com.solux.luxup.taptap.feature.home.main.util.HomeFirstButtonSection
+import com.solux.luxup.taptap.feature.home.main.util.NoButtonsSection
 import com.solux.luxup.taptap.feature.home.main.util.RecentRecordBox
 import com.solux.luxup.taptap.feature.home.main.util.RecordCompleteBanner
 import com.solux.luxup.taptap.feature.home.main.util.RecordDeleteConfirmDialog
@@ -98,6 +99,11 @@ fun MainHomeScreen(
     firstButtonSuggestions: List<TemplateButtonSuggestion> = emptyList(),
     /** true면 firstButtonSuggestions를 카테고리 탭으로 나눠 보여준다 (템플릿을 골랐을 때). 건너뛴 경우 false. */
     groupFirstButtonSuggestionsByCategory: Boolean = true,
+    /**
+     * 버튼이 0개일 때 무엇을 보여줄지 — true면 "첫 번째 버튼을 만들어보세요" 추천을,
+     * false면(온보딩을 이미 마친 유저가 전부 삭제한 경우) "버튼이 없어요"만 보여준다.
+     */
+    isFirstTimeEmptyState: Boolean = true,
     categories: List<Category> = emptyList(),
     /** GET /api/buttons/search 결과 — null이면 검색 중이 아니라는 뜻이라 카테고리 필터 목록을 그대로 보여준다 */
     searchResults: List<HabitButton>? = null,
@@ -180,89 +186,91 @@ fun MainHomeScreen(
                     onCreateQuickly = { showQuickCreatePopup = true }
                 )
 
-                Spacer(Modifier.height(20.dp))
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(SpanStyle(brush = Brush.linearGradient(colors = listOf(BlueGradientStart, BlueGradientEnd)))) {
-                            append(user.nickname)
-                        }
-                        withStyle(SpanStyle(color = Color(0xFF1A1A1A))) {
-                            append("님 반가워요!")
-                        }
-                    },
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text("오늘의 습관도 기록해봐요.", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF6D6D6D))
-
-                Spacer(Modifier.height(30.dp))
-                Text("최근 기록", fontSize = 15.sp, color = Color(0xFF6D6D6D))
-                Spacer(Modifier.height(8.dp))
-                RecentRecordBox(record = recentRecord, now = now)
-
-                Spacer(Modifier.height(30.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "즐겨찾기",
-                        fontSize = 15.sp,
-                        color = Color(0xFF6D6D6D),
-                        modifier = Modifier.clickable { showFavoriteEditDialog = true }
-                    )
-                    Spacer(Modifier.width(2.dp))
-                    Icon(
-                        painter = painterResource(R.drawable.ic_setting),
-                        contentDescription = null,
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    favoriteButtonsState.forEach { button ->
-                        FavoriteButtonBox(button = button, onClick = { /* TODO: 즐겨찾기 버튼 클릭 */ }, now = now)
-                    }
-                    if (favoriteButtonsState.isEmpty()) {
-                        FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
-                    }
-                }
-
-                Spacer(Modifier.height(30.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CategoryDropdown(
-                        categories = categoryFilterOptions(categories.map { it.name }),
-                        onCategorySelected = { selectedCategory = it },
-                        onManageCategoriesClick = { showCategoryEditDialog = true }
-                    )
-                    Spacer(Modifier.width(16.dp))
-                    SearchBar(
-                        modifier = Modifier.weight(1f),
-                        fillWidth = true,
-                        horizontalMargin = 0.dp,
-                        placeholder = "버튼 검색",
-                        onQueryChange = onSearchQueryChange
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // 카드 그림자가 스크롤 뷰포트 상단에서 잘리지 않도록 여백을 스크롤 영역 안쪽에 둔다
                     Spacer(Modifier.height(20.dp))
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(brush = Brush.linearGradient(colors = listOf(BlueGradientStart, BlueGradientEnd)))) {
+                                append(user.nickname)
+                            }
+                            withStyle(SpanStyle(color = Color(0xFF1A1A1A))) {
+                                append("님 반가워요!")
+                            }
+                        },
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text("오늘의 습관도 기록해봐요.", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF6D6D6D))
+
+                    Spacer(Modifier.height(30.dp))
+                    Text("최근 기록", fontSize = 15.sp, color = Color(0xFF6D6D6D))
+                    Spacer(Modifier.height(8.dp))
+                    RecentRecordBox(record = recentRecord, now = now)
+
+                    Spacer(Modifier.height(30.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "즐겨찾기",
+                            fontSize = 15.sp,
+                            color = Color(0xFF6D6D6D),
+                            modifier = Modifier.clickable { showFavoriteEditDialog = true }
+                        )
+                        Spacer(Modifier.width(2.dp))
+                        Icon(
+                            painter = painterResource(R.drawable.ic_setting),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        favoriteButtonsState.forEach { button ->
+                            FavoriteButtonBox(button = button, onClick = { /* TODO: 즐겨찾기 버튼 클릭 */ }, now = now)
+                        }
+                        if (favoriteButtonsState.isEmpty()) {
+                            FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
+                        }
+                    }
+
+                    Spacer(Modifier.height(30.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CategoryDropdown(
+                            categories = categoryFilterOptions(categories.map { it.name }),
+                            onCategorySelected = { selectedCategory = it },
+                            onManageCategoriesClick = { showCategoryEditDialog = true }
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        SearchBar(
+                            modifier = Modifier.weight(1f),
+                            fillWidth = true,
+                            horizontalMargin = 0.dp,
+                            placeholder = "버튼 검색",
+                            onQueryChange = onSearchQueryChange
+                        )
+                    }
+                    Spacer(Modifier.height(30.dp))
 
                     if (buttonsState.isEmpty()) {
-                        HomeFirstButtonSection(
-                            suggestions = firstButtonSuggestions,
-                            onSuggestionClick = onFirstButtonSuggestionClick,
-                            groupByCategory = groupFirstButtonSuggestionsByCategory,
-                        )
+                        if (isFirstTimeEmptyState) {
+                            HomeFirstButtonSection(
+                                suggestions = firstButtonSuggestions,
+                                onSuggestionClick = onFirstButtonSuggestionClick,
+                                groupByCategory = groupFirstButtonSuggestionsByCategory,
+                            )
+                        } else {
+                            NoButtonsSection()
+                        }
                     } else {
                         HabitButtonGrid(
                             buttons = displayedHabitButtons,

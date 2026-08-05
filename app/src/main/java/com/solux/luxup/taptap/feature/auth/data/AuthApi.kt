@@ -4,7 +4,7 @@ import com.solux.luxup.taptap.core.network.BaseResponse
 import kotlinx.serialization.json.JsonElement
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.DELETE
+import retrofit2.http.HTTP
 import retrofit2.http.POST
 
 interface AuthApi {
@@ -21,6 +21,8 @@ interface AuthApi {
     @POST("api/auth/email/verification-code")
     suspend fun sendVerificationCode(@Body request: VerificationCodeRequestDto): Response<BaseResponse<VerificationCodeResponseDto>>
 
-    @DELETE("api/auth/sessions")
+    // Retrofit은 DELETE를 "body를 가질 수 없는 메서드"로 취급해 @DELETE + @Body 조합은 요청 생성 시점에
+    // IllegalArgumentException("Non-body HTTP method cannot contain @Body")을 던진다 — hasBody로 명시해 우회한다.
+    @HTTP(method = "DELETE", path = "api/auth/sessions", hasBody = true)
     suspend fun logout(@Body request: LogoutRequestDto): Response<BaseResponse<JsonElement?>>
 }

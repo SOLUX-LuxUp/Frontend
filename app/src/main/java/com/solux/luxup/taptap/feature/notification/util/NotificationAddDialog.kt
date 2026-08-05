@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.core.util.category.CategoryDropdown
+import com.solux.luxup.taptap.core.util.category.resolveCategoryFilter
 import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
@@ -57,7 +58,7 @@ fun NotificationAddDialog(
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     val filteredItems = remember(items, query, selectedCategory) {
         items
-            .filter { selectedCategory == null || selectedCategory == "ALL" || it.category == selectedCategory }
+            .filter { selectedCategory == null || it.category == selectedCategory }
             .filter { query.isBlank() || it.title.contains(query, ignoreCase = true) }
     }
 
@@ -86,7 +87,7 @@ fun NotificationAddDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CategoryDropdown(
                     categories = categories,
-                    onCategorySelected = { selectedCategory = it }
+                    onCategorySelected = { selectedCategory = resolveCategoryFilter(it) }
                 )
                 Spacer(Modifier.width(12.dp))
                 SearchBar(
