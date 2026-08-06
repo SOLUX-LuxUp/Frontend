@@ -37,9 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.solux.luxup.taptap.R
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.ui.theme.TeamIcon
+import com.solux.luxup.taptap.core.util.UserAvatar
 import com.solux.luxup.taptap.core.util.formatTimeAgo
 import com.solux.luxup.taptap.feature.team.model.LatestRecord
 import com.solux.luxup.taptap.feature.team.model.MemberProfile
@@ -120,7 +122,9 @@ private fun TeamProfileImage(
             contentScale = ContentScale.Crop
         )
 
-        iconName != null -> Box(
+        // iconName이 없어도(생성 시 아이콘 미선택) TeamIcon.from/IconColor.from이
+        // 기본값(people/blue)을 돌려주므로 항상 이 분기로 렌더링한다.
+        else -> Box(
             modifier = modifier
                 .size(40.dp)
                 .clip(CircleShape)
@@ -135,13 +139,6 @@ private fun TeamProfileImage(
                 modifier = Modifier.size(24.dp)
             )
         }
-
-        else -> Icon(
-            painter = painterResource(R.drawable.ic_profile),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = modifier.size(40.dp)
-        )
     }
 }
 @Composable
@@ -151,13 +148,8 @@ private fun MemberAvatars(
     avatarSize: Dp = 28.dp                     // 크기 파라미터 추가
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
-        members.take(max).forEach { _ ->
-            Icon(
-                painter = painterResource(R.drawable.ic_profile),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(avatarSize)
-            )
+        members.take(max).forEach { member ->
+            UserAvatar(imageUrl = member.profileImageUrl, size = avatarSize)
         }
     }
 }
@@ -185,10 +177,10 @@ private fun RecentRecordBox(record: LatestRecord) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_profile),
+                    painter = painterResource(ButtonIcons.resOf(record.iconName)),
                     contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(24.dp)
+                    tint = IconColor.from(record.iconColor).color,
+                    modifier = Modifier.size(14.dp)
                 )
             }
             Spacer(Modifier.width(6.dp))
