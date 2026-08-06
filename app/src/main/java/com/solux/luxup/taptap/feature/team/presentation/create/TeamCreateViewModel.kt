@@ -63,8 +63,18 @@ class TeamCreateViewModel @Inject constructor(
         if (isSubmitting) return
         isSubmitting = true
 
+        // 이미지도 아이콘도 고르지 않았다면 기본값(people/blue)으로 채워서 보낸다
+        val submitForm = if (form.teamImageUrl == null && form.iconName == null) {
+            form.copy(
+                iconName = TeamCreateForm.DEFAULT_ICON_NAME,
+                iconColor = TeamCreateForm.DEFAULT_ICON_COLOR,
+            )
+        } else {
+            form
+        }
+
         viewModelScope.launch {
-            teamRepository.createTeam(form)
+            teamRepository.createTeam(submitForm)
                 .onSuccess { result ->
                     createdTeam = result
                     isSubmitting = false

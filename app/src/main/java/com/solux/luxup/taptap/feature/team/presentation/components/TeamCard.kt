@@ -37,9 +37,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.solux.luxup.taptap.R
+import com.solux.luxup.taptap.core.ui.modifier.figmaDropShadow
+import com.solux.luxup.taptap.core.ui.theme.ButtonIcons
 import com.solux.luxup.taptap.core.ui.theme.IconColor
 import com.solux.luxup.taptap.core.ui.theme.PreviewContainer
 import com.solux.luxup.taptap.core.ui.theme.TeamIcon
+import com.solux.luxup.taptap.core.util.UserAvatar
 import com.solux.luxup.taptap.core.util.formatTimeAgo
 import com.solux.luxup.taptap.feature.team.model.LatestRecord
 import com.solux.luxup.taptap.feature.team.model.MemberProfile
@@ -58,10 +61,12 @@ fun TeamCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .figmaDropShadow(cornerRadius = 16.dp, alpha = 0.15f, blurRadius = 7.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFEFE)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // 상단: 별 + 이름 / 최근기록 박스
@@ -80,18 +85,34 @@ fun TeamCard(
                             )
                     )
                     Spacer(Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {          // 프로필 + 이름 가로로
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {          // 프로필 + 이름 가로로
                         TeamProfileImage(
                             imageUrl = team.teamImageUrl,
                             iconName = team.iconName,
                             iconColor = team.iconColor,
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(team.teamName, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+                        Text(
+                            team.teamName,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1A1A1A),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
                     }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    team.latestRecord?.let { RecentRecordBox(it) }
+                    // 카드 높이가 팀마다 들쭉날쭉하지 않도록, 기록이 없어도 같은 크기의 빈 박스로 자리를 유지한다
+                    if (team.latestRecord != null) {
+                        RecentRecordBox(team.latestRecord)
+                    } else {
+                        EmptyRecentRecordBox()
+                    }
                     UpdateBar(members = team.recentUpdatedMembers)   // memberProfiles → recentUpdatedMembers
                 }
             }
@@ -120,7 +141,9 @@ private fun TeamProfileImage(
             contentScale = ContentScale.Crop
         )
 
-        iconName != null -> Box(
+        // iconName이 없어도(생성 시 아이콘 미선택) TeamIcon.from/IconColor.from이
+        // 기본값(people/blue)을 돌려주므로 항상 이 분기로 렌더링한다.
+        else -> Box(
             modifier = modifier
                 .size(40.dp)
                 .clip(CircleShape)
@@ -135,13 +158,6 @@ private fun TeamProfileImage(
                 modifier = Modifier.size(24.dp)
             )
         }
-
-        else -> Icon(
-            painter = painterResource(R.drawable.ic_profile),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = modifier.size(40.dp)
-        )
     }
 }
 @Composable
@@ -150,14 +166,9 @@ private fun MemberAvatars(
     max: Int = 8,
     avatarSize: Dp = 28.dp                     // 크기 파라미터 추가
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
-        members.take(max).forEach { _ ->
-            Icon(
-                painter = painterResource(R.drawable.ic_profile),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(avatarSize)
-            )
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        members.take(max).forEach { member ->
+            UserAvatar(imageUrl = member.profileImageUrl, size = avatarSize)
         }
     }
 }
@@ -185,10 +196,10 @@ private fun RecentRecordBox(record: LatestRecord) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_profile),
+                    painter = painterResource(ButtonIcons.resOf(record.iconName)),
                     contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(24.dp)
+                    tint = IconColor.from(record.iconColor).color,
+                    modifier = Modifier.size(14.dp)
                 )
             }
             Spacer(Modifier.width(6.dp))
@@ -210,6 +221,18 @@ private fun RecentRecordBox(record: LatestRecord) {
             )
         }
     }
+}
+
+/** latestRecord가 없을 때도 RecentRecordBox와 같은 크기를 차지해 카드 높이를 맞춘다 */
+@Composable
+private fun EmptyRecentRecordBox() {
+    Box(
+        modifier = Modifier
+            .width(130.dp)
+            .height(65.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0xFFF2F2F2))
+    )
 }
 
 @Composable
