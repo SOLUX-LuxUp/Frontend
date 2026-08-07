@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -141,6 +142,35 @@ fun MainHomeScreen(
     var favoriteButtonsState by remember(favoriteButtons) { mutableStateOf(favoriteButtons) }
     var showFavoriteEditDialog by remember { mutableStateOf(false) }
 
+    // 첫 번째 버튼 추천 섹션 노출 여부 — 처음 진입 시(isFirstTimeEmptyState)에만 켜서 시작하고,
+    // 이번 세션에서 추천을 눌러 버튼을 몇 개를 새로 만들든(아래 HabitButtonGrid에 계속 쌓임) 유지하다가
+    // 실제로 버튼을 탭해 기록하는 순간(=습관을 실제로 시작했다는 뜻) 닫는다.
+    var showFirstButtonSuggestions by remember { mutableStateOf(isFirstTimeEmptyState) }
+
+    // 위 showFirstButtonSuggestions를 "버튼이 생겨도 계속 열어둘지" 판단하는 데 쓴다 — 이번 세션에서
+    // 추천을 눌러 만든 버튼이면 true, 재로그인 등으로 처음부터(추천을 누르기도 전에) 이미 버튼이 있던 거라면 false.
+    var hasCreatedButtonFromSuggestionThisSession by remember { mutableStateOf(false) }
+
+    // 로그인 시점에 서버가 내려준 isFirstTimeEmptyState가 (버튼을ㅓ 실제로 갖고 있는데도) 아직 true일 수 있어,
+    // 버튼 목록이 처음 로드됐을 때 이미 버튼이 있으면(=이번 세션에서 방금 만든 게 아니라면) 추천 섹션을 닫는다.
+    LaunchedEffect(habitButtons) {
+        if (habitButtons.isNotEmpty() && !hasCreatedButtonFromSuggestionThisSession) {
+            showFirstButtonSuggestions = false
+        }
+    }
+
+    // 빠르게 만들기 팝업/첫 버튼 추천 섹션이 열려있는 동안 버튼을 탭해 기록하면(실제로 습관을 시작했다는 뜻이므로) 닫는다
+    val handleQuickRecord: (Long) -> Unit = { buttonId ->
+        showQuickCreatePopup = false
+        showFirstButtonSuggestions = false
+        onQuickRecord(buttonId)
+    }
+
+    val handleFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = { suggestion ->
+        hasCreatedButtonFromSuggestionThisSession = true
+        onFirstButtonSuggestionClick(suggestion)
+    }
+
     // 카테고리 드롭다운에서 선택된 카테고리 (null 또는 "ALL"이면 전체 노출)
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     val filteredHabitButtons = remember(buttonsState, selectedCategory) {
@@ -234,7 +264,7 @@ fun MainHomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         favoriteButtonsState.forEach { button ->
-                            FavoriteButtonBox(button = button, onClick = { onQuickRecord(button.buttonId) }, now = now)
+                            FavoriteButtonBox(button = button, onClick = { handleQuickRecord(button.buttonId) }, now = now)
                         }
                         if (favoriteButtonsState.isEmpty()) {
                             FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
@@ -262,23 +292,26 @@ fun MainHomeScreen(
                     }
                     Spacer(Modifier.height(30.dp))
 
-                    if (buttonsState.isEmpty()) {
-                        if (isFirstTimeEmptyState) {
-                            HomeFirstButtonSection(
-                                suggestions = firstButtonSuggestions,
-                                onSuggestionClick = onFirstButtonSuggestionClick,
-                                groupByCategory = groupFirstButtonSuggestionsByCategory,
-                            )
-                        } else {
-                            NoButtonsSection()
+                    if (showFirstButtonSuggestions) {
+                        HomeFirstButtonSection(
+                            suggestions = firstButtonSuggestions,
+                            onSuggestionClick = handleFirstButtonSuggestionClick,
+                            groupByCategory = groupFirstButtonSuggestionsByCategory,
+                        )
+                        if (buttonsState.isNotEmpty()) {
+                            Spacer(Modifier.height(20.dp))
                         }
-                    } else {
+                    } else if (buttonsState.isEmpty()) {
+                        NoButtonsSection()
+                    }
+
+                    if (buttonsState.isNotEmpty()) {
                         HabitButtonGrid(
                             buttons = displayedHabitButtons,
                             onToggleFavorite = onToggleFavorite,
                             onEditRecord = onNavigateToEditButton,
                             onDeleteRecord = { button -> recordPendingDelete = button },
-                            onQuickRecord = { button -> onQuickRecord(button.buttonId) },
+                            onQuickRecord = { button -> handleQuickRecord(button.buttonId) },
                             onOpenDetail = onNavigateToButtonDetail,
                             now = now,
                         )
@@ -308,10 +341,7 @@ fun MainHomeScreen(
                 title = TEMPLATE_QUICK_BUTTON_TITLE,
                 items = firstButtonSuggestions,
                 onDismiss = { showQuickCreatePopup = false },
-                onItemClick = {
-                    onQuickCreateSuggestionClick(it)
-                    showQuickCreatePopup = false
-                }
+                onItemClick = { onQuickCreateSuggestionClick(it) }
             )
         }
     }

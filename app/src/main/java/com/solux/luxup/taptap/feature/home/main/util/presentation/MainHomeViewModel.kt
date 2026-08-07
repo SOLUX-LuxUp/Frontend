@@ -65,7 +65,8 @@ class MainHomeViewModel @AssistedInject constructor(
         fun create(templateId: Long?): MainHomeViewModel
     }
 
-    private data class PendingRecord(val buttonId: Long, val recordId: Long)
+    /** previousRecentRecord — 이 기록을 남기기 직전의 "최근 기록" 배너 상태. 취소 시 서버 재조회 없이 바로 되돌리는 데 쓴다. */
+    private data class PendingRecord(val buttonId: Long, val recordId: Long, val previousRecentRecord: RecentRecord?)
 
     var homeUser by mutableStateOf(HomeUser(nickname = ""))
         private set
@@ -92,7 +93,9 @@ class MainHomeViewModel @AssistedInject constructor(
     /**
      * 버튼이 0개일 때 "첫 번째 버튼을 만들어보세요" 추천을 보여줄지, 아니면 "버튼이 없어요"만 보여줄지 결정한다.
      * 로그인/회원가입 때 서버가 내려준 isOnboardingRequired를 시작값으로 쓰고, 버튼이 하나라도 있는 걸
-     * 확인하는 순간(생성했든, 원래 있었든) 영구히 false로 굳혀서 — 나중에 전부 삭제해도 다시 추천이 뜨지 않게 한다.
+     * 확인하는 순간(생성했든, 원래 있었든) 영구히 false로 굳혀서 — 재로그인해도, 나중에 전부 삭제해도
+     * 다시 추천이 뜨지 않게 한다. (한 세션 안에서 추천 섹션이 계속 열려 있는 것은 이 값과 무관하게
+     * MainHomeScreen의 showFirstButtonSuggestions가 따로 관리한다.)
      */
     var isFirstTimeEmptyState by mutableStateOf(tokenManager.isOnboardingRequired())
         private set
@@ -217,7 +220,11 @@ class MainHomeViewModel @AssistedInject constructor(
                 .onSuccess {
                     habitButtons = habitButtons.filterNot { it.buttonId == buttonId }
                     favoriteButtons = favoriteButtons.filterNot { it.buttonId == buttonId }
-                    // 삭제한 버튼이 "최근 기록" 배너에 떠 있었을 수도 있어 함께 새로고침한다.
+                    // 삭제한 버튼이 "최근 기록" 배너에 떠 있던 버튼이면, 서버 재조회 응답을 기다리지 않고
+                    // 바로 지운다 — 재조회가 늦거나 삭제 직후 서버가 아직 반영 전이라도 배너에 남아있지 않도록.
+                    if (recentRecord?.buttonId == buttonId) {
+                        recentRecord = null
+                    }
                     loadRecentRecord()
                 }
                 .onFailure { errorMessage = it.message ?: "버튼을 삭제하지 못했어요." }
@@ -321,7 +328,11 @@ class MainHomeViewModel @AssistedInject constructor(
         viewModelScope.launch {
             buttonRepository.createRecord(buttonId)
                 .onSuccess { result ->
-                    pendingRecord = PendingRecord(buttonId = result.buttonId, recordId = result.recordId)
+                    pendingRecord = PendingRecord(
+                        buttonId = result.buttonId,
+                        recordId = result.recordId,
+                        previousRecentRecord = recentRecord,
+                    )
                     refreshButtonLastRecordedAt(result.buttonId)
                     loadRecentRecord()
 
@@ -340,6 +351,8 @@ class MainHomeViewModel @AssistedInject constructor(
         val pending = pendingRecord ?: return
         recordCancelWindowJob?.cancel()
         pendingRecord = null
+        // 서버 재조회 응답을 기다리지 않고 기록 남기기 직전 상태로 바로 되돌린다.
+        recentRecord = pending.previousRecentRecord
 
         viewModelScope.launch {
             buttonRepository.cancelRecord(pending.buttonId, pending.recordId)

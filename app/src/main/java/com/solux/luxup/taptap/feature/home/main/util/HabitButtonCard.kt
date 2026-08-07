@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -172,9 +175,14 @@ fun HabitButtonCard(
             notchCenterDyFromTopEnd = HabitBadgeOffsetY + HabitBadgeSize / 2
         )
     }
+    // 탭 영역(뱃지까지 포함)과 눌림 효과가 그려지는 자리(카드 모양대로만)를 분리하기 위해
+    // 인터랙션 소스를 공유하고, 리플은 카드에만 카드 모양(cardShape)대로 클립해서 그린다.
+    val interactionSource = remember { MutableInteractionSource() }
 
     Box(
         modifier = modifier.combinedClickable(
+            interactionSource = interactionSource,
+            indication = null,
             onClick = onQuickRecord,
             onLongClick = onOpenDetail
         )
@@ -183,7 +191,9 @@ fun HabitButtonCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .habitCardDropShadow(shape = cardShape),
+                .habitCardDropShadow(shape = cardShape)
+                .clip(cardShape)
+                .indication(interactionSource, ripple()),
             shape = cardShape,
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
