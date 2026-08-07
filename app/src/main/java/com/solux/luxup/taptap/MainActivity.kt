@@ -111,10 +111,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // 로그인 시 AuthRepository가 저장한 userId. 로그인 화면을 거치지 않고는 이 지점에 도달하지 않는다.
-        val currentUserId = tokenManager.getUserId() ?: -1L
         setContent {
             TapTapTheme {
+                // 로그인 시 AuthRepository가 저장한 userId. onCreate 시점에 한 번만 읽으면
+                // 로그아웃 후 다른 계정으로 재로그인해도(프로세스가 안 죽으면) 이 값이 안 바뀌어
+                // 팀 소유권/isMine 판정이 전부 이전 계정 기준으로 남는다 — postLoginSplash
+                // 진입마다(모든 로그인 성공 경로가 여길 거친다) 다시 읽어 갱신한다.
+                var currentUserId by remember { mutableStateOf(tokenManager.getUserId() ?: -1L) }
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "splash") {
                     composable("splash") {
@@ -137,6 +140,11 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("postLoginSplash") {
+                        // 로그인 성공 경로(로그인/회원가입 후 재로그인)가 전부 이 화면을 거치므로
+                        // 여기서 currentUserId를 다시 읽어 이전 계정 값이 남지 않게 한다.
+                        LaunchedEffect(Unit) {
+                            currentUserId = tokenManager.getUserId() ?: -1L
+                        }
                         val postLoginSplashViewModel: PostLoginSplashViewModel = hiltViewModel()
                         PostLoginSplashScreen(
                             isReady = postLoginSplashViewModel.hasButtons != null,
