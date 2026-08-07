@@ -131,7 +131,7 @@ fun TeamMaxMemberModalContent(
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             MaxMemberPillButton(
                 label = "취소",
-                contentColor = Color(0xFFF08A8A),
+                contentColor = Color(0xFFF6989C),
                 isDanger = true,
                 onClick = onDismiss,
             )

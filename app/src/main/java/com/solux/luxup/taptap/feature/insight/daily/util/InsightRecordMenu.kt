@@ -3,6 +3,8 @@ package com.solux.luxup.taptap.feature.insight.daily.util
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +17,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,6 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 private val DangerColor = Color(0xFFF6989C)
 private val TextColor = Color(0xFF6D6D6D)
@@ -59,7 +66,7 @@ fun InsightRecordActionMenuContent(
             .padding(30.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        MenuFlatButton(text = "기록 삭제", contentColor = DangerColor, onClick = onDeleteClick)
+        MenuFlatButton(text = "기록 삭제", contentColor = DangerColor, isDanger = true, onClick = onDeleteClick)
         MenuFlatButton(text = "기록으로 이동", contentColor = TextColor, onClick = onMoveToRecordClick)
     }
 }
@@ -128,6 +135,7 @@ fun InsightRecordDeleteConfirmContent(
             MenuFlatButton(
                 text = "삭제",
                 contentColor = DangerColor,
+                isDanger = true,
                 onClick = onConfirmDelete,
                 modifier = Modifier.weight(1f)
             )
@@ -135,25 +143,45 @@ fun InsightRecordDeleteConfirmContent(
     }
 }
 
-/** 점 세 개 메뉴 항목 — 테두리 있는 흰색 버튼 (Frame 43) */
+/** 점 세 개 메뉴 항목 — 테두리 있는 흰색 버튼 (Frame 43). isDanger(빨간 계열)면 눌렀을 때 회색(#E2E2E2), 아니면 파란 그라데이션으로 바뀐다 */
 @Composable
 private fun MenuFlatButton(
     text: String,
     contentColor: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDanger: Boolean = false,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = when {
+        isPressed && isDanger -> Brush.horizontalGradient(listOf(Color(0xFFE2E2E2), Color(0xFFE2E2E2)))
+        isPressed -> Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+        else -> Brush.horizontalGradient(listOf(Color.White, Color.White))
+    }
+    val borderBrush = if (isPressed) background else Brush.horizontalGradient(listOf(contentColor, contentColor))
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .background(Color.White)
-            .border(1.dp, contentColor, RoundedCornerShape(10.dp))
-            .clickable(onClick = onClick)
+            .background(background)
+            .border(1.dp, borderBrush, RoundedCornerShape(10.dp))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
             .padding(vertical = 16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text, fontSize = 20.sp, fontWeight = FontWeight.Medium, color = contentColor, textAlign = TextAlign.Center)
+        Text(
+            text,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+            color = if (isPressed && !isDanger) Color.White else contentColor,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

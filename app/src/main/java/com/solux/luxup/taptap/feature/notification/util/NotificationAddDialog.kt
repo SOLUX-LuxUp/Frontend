@@ -3,6 +3,8 @@ package com.solux.luxup.taptap.feature.notification.util
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +44,7 @@ import com.solux.luxup.taptap.core.util.category.resolveCategoryFilter
 import com.solux.luxup.taptap.core.util.SearchBar
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
 import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 
 // "알림 추가" 모달 - 버튼 후보 목록에서 알림을 걸 버튼을 체크해 선택
 // 체크리스트 항목을 탭하면 onItemClick으로 알려서 세부 설정 화면(전체화면)으로 넘김 - 다이얼로그 창 안에 중첩하면 창 그림자가 생기므로 호출부에서 다이얼로그 밖으로 빼서 띄워야 함
@@ -121,8 +125,9 @@ fun NotificationAddDialog(
         ) {
             DialogPillButton(
                 text = "취소",
-                textColor = Color(0xFFFF7B7B),
-                borderColor = Color(0xFFFF7B7B),
+                textColor = Color(0xFFF6989C),
+                borderColor = Color(0xFFF6989C),
+                isDanger = true,
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f)
             )
@@ -196,23 +201,38 @@ private fun NotificationCheckRow(
     }
 }
 
+/** isDanger(빨간 계열)면 눌렀을 때 회색(#E2E2E2), 아니면 파란 그라데이션으로 바뀐다 */
 @Composable
 private fun DialogPillButton(
     text: String,
     textColor: Color,
     borderColor: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDanger: Boolean = false,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = when {
+        isPressed && isDanger -> Brush.horizontalGradient(listOf(Color(0xFFE2E2E2), Color(0xFFE2E2E2)))
+        isPressed -> Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+        else -> Brush.horizontalGradient(listOf(Color.White, Color.White))
+    }
+    val borderBrush = if (isPressed) background else Brush.horizontalGradient(listOf(borderColor, borderColor))
+
     Box(
         modifier = modifier
             .height(44.dp)
             .clip(RoundedCornerShape(50))
-            .background(Color.White)
-            .border(1.dp, borderColor, RoundedCornerShape(50))
-            .clickable(onClick = onClick),
+            .background(background)
+            .border(1.dp, borderBrush, RoundedCornerShape(50))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
         contentAlignment = Alignment.Center
     ) {
-        Text(text, fontSize = 18.sp, fontWeight = FontWeight.Medium, color = textColor)
+        Text(text, fontSize = 18.sp, fontWeight = FontWeight.Medium, color = if (isPressed && !isDanger) Color.White else textColor)
     }
 }
