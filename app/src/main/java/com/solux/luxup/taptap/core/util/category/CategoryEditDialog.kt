@@ -286,7 +286,7 @@ private fun CategoryOrderList(
 }
 
 /** 빨간 계열(삭제/위험) textColor면 눌렀을 때 회색(#E2E2E2), 아니면 파란 그라데이션으로 바뀐다 */
-private val DangerTextColors = setOf(Color(0xFFFF7B7B), Color(0xFFF6989C))
+private val DangerTextColors = setOf(Color(0xFFF6989C))
 
 @Composable
 internal fun CategoryDialogButton(

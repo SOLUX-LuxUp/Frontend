@@ -65,6 +65,7 @@ fun AccountConfirmDialog(
                 AccountDialogButton(
                     text = confirmText,
                     textColor = if (destructive) DangerColor else Color(0xFF2085FF),
+                    isDanger = destructive,
                     modifier = Modifier.weight(1f),
                     onClick = onConfirm,
                 )
@@ -99,7 +100,7 @@ private fun AccountConfirmDialogContentPreview() {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             AccountDialogButton(text = "취소", textColor = CancelColor, modifier = Modifier.weight(1f), onClick = {})
-            AccountDialogButton(text = "로그아웃", textColor = DangerColor, modifier = Modifier.weight(1f), onClick = {})
+            AccountDialogButton(text = "로그아웃", textColor = DangerColor, isDanger = true, modifier = Modifier.weight(1f), onClick = {})
         }
     }
 }

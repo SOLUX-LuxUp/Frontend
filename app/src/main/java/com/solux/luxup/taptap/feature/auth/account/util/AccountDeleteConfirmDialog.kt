@@ -81,6 +81,7 @@ fun AccountDeleteConfirmDialog(
                 AccountDialogButton(
                     text = "탈퇴",
                     textColor = DangerColor,
+                    isDanger = true,
                     modifier = Modifier.weight(1f),
                     onClick = onConfirm,
                 )
@@ -134,7 +135,7 @@ private fun AccountDeleteConfirmDialogContentPreview() {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             AccountDialogButton(text = "취소", textColor = CancelColor, modifier = Modifier.weight(1f), onClick = {})
-            AccountDialogButton(text = "탈퇴", textColor = DangerColor, modifier = Modifier.weight(1f), onClick = {})
+            AccountDialogButton(text = "탈퇴", textColor = DangerColor, isDanger = true, modifier = Modifier.weight(1f), onClick = {})
         }
     }
 }

@@ -3,6 +3,8 @@ package com.solux.luxup.taptap.feature.notification.util
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -35,6 +38,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.solux.luxup.taptap.feature.notification.model.NotificationItem
+import com.solux.luxup.taptap.ui.theme.BlueGradientEnd
+import com.solux.luxup.taptap.ui.theme.BlueGradientStart
 import com.solux.luxup.taptap.ui.theme.BrandWhiteBlue
 import kotlin.math.roundToInt
 
@@ -127,6 +132,7 @@ fun NotificationDeleteConfirmDialog(
             NotificationDialogButton(
                 text = "삭제",
                 textColor = DeleteColor,
+                isDanger = true,
                 modifier = Modifier.weight(1f),
                 onClick = onConfirmDelete
             )
@@ -134,22 +140,37 @@ fun NotificationDeleteConfirmDialog(
     }
 }
 
+/** isDanger(빨간 계열)면 눌렀을 때 회색(#E2E2E2), 아니면 파란 그라데이션으로 바뀐다 */
 @Composable
 private fun NotificationDialogButton(
     text: String,
     textColor: Color,
     modifier: Modifier = Modifier,
+    isDanger: Boolean = false,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val background = when {
+        isPressed && isDanger -> Brush.horizontalGradient(listOf(Color(0xFFE2E2E2), Color(0xFFE2E2E2)))
+        isPressed -> Brush.horizontalGradient(listOf(BlueGradientStart, BlueGradientEnd))
+        else -> Brush.horizontalGradient(listOf(Color.White, Color.White))
+    }
+    val borderBrush = if (isPressed) background else Brush.horizontalGradient(listOf(textColor, textColor))
+
     Box(
         modifier = modifier
-            .border(1.dp, textColor, RoundedCornerShape(50))
+            .border(1.dp, borderBrush, RoundedCornerShape(50))
             .clip(RoundedCornerShape(50))
-            .background(Color.White)
-            .clickable(onClick = onClick)
+            .background(background)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text, fontSize = 18.sp, fontWeight = FontWeight.Medium, color = textColor)
+        Text(text, fontSize = 18.sp, fontWeight = FontWeight.Medium, color = if (isPressed && !isDanger) Color.White else textColor)
     }
 }

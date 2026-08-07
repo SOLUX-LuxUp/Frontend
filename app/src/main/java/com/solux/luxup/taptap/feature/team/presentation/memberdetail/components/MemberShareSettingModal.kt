@@ -179,8 +179,8 @@ fun MemberShareSettingModal(
             ) {
                 ModalButton(
                     text = "취소",
-                    textColor = Color(0xFFFF6B6B),
-                    borderColor = Color(0xFFFF6B6B),
+                    textColor = Color(0xFFF6989C),
+                    borderColor = Color(0xFFF6989C),
                     bgColor = Color.White,
                     isDanger = true,
                     modifier = Modifier.weight(1f),

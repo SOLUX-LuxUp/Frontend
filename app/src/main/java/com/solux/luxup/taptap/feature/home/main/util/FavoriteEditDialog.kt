@@ -200,7 +200,7 @@ fun FavoriteEditDialog(
         ) {
             CategoryDialogButton(
                 text = "취소",
-                textColor = Color(0xFFFF7B7B),
+                textColor = Color(0xFFF6989C),
                 modifier = Modifier.weight(1f),
                 onClick = onDismiss
             )
