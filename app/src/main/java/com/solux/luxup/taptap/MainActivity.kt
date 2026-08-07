@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -118,8 +119,21 @@ class MainActivity : ComponentActivity() {
                 // 팀 소유권/isMine 판정이 전부 이전 계정 기준으로 남는다 — postLoginSplash
                 // 진입마다(모든 로그인 성공 경로가 여길 거친다) 다시 읽어 갱신한다.
                 var currentUserId by remember { mutableStateOf(tokenManager.getUserId() ?: -1L) }
+
+                // 로그아웃/계정 삭제마다 증가시켜 NavHost 전체(navController + 그 안의 모든
+                // 백스택 엔트리·ViewModelStore)를 통째로 새로 만든다. 하단 탭 전환은
+                // saveState/restoreState로 팀 탭 등의 백스택을 별도로 저장해두는데, 로그아웃 시
+                // popUpTo(0)는 "현재" 백스택만 비우고 이렇게 저장된 다른 탭의 상태(예: 팀 설정·권한
+                // 화면에 남아있던 ViewModel)는 지우지 못해 재로그인 후 이전 계정 권한 정보가 그대로
+                // 남아 보이는 문제가 있었다 — key로 감싸 저장된 상태까지 전부 폐기한다.
+                var sessionEpoch by remember { mutableStateOf(0) }
+
+                key(sessionEpoch) {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "splash") {
+                NavHost(
+                    navController = navController,
+                    startDestination = if (sessionEpoch == 0) "splash" else "login",
+                ) {
                     composable("splash") {
                         SplashScreen(
                             onNavigateToLogin = {
@@ -661,9 +675,11 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onLogout = {
                                         accountViewModel.logout {
-                                            navController.navigate("login") {
-                                                popUpTo(0) { inclusive = true }
-                                            }
+                                            // navController 자체를 포함해 이번 세션에 쌓인 모든
+                                            // 백스택·ViewModelStore(하단 탭 saveState로 저장된
+                                            // 것까지)를 통째로 버리고 "login"부터 새로 시작한다.
+                                            currentUserId = -1L
+                                            sessionEpoch++
                                         }
                                     },
                                     onRequestDeleteAccount = {
@@ -671,9 +687,8 @@ class MainActivity : ComponentActivity() {
                                     },
                                     isAccountDeleted = accountViewModel.isAccountDeleted,
                                     onDeleteAccount = {
-                                        navController.navigate("login") {
-                                            popUpTo(0) { inclusive = true }
-                                        }
+                                        currentUserId = -1L
+                                        sessionEpoch++
                                     }
                                 )
                             }
@@ -1078,6 +1093,7 @@ class MainActivity : ComponentActivity() {
                             navController.navigateToTab(item)
                         },
                     )
+                }
                 }
             }
         }
