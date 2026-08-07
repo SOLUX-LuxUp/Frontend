@@ -203,94 +203,94 @@ fun TeamActivityScreen(
     val listState = rememberLazyListState()
 
     Box(modifier = modifier) {
-    Column {
-        // 최근 기록 배너 — 서버가 latestRecord.recordedAt 최신순으로 정렬해서 주므로
-        // 기록이 있는 첫 번째 버튼이 곧 가장 최근 기록이다
-        val recentButton = buttons.firstOrNull { it.latestRecord != null }
-        Column(modifier = Modifier.padding(horizontal = 40.dp, vertical = 12.dp)) {
-            Text("최근 기록", fontSize = 14.sp, color = Color(0xFF6D6D6D), fontWeight = FontWeight.Medium)
-            Spacer(Modifier.height(11.dp))
-            if (recentButton != null) {
-                RecentRecordBanner(recentButton)
-            } else {
-                EmptyRecordBanner()
-            }
-            Spacer(Modifier.height(30.dp))
-        }
+        // 최근 기록 배너 · 카테고리/검색도 버튼 목록과 같은 LazyColumn의 header로 넣어서
+        // 활동/인사이트/멤버 탭 아래 전체가 하나로 스크롤되게 한다 (탭 자체는 TeamDetailScreen에 고정).
+        TeamButtonList(
+            buttons = filteredButtons,
+            state = listState,
+            onButtonClick = { button ->
+                if (button.hasTapPermission) onRecordTap(button)
+                else localNotice = if (isTeamOwner) NO_TAP_PERMISSION_MESSAGE_OWNER else NO_TAP_PERMISSION_MESSAGE_MEMBER
+            },
+            onButtonLongClick = onNavigateToTimeline,
+            onButtonMenuClick = { menuTarget = it },
+            header = {
+                Column {
+                    // 최근 기록 배너 — 서버가 latestRecord.recordedAt 최신순으로 정렬해서 주므로
+                    // 기록이 있는 첫 번째 버튼이 곧 가장 최근 기록이다
+                    val recentButton = buttons.firstOrNull { it.latestRecord != null }
+                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                        Text("최근 기록", fontSize = 14.sp, color = Color(0xFF6D6D6D), fontWeight = FontWeight.Medium)
+                        Spacer(Modifier.height(11.dp))
+                        if (recentButton != null) {
+                            RecentRecordBanner(recentButton)
+                        } else {
+                            EmptyRecordBanner()
+                        }
+                        Spacer(Modifier.height(30.dp))
+                    }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 40.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CategoryDropdown(
-                categories = categories.map { it.categoryName } + "ALL",
-                onCategorySelected = { categoryFilter = it },
-                onManageCategoriesClick = { showCategoryEditDialog = true },
-            )
-            SearchBar(
-                modifier = Modifier.weight(1f),
-                placeholder = "버튼 검색",
-                onQueryChange = { searchQuery = it },
-            )
-        }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CategoryDropdown(
+                            categories = categories.map { it.categoryName } + "ALL",
+                            onCategorySelected = { categoryFilter = it },
+                            onManageCategoriesClick = { showCategoryEditDialog = true },
+                        )
+                        SearchBar(
+                            modifier = Modifier.weight(1f),
+                            placeholder = "버튼 검색",
+                            onQueryChange = { searchQuery = it },
+                        )
+                    }
 
-        when {
-            buttons.isEmpty() && showTemplateSection -> {
-                TeamFirstButtonSection(
-                    suggestions = suggestions,
-                    onSuggestionClick = onSuggestionClick,
-                    isFirstButton = true,
-                    modifier = Modifier.padding(horizontal = 40.dp, vertical = 12.dp),
-                )
-            }
+                    when {
+                        buttons.isEmpty() && showTemplateSection -> {
+                            TeamFirstButtonSection(
+                                suggestions = suggestions,
+                                onSuggestionClick = onSuggestionClick,
+                                isFirstButton = true,
+                                modifier = Modifier.padding(vertical = 12.dp),
+                            )
+                        }
 
-            buttons.isEmpty() -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 80.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("버튼이 없어요", fontSize = 14.sp, color = Color(0xFF8A94A6))
-                }
-            }
+                        buttons.isEmpty() -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 80.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("버튼이 없어요", fontSize = 14.sp, color = Color(0xFF8A94A6))
+                            }
+                        }
 
-            filteredButtons.isEmpty() -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 80.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("이 카테고리에 버튼이 없어요", fontSize = 14.sp, color = Color(0xFF8A94A6))
-                }
-            }
+                        filteredButtons.isEmpty() -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 80.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("이 카테고리에 버튼이 없어요", fontSize = 14.sp, color = Color(0xFF8A94A6))
+                            }
+                        }
 
-            else -> {
-                TeamButtonList(
-                    buttons = filteredButtons,
-                    state = listState,
-                    onButtonClick = { button ->
-                        if (button.hasTapPermission) onRecordTap(button)
-                        else localNotice = if (isTeamOwner) NO_TAP_PERMISSION_MESSAGE_OWNER else NO_TAP_PERMISSION_MESSAGE_MEMBER
-                    },
-                    onButtonLongClick = onNavigateToTimeline,
-                    onButtonMenuClick = { menuTarget = it },
-                    header = if (showTemplateSection) {
-                        {
+                        showTemplateSection -> {
                             TeamFirstButtonSection(
                                 suggestions = suggestions,
                                 onSuggestionClick = onSuggestionClick,
                                 isFirstButton = false,
                             )
                         }
-                    } else null,
-                )
-            }
-        }
-    }
+                    }
+                }
+            },
+        )
 
         // 활동 탭 콘텐츠는 팀 상세 상단바/탭 아래에 중첩돼 있어, 일반 Box 정렬로는 화면 진짜
         // 최상단(개인 파트와 같은 위치)에 띄울 수 없다. Popup은 창 좌표 기준이라 중첩과 무관하게
