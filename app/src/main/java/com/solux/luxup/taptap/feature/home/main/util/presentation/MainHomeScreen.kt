@@ -216,15 +216,16 @@ fun MainHomeScreen(
                         Text(
                             "즐겨찾기",
                             fontSize = 15.sp,
-                            color = Color(0xFF6D6D6D),
-                            modifier = Modifier.clickable { showFavoriteEditDialog = true }
+                            color = Color(0xFF6D6D6D)
                         )
                         Spacer(Modifier.width(2.dp))
                         Icon(
                             painter = painterResource(R.drawable.ic_setting),
-                            contentDescription = null,
+                            contentDescription = "즐겨찾기 수정",
                             tint = Color.Unspecified,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clickable { showFavoriteEditDialog = true }
                         )
                     }
                     Spacer(Modifier.height(8.dp))
