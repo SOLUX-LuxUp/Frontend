@@ -27,7 +27,10 @@ interface InsightApi {
     // ---- 라이프스타일 추천 ----
 
     @GET("api/lifestyle-recommendations")
-    suspend fun getLifestyleRecommendations(): Response<BaseResponse<LifestyleRecommendationsResponseDto>>
+    suspend fun getLifestyleRecommendations(
+        @Query("year") year: Int? = null,
+        @Query("month") month: Int? = null,
+    ): Response<BaseResponse<LifestyleRecommendationsResponseDto>>
 
     @PATCH("api/lifestyle-recommendations/{rec_id}")
     suspend fun processLifestyleRecommendationAction(

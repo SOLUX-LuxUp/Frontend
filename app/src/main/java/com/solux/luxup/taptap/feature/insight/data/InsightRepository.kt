@@ -37,8 +37,8 @@ class InsightRepository @Inject constructor(
 
     // ---- 라이프스타일 추천 ----
 
-    suspend fun getLifestyleRecommendations(): Result<InsightLifestyle> =
-        apiCallHandler.execute { insightApi.getLifestyleRecommendations() }.mapCatching { it.toModel() }
+    suspend fun getLifestyleRecommendations(year: Int? = null, month: Int? = null): Result<InsightLifestyle> =
+        apiCallHandler.execute { insightApi.getLifestyleRecommendations(year, month) }.mapCatching { it.toModel() }
 
     /** action: "accept"(수락) | "dismiss"(무시) */
     suspend fun processLifestyleRecommendation(recId: Long, action: String): Result<Unit> =

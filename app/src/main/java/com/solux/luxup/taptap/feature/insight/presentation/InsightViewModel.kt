@@ -185,6 +185,7 @@ class InsightViewModel @Inject constructor(
         year = y
         month = m
         loadMonthly()
+        if (lifestyle != null) loadLifestyle()
     }
 
     fun goToNextMonth() {
@@ -192,6 +193,7 @@ class InsightViewModel @Inject constructor(
         year = y
         month = m
         loadMonthly()
+        if (lifestyle != null) loadLifestyle()
     }
 
     /** 데일리 타임라인 "..." → 기록 삭제. 삭제 후 daily/weekly/monthly 집계가 전부 바뀌므로 다시 불러온다. */
@@ -204,8 +206,12 @@ class InsightViewModel @Inject constructor(
     }
 
     fun loadLifestyle() {
+        if (isFutureMonth(year, month)) {
+            lifestyle = InsightLifestyle(analysisAvailable = false, lifestyleLabel = "", lifestyleCaption = "")
+            return
+        }
         viewModelScope.launch {
-            insightRepository.getLifestyleRecommendations()
+            insightRepository.getLifestyleRecommendations(year, month)
                 .onSuccess { lifestyle = it }
                 .onFailure { errorMessage = it.message ?: "라이프스타일 추천을 불러오지 못했어요." }
         }

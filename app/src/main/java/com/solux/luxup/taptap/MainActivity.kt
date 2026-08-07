@@ -503,6 +503,10 @@ class MainActivity : ComponentActivity() {
                                 onBack = {
                                     navController.popBackStack()
                                 },
+                                year = viewModel.year,
+                                month = viewModel.month,
+                                onPrevMonth = viewModel::goToPreviousMonth,
+                                onNextMonth = viewModel::goToNextMonth,
                                 onAddRecommendation = viewModel::acceptLifestyleRecommendation,
                                 onDeleteRecommendation = viewModel::acceptLifestyleRecommendation
                             )
