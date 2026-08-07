@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -75,9 +78,24 @@ private fun NavBackStackEntry.settingViewModel(
         navController.getBackStackEntry(TeamSettingRoute.GRAPH_PATTERN)
     }
     val teamId = parentEntry.teamId()
-    return hiltViewModel<TeamSettingViewModel, TeamSettingViewModel.Factory>(
+    val viewModel = hiltViewModel<TeamSettingViewModel, TeamSettingViewModel.Factory>(
         viewModelStoreOwner = parentEntry,
     ) { factory -> factory.create(teamId, currentUserId) }
+
+    // 하단 탭 전환으로 이 그래프가 백스택에 보존된 채 돌아왔을 때도(예: 팀장 위임을 받아
+    // 소유권이 바뀐 경우) 최신 상태를 반영하도록 화면이 다시 보일 때(RESUME)마다 새로고침한다.
+    DisposableEffect(this) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadSettings()
+                viewModel.loadMembers()
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+
+    return viewModel
 }
 
 /**
