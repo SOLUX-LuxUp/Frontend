@@ -120,7 +120,7 @@ fun MainHomeScreen(
     onReorderFavorites: (buttonIds: List<Long>) -> Unit = {},
     onDeleteButton: (buttonId: Long) -> Unit = {},
     onNavigateToButtonDetail: (button: HabitButton) -> Unit = {},
-    onQuickRecord: (button: HabitButton) -> Unit = {},
+    onQuickRecord: (buttonId: Long) -> Unit = {},
     showRecordCompleteBanner: Boolean = false,
     onCancelRecord: () -> Unit = {},
     onFirstButtonSuggestionClick: (TemplateButtonSuggestion) -> Unit = {},
@@ -233,7 +233,7 @@ fun MainHomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         favoriteButtonsState.forEach { button ->
-                            FavoriteButtonBox(button = button, onClick = { /* TODO: 즐겨찾기 버튼 클릭 */ }, now = now)
+                            FavoriteButtonBox(button = button, onClick = { onQuickRecord(button.buttonId) }, now = now)
                         }
                         if (favoriteButtonsState.isEmpty()) {
                             FavoriteAddBox(onClick = { /* TODO: 즐겨찾기 추가 */ })
@@ -277,7 +277,7 @@ fun MainHomeScreen(
                             onToggleFavorite = onToggleFavorite,
                             onEditRecord = onNavigateToEditButton,
                             onDeleteRecord = { button -> recordPendingDelete = button },
-                            onQuickRecord = onQuickRecord,
+                            onQuickRecord = { button -> onQuickRecord(button.buttonId) },
                             onOpenDetail = onNavigateToButtonDetail,
                             now = now,
                         )
