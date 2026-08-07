@@ -317,9 +317,9 @@ class MainHomeViewModel @AssistedInject constructor(
      * 화면 상단에 "기록 완료!" 취소 배너를 3초간 띄운다. 그 안에 취소하지 않으면 배너는 그냥 사라지고
      * 기록은 그대로 유지된다(별도 확정 호출 없음).
      */
-    fun quickRecord(button: HabitButton) {
+    fun quickRecord(buttonId: Long) {
         viewModelScope.launch {
-            buttonRepository.createRecord(button.buttonId)
+            buttonRepository.createRecord(buttonId)
                 .onSuccess { result ->
                     pendingRecord = PendingRecord(buttonId = result.buttonId, recordId = result.recordId)
                     refreshButtonLastRecordedAt(result.buttonId)
