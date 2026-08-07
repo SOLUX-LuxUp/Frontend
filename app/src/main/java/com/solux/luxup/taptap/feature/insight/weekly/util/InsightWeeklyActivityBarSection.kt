@@ -47,11 +47,11 @@ private val BarWidth = 18.dp
 
 // 카테고리 색 지정이 없을 때(⚠ API 미제공 대비) 순번 기준으로 대체할 팔레트
 private val CategoryPalette = listOf(
-    Color(0xFF0059C5),
-    Color(0xFFFFC94C),
-    Color(0xFFFF6B6B),
-    Color(0xFF7CCBFF),
-    Color(0xFFB0B8C1),
+    Color(0xFFFF6565),
+    Color(0xFFFFD53F),
+    Color(0xFF2085FF),
+    Color(0xFF8DBFFE),
+    Color(0xFFA9F594),
 )
 
 private data class LegendCategory(val categoryId: String, val name: String, val color: Color)

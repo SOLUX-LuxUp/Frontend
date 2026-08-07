@@ -56,13 +56,13 @@ private val BubbleGap = 10.dp
 /** 상위 몇 개 카테고리까지 개별 표시할지 — 초과분은 "기타"로 묶임 */
 private const val MAX_VISIBLE_CATEGORIES = 4
 
-// 도넛 조각 팔레트 — 진한→연한 파랑. 상위 4개 카테고리 + 기타(마지막 색)
+// 도넛 조각 팔레트 — 상위 4개 카테고리 + 기타(마지막 색)
 private val DonutPalette = listOf(
-    Color(0xFF0059C5),
+    Color(0xFFFF6565),
+    Color(0xFFFFD53F),
     Color(0xFF2085FF),
-    Color(0xFF0099FF),
-    Color(0xFF4BB4FF),
-    Color(0xFF7CCBFF),
+    Color(0xFF8DBFFE),
+    Color(0xFFA9F594),
 )
 
 /** 도넛 조각/범례 표시 단위 (개별 카테고리 또는 "기타" 묶음) */
