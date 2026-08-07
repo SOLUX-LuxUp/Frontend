@@ -25,18 +25,25 @@ import com.solux.luxup.taptap.feature.insight.lifestyle.model.InsightLifestyle
 import com.solux.luxup.taptap.feature.insight.lifestyle.util.InsightLifestyleForgottenSection
 import com.solux.luxup.taptap.feature.insight.lifestyle.util.InsightLifestyleRecommendSection
 import com.solux.luxup.taptap.feature.insight.lifestyle.util.InsightLifestyleSummaryCard
+import com.solux.luxup.taptap.feature.insight.monthly.util.InsightMonthNav
+import java.time.LocalDate
 
 private val EmptyStateColor = Color(0xFFB0B0B0)
 
 /**
  * 나의 라이프 스타일 — 먼슬리 레포트의 "나의 라이프 스타일" 배너에서 진입.
- * GET /api/insights/lifestyle 조회 결과를 요약 카드 + 버튼 추가/삭제 추천으로 보여준다.
+ * GET /api/lifestyle-recommendations?year&month 조회 결과를 요약 카드 + 버튼 추가/삭제 추천으로 보여준다.
+ * year/month를 넘기지 않으면 서버가 이번 달 기준으로 조회하므로, 화면에서도 월 이동이 가능하다.
  */
 @Composable
 fun InsightLifestyleScreen(
     data: InsightLifestyle,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    year: Int = LocalDate.now().year,
+    month: Int = LocalDate.now().monthValue,
+    onPrevMonth: () -> Unit = {},
+    onNextMonth: () -> Unit = {},
     onAddRecommendation: (Long) -> Unit = {},
     onDeleteRecommendation: (Long) -> Unit = {}
 ) {
@@ -49,7 +56,11 @@ fun InsightLifestyleScreen(
 
         InsightBackHeader(title = "나의 라이프 스타일", onBack = onBack)
 
-        Spacer(Modifier.height(60.dp))
+        Spacer(Modifier.height(20.dp))
+
+        InsightMonthNav(year = year, month = month, onPrevMonth = onPrevMonth, onNextMonth = onNextMonth)
+
+        Spacer(Modifier.height(40.dp))
 
         if (!data.analysisAvailable) {
             LifestyleEmptyState()
