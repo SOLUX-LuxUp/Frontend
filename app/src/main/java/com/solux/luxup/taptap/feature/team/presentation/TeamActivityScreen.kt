@@ -188,13 +188,16 @@ fun TeamActivityScreen(
 
     // "ALL" 또는 null이면 전체 노출, 그 외에는 선택된 카테고리 이름으로 categoryId를 찾아 필터링
     var categoryFilter by remember { mutableStateOf<String?>(null) }
-    val filteredButtons = remember(buttons, categoryFilter, categories) {
-        if (categoryFilter == null || categoryFilter == "ALL") {
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredButtons = remember(buttons, categoryFilter, categories, searchQuery) {
+        val byCategory = if (categoryFilter == null || categoryFilter == "ALL") {
             buttons
         } else {
             val categoryId = categories.find { it.categoryName == categoryFilter }?.categoryId
             buttons.filter { it.categoryId == categoryId }
         }
+        if (searchQuery.isBlank()) byCategory
+        else byCategory.filter { it.buttonName.contains(searchQuery.trim(), ignoreCase = true) }
     }
 
     val listState = rememberLazyListState()
@@ -226,7 +229,11 @@ fun TeamActivityScreen(
                 onCategorySelected = { categoryFilter = it },
                 onManageCategoriesClick = { showCategoryEditDialog = true },
             )
-            SearchBar(modifier = Modifier.weight(1f), placeholder = "버튼 검색")
+            SearchBar(
+                modifier = Modifier.weight(1f),
+                placeholder = "버튼 검색",
+                onQueryChange = { searchQuery = it },
+            )
         }
 
         when {

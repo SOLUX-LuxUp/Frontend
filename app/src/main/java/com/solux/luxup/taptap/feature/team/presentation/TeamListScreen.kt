@@ -75,6 +75,12 @@ fun TeamListScreen(
     var showOptionModal by remember { mutableStateOf(false) }
     var showJoinModal by remember { mutableStateOf(false) }
     var joinCode by remember { mutableStateOf("") }
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredTeams = remember(teams, searchQuery) {
+        if (searchQuery.isBlank()) teams
+        else teams.filter { it.teamName.contains(searchQuery.trim(), ignoreCase = true) }
+    }
 
     // 참여 성공 신호를 받았을 때만 모달을 닫는다 — 실패 시엔 열린 채로 에러를 보여준다
     LaunchedEffect(joinedTeamId) {
@@ -101,13 +107,17 @@ fun TeamListScreen(
                 .padding(innerPadding)          // 네비바 높이만큼 본문 밀어줌
         ) {
             AppLogo()
-            TeamListHeader(onAddClick = { showOptionModal = true })
+            TeamListHeader(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                onAddClick = { showOptionModal = true },
+            )
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 40.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(teams) { team ->
+                items(filteredTeams) { team ->
                     TeamCard(
                         team = team,
                         onClick = { onNavigateToTeamDetail(team.teamId) },   // teamId만 전달
@@ -151,6 +161,8 @@ fun TeamListScreen(
 
 @Composable
 private fun TeamListHeader(
+    query: String,
+    onQueryChange: (String) -> Unit,
     onAddClick: () -> Unit,
 ) {
     Row(
@@ -158,7 +170,11 @@ private fun TeamListHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("내 팀", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = Color(0xFF6D6D6D))
-        SearchBar(modifier = Modifier.weight(1f).padding(horizontal = 12.dp))
+        SearchBar(
+            query = query,
+            onQueryChange = onQueryChange,
+            modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+        )
         Icon(
             Icons.Default.Add,
             contentDescription = "팀 추가",
@@ -194,8 +210,11 @@ private fun AppLogo() {
     )
 }
 @Composable
-private fun SearchBar(modifier: Modifier = Modifier) {
-    var query by remember { mutableStateOf("") }
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
         modifier = modifier
             .height(43.dp)
@@ -214,7 +233,7 @@ private fun SearchBar(modifier: Modifier = Modifier) {
         Spacer(Modifier.width(8.dp))
         BasicTextField(
             value = query,
-            onValueChange = { query = it },
+            onValueChange = onQueryChange,
             singleLine = true,
             modifier = Modifier.weight(1f),
             decorationBox = { innerTextField ->
